@@ -90,7 +90,7 @@ private:
     bool isPressed_ = false;
     
     // private function
-private:     
+private:
     void drawLayer(const Layer& layer, IRenderWindow* renderWindow);
 };
 

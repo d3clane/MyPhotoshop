@@ -6,6 +6,16 @@
 
 using namespace ps;
 
+namespace
+{
+
+bool isHovered(vec2i pos, vec2u size)
+{
+    return pos.x >= 0 && pos.y >= 0 && pos.x < size.x && pos.y < size.y;
+}
+
+} // namespace anonymous
+
 // Layer implementation
 
 static const char* canvasTextureInputFile = "media/textures/canvas.png";
@@ -69,6 +79,9 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 {
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
+    if (isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonPressed)
+        isPressed_ = true;
+
     return true;
 }
 
@@ -108,8 +121,7 @@ vec2i Canvas::getMousePosition() const
 
 bool Canvas::isPressed() const
 {
-    return lastMousePosRelatively_.x >= 0 && lastMousePosRelatively_.y >= 0 &&
-           lastMousePosRelatively_.x < size_.x && lastMousePosRelatively_.y < size_.y;
+    return isPressed_;
 }
 
 ILayer* Canvas::getLayer(size_t index)

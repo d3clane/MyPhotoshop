@@ -82,41 +82,53 @@ IWindowContainer* getRootWindow()
     return &rootWindow;
 }
 
-bool IWindowContainer::isWindowContainer() const {
+bool IWindowContainer::isWindowContainer() const 
+{
     return true;
 }
 
-bool IWindowVector::isWindowContainer() const {
+bool IWindowVector::isWindowContainer() const 
+{
     return true;
 }
 
-void IWindowVector::addWindow(std::unique_ptr<IWindow> window) {
+void IWindowVector::addWindow(std::unique_ptr<IWindow> window) 
+{
     windows_.push_back(std::move(window));
 }
 
 void IWindowVector::removeWindow(wid_t id) {
-    for (auto it = windows_.begin(); it != windows_.end(); it++) {
-        if ((*it)->getId() == id) {
+    for (auto it = windows_.begin(); it != windows_.end(); it++) 
+    {
+        if ((*it)->getId() == id) 
+        {
             windows_.erase(it);
             return;
         }
     }
+
+    for (auto& window : windows_)
+    {
+        if (window->isWindowContainer())
+            static_cast<IWindowContainer*>(window.get())->removeWindow(id);
+    }
 }
 
-IWindow* IWindowVector::getWindowById(wid_t id) {
+IWindow* IWindowVector::getWindowById(wid_t id) 
+{
     return const_cast<IWindow*>(static_cast<const IWindowVector*>(this)->getWindowById(id));
 }
 
-const IWindow* IWindowVector::getWindowById(wid_t id) const {
+const IWindow* IWindowVector::getWindowById(wid_t id) const 
+{
     if (id == kInvalidWindowId) {
         return nullptr;
     }
 
     for (const auto& window : windows_) {
         IWindow* result = window->getWindowById(id);
-        if (result) {
+        if (result)
             return result;
-        }
     }
     
     return nullptr;

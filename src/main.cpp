@@ -1,4 +1,6 @@
 #include "pluginsSrc/canvas/canvas.hpp"
+#include "pluginsSrc/toolbar/toolbar.hpp"
+
 #include "api/api_sfm.hpp"
 
 int main()
@@ -6,6 +8,7 @@ int main()
     auto renderWindow = psapi::IRenderWindow::create(800, 600, "PSAPI");
 
     loadPlugin2();
+    loadPlugin();
 
     auto rootWindow = psapi::getRootWindow();
     

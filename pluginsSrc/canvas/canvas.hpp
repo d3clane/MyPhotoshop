@@ -6,8 +6,13 @@
 
 #include <iostream>
 
+extern "C"
+{
+
 bool loadPlugin2();
 void unloadPlugin2();
+
+}
 
 namespace ps {
 

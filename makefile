@@ -31,9 +31,8 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 override CFLAGS += $(COMMONINC)
 override CFLAGS += $(LIB_INC)
 
-CPPSRC := $(wildcard src/*.cpp )	$(wildcard src/Graphics/*.cpp) $(wildcard src/Utils/*.cpp) \
-		   $(wildcard src/Engine/*.cpp) $(wildcard src/Logger/*.cpp) $(wildcard src/Scene/*.cpp)
-		  
+CPPSRC = src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp src/main.cpp \
+		 pluginsSrc/canvas/canvas.cpp
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)

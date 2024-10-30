@@ -1,5 +1,6 @@
 #include "brush.hpp"
 #include <string>
+#include <dlfcn.h>
 
 #include "api/api_sfm.hpp"
 #include "api/api_photoshop.hpp"
@@ -9,7 +10,6 @@
 #include "bars/ps_bar.hpp"
 
 #include <iostream>
-
 
 namespace ps
 {
@@ -101,7 +101,8 @@ bool loadPlugin1()
 
     auto info = toolBar->getNextChildInfo();
     auto pos = info.pos;
-    vec2u size = { info.size.x, info.size.y };
+    vec2u size = { static_cast<unsigned int>(info.size.x),  
+                   static_cast<unsigned int>(info.size.y) };
 
     buttonSprite->setPosition(pos.x, pos.y);
     

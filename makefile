@@ -31,27 +31,43 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 override CFLAGS += $(COMMONINC)
 override CFLAGS += $(LIB_INC)
 
-CPPSRC = src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp src/main.cpp \
-		 pluginsSrc/canvas/canvas.cpp src/bars/ps_bar.cpp pluginsSrc/toolbar/toolbar.cpp \
-		 pluginsSrc/spray/spray.cpp pluginsSrc/brush/brush.cpp
+CPPSRC = src/main.cpp
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)
 
+DYLIBS = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib
+
 .PHONY: all
 all: $(PROGRAM_DIR)/$(PROGRAM_NAME)
 
-$(PROGRAM_DIR)/$(PROGRAM_NAME): $(CPPOBJ)
+$(PROGRAM_DIR)/$(PROGRAM_NAME): $(CPPOBJ) $(DYLIBS)
 	@mkdir -p $(@D)
-	$(CC) $^ -o $@ $(LDFLAGS)
+	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
 $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(DEPS) : $(OUT_O_DIR)/%.d : %.cpp
-	@mkdir -p $(@D)
-	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
+libapi_photoshop.dylib: src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+lib_brush.dylib: pluginsSrc/brush/brush.cpp src/bars/ps_bar.cpp libapi_photoshop.dylib
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp libapi_photoshop.dylib
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp src/bars/ps_bar.cpp libapi_photoshop.dylib
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp libapi_photoshop.dylib
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+#
+#$(DEPS) : $(OUT_O_DIR)/%.d : %.cpp
+#	@mkdir -p $(@D)
+#	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
 
 #
 #TESTFILES=$(wildcard $(TESTS)/*.dat)
@@ -67,8 +83,8 @@ $(DEPS) : $(OUT_O_DIR)/%.d : %.cpp
 clean:
 	rm -rf $(CPPOBJ) $(DEPS) $(OUT_O_DIR)/*.x $(OUT_O_DIR)/*.log
 
-NODEPS = clean
+#NODEPS = clean
 
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
-include $(DEPS)
-endif
+#ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
+#include $(DEPS)
+#endif

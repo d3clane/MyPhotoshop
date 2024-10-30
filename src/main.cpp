@@ -5,14 +5,36 @@
 
 #include "api/api_sfm.hpp"
 
+#include <dlfcn.h>
+
 int main()
 {
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
 
     loadPlugin2();
-    loadPlugin();
+    loadPlugin ();
     loadPlugin1();
     loadPlugin3();
+
+#if 0
+    void *handle = dlopen("libbrush.dylib", RTLD_NOW);
+
+    if (!handle)
+    {
+        std::cerr << "Ошибка загрузки библиотеки: " << dlerror() << std::endl;
+        return 1;
+    }
+
+    void (*load_func)() = (void (*)())dlsym(handle, "loadPlugin1");
+
+    if (!load_func) 
+    {
+        std::cerr << "Ошибка получения функции load(): " << dlerror() << std::endl;
+        return 1;
+    }
+
+    load_func();
+#endif
 
     auto rootWindow = psapi::getRootWindow();
     
@@ -32,4 +54,6 @@ int main()
 
         renderWindow->display();
     }
+
+    //dlclose(handle);
 }

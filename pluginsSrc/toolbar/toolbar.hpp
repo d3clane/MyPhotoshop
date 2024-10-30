@@ -32,7 +32,7 @@ private:
     mutable int nextChildIndex_ = 0;
     mutable int numChildren_ = 0;
 
-    vec2i childSize_ = {16, 16};
+    vec2i childSize_ = {64, 64};
 };
 
 } // namespace

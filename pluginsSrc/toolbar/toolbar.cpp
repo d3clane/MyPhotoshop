@@ -14,7 +14,6 @@ bool loadPlugin()
     vec2i pos  = {0,   0  };
     vec2u size = {100, 600};
     auto toolbar = std::make_unique<Toolbar>(pos, size);
-    //std::cerr << "TB ID - " << toolbar.get()->getId() << "\n";
 
     getRootWindow()->addWindow(std::move(toolbar));
     
@@ -95,6 +94,7 @@ void Toolbar::addWindow(std::unique_ptr<IWindow> window)
     }
 
     windows_.push_back(std::unique_ptr<ABarButton>(button));
+    window.release();
 }
 
 void Toolbar::removeWindow(wid_t id)

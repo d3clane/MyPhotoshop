@@ -31,6 +31,10 @@ public:
 
     void setState(State state) override;
     State getState() const override;
+
+    void setPos (vec2i pos);
+    void setSize(vec2u size);
+    
 protected:
     wid_t id_ = kInvalidWindowId;
 
@@ -41,9 +45,15 @@ protected:
     vec2u size_;
 
     std::unique_ptr<ISprite>  mainSprite_;
-    std::shared_ptr<ITexture> mainTexture_;
+    std::unique_ptr<ITexture> mainTexture_;
 
     State state_;
+
+protected:
+    bool isHovered(vec2i mousePos);
+    bool isPressed (const Event& event);
+    bool isClicked(const Event& event);
+
 };
 
 class ABar : public IBar {

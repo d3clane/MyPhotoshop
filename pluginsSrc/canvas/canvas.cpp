@@ -29,11 +29,16 @@ Layer::Layer(vec2u size)
 
 Color Layer::getPixel(vec2i pos) const 
 {
+    if (pos.x < 0 || pos.y < 0 || pos.x >= size_.x || pos.y >= size_.y)
+        return {0, 0, 0, 0};
+
     return pixels_.at(static_cast<size_t>(pos.y * size_.x + pos.x));
 }
 
 void Layer::setPixel(vec2i pos, Color pixel) 
 {
+    if (pos.x < 0 || pos.y < 0 || pos.x >= size_.x || pos.y >= size_.y)
+        return;
     pixels_.at(static_cast<size_t>(pos.y * size_.x + pos.x)) = pixel;
 }
 
@@ -79,8 +84,11 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 {
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
-    if (isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonPressed)
-        isPressed_ = true;
+    bool pressedRightNow  = isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonPressed;
+    bool releasedRightNow = isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonReleased;
+
+    if (pressedRightNow)  isPressed_ = true;
+    if (releasedRightNow) isPressed_ = false;
 
     return true;
 }

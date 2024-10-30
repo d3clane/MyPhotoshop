@@ -1,7 +1,7 @@
 #include "bars/ps_bar.hpp"
 
-
 #include <cassert>
+#include <iostream>
 
 namespace ps
 {
@@ -73,12 +73,49 @@ ABarButton::State ABarButton::getState() const
     return state_;
 }
 
+bool ABarButton::isHovered(vec2i mousePos)
+{
+    return mousePos.x >= pos_.x && mousePos.x < pos_.x + size_.x &&
+           mousePos.y >= pos_.y && mousePos.y < pos_.y + size_.y;
+}
+
+bool ABarButton::isPressed (const Event& event)
+{
+    return (event.type == event.MouseButtonPressed && isHovered({event.mouseButton.x, event.mouseButton.y}));
+}
+
+bool ABarButton::isClicked(const Event& event)
+{
+    return (event.type == event.MouseButtonReleased && isHovered({event.mouseButton.x, event.mouseButton.y}));
+}
+
+void ABarButton::setPos (vec2i pos)
+{
+    pos_ = pos;
+
+    mainSprite_->setPosition(pos.x, pos.y);
+}
+
+void ABarButton::setSize(vec2u size)
+{
+    size_ = size;
+
+    mainSprite_->setScale(1.f, 1.f);
+    auto spriteSize = mainSprite_->getSize();
+
+    mainSprite_->setScale(static_cast<double>(size.x) / spriteSize.x, 
+                          static_cast<double>(size.y) / spriteSize.y);
+}
+
 // ABar implementation
 
 void ABar::drawChildren(IRenderWindow* renderWindow) 
 {
     for (const auto& window : windows_)
+    {
+        assert(window.get());
         window->draw(renderWindow);
+    }
 }
 
 bool ABar::updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event) 
@@ -110,7 +147,7 @@ ABar::~ABar() = default;
 void ABar::draw(IRenderWindow* renderWindow)
 {
     renderWindow->draw(sprite_.get());
-
+    
     drawChildren(renderWindow);
 }
 

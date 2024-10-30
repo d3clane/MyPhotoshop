@@ -9,12 +9,16 @@
 
 int main()
 {
+    std::cerr << "MAIN\n";
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
 
     loadPlugin2();
+    std::cerr << "LOAD PLUGIN\n";
     loadPlugin ();
+    std::cerr << "LOAD PLUGIN 1\n";
     loadPlugin1();
-    loadPlugin3();
+    std::cerr << "LOAD PLUGIN 3\n";
+    //loadPlugin3();
 
 #if 0
     void *handle = dlopen("libbrush.dylib", RTLD_NOW);

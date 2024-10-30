@@ -12,7 +12,7 @@ CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs 			  \
 		   -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
 		   -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-protector  						  \
-		   -fPIE -Werror=vla									  
+		   -fPIE -Werror=vla -fsanitize=address				  
 
 OUT_O_DIR := build
 COMMONINC := -I./include -I./

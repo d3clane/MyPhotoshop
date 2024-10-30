@@ -45,8 +45,9 @@ void ABarButton::setParent(const IWindow* parent)
 {
     try
     {
-        const ABar* parentBar = dynamic_cast<const ABar*>(parent);
+        const ABar* parentBar = static_cast<const ABar*>(parent);
 
+        std::cerr << "PARENT BAR ADR - " << parentBar << std::endl;
         assert(parentBar);
         parent_ = parentBar;
     }

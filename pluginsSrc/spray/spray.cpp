@@ -1,4 +1,5 @@
-#include "spray_plugin.hpp"
+#include "spray.hpp"
+
 #include <string>
 
 #include "api/api_sfm.hpp"
@@ -69,28 +70,27 @@ bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
         assert(0);
     }
 
-    if (!canvas->isPressed())
+    if (event.type != Event::MouseButtonReleased)
         return true;
 
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
 
     auto mousePos = canvas->getMousePosition();
-
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j)
+    for (int i = -5; i < 5; ++i)
+        for (int j = -5; j < 5; ++j)
             canvas->getLayer(activeLayerIndex)->setPixel({mousePos.x + i, mousePos.y + j}, {0xFF, 0x00, 0x00, 0xFF});
     
-    return false;
+    return true;
 }
 
 } // namespace ps
 
-bool loadPlugin1()
+bool loadPlugin3()
 {
     auto buttonSprite = std::unique_ptr<ISprite>(ISprite::create());
     auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
 
-    buttonTexture.get()->loadFromFile("media/textures/paintbrush.png");
+    buttonTexture.get()->loadFromFile("media/textures/spray.png");
 
     buttonSprite->setTexture(buttonTexture.get());
 
@@ -117,7 +117,7 @@ bool loadPlugin1()
     return true;
 }
 
-void unloadPlugin1()
+void unloadPlugin3()
 {
     return;
 }

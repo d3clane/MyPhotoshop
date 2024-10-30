@@ -46,7 +46,9 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
 
 ChildInfo Toolbar::getNextChildInfo() const 
 {
-    vec2i pos = {gapSize_ + (gapSize_ + childSize_.x) * nextChildIndex_, gapSize_};
+    vec2i pos = {gapSize_, gapSize_ + (gapSize_ + childSize_.x) * nextChildIndex_};
+
+    nextChildIndex_++;
 
     return {pos, childSize_};
 }

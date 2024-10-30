@@ -1,6 +1,7 @@
 #include "pluginsSrc/canvas/canvas.hpp"
 #include "pluginsSrc/toolbar/toolbar.hpp"
-#include "pluginsSrc/spray/spray_plugin.hpp"
+#include "pluginsSrc/brush/brush.hpp"
+#include "pluginsSrc/spray/spray.hpp"
 
 #include "api/api_sfm.hpp"
 
@@ -11,6 +12,7 @@ int main()
     loadPlugin2();
     loadPlugin();
     loadPlugin1();
+    loadPlugin3();
 
     auto rootWindow = psapi::getRootWindow();
     

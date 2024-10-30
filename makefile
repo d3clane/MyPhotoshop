@@ -33,7 +33,7 @@ override CFLAGS += $(LIB_INC)
 
 CPPSRC = src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp src/main.cpp \
 		 pluginsSrc/canvas/canvas.cpp src/bars/ps_bar.cpp pluginsSrc/toolbar/toolbar.cpp \
-		 pluginsSrc/spray/spray_plugin.cpp
+		 pluginsSrc/spray/spray.cpp pluginsSrc/brush/brush.cpp
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)

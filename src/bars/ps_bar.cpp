@@ -9,6 +9,9 @@ namespace ps
 void ABarButton::draw(IRenderWindow* renderWindow) 
 {
     renderWindow->draw(mainSprite_.get());
+
+    assert(parent_);
+    parent_->finishButtonDraw(renderWindow, this);
 }
 
 IWindow* ABarButton::getWindowById(wid_t id) 
@@ -40,7 +43,19 @@ wid_t ABarButton::getId() const
 
 void ABarButton::setParent(const IWindow* parent) 
 {
-    parent_ = parent;
+    try
+    {
+        const ABar* parentBar = dynamic_cast<const ABar*>(parent);
+
+        assert(parentBar);
+        parent_ = parentBar;
+    }
+    catch(...)
+    {
+        std::cerr << "Can't cast parent to ABar\n";
+        assert(false);
+        std::terminate();
+    }
 }
 
 void ABarButton::forceDeactivate() 

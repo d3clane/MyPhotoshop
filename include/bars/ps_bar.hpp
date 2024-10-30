@@ -10,6 +10,8 @@ using namespace sfm;
 namespace ps
 {
 
+class ABar;
+
 class ABarButton : public IBarButton {
 public: 
     void draw(IRenderWindow* renderWindow)         override;
@@ -34,11 +36,11 @@ public:
 
     void setPos (vec2i pos);
     void setSize(vec2u size);
-    
+
 protected:
     wid_t id_ = kInvalidWindowId;
 
-    const IWindow* parent_ = nullptr;
+    const ABar* parent_ = nullptr;
     bool isActive_ = true;
 
     vec2i pos_;

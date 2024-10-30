@@ -87,7 +87,7 @@ bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
 
 bool loadPlugin3()
 {
-    auto buttonSprite = std::unique_ptr<ISprite>(ISprite::create());
+    auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
     auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
 
     buttonTexture.get()->loadFromFile("media/textures/spray.png");

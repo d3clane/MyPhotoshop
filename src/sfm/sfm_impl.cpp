@@ -268,6 +268,12 @@ void Sprite::setColor(const Color &color)
     sprite_.setColor(sf::Color(color.r, color.g, color.b, color.a));
 }
 
+Color Sprite::getColor() const
+{
+    sf::Color color = sprite_.getColor();
+    return { color.r, color.g, color.b, color.a };
+}
+
 void Sprite::setRotation(float angle) 
 {
     sprite_.setRotation(angle);

@@ -42,6 +42,28 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
 
     sprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, static_cast<double>(size_.y) / spriteSize.y);
     sprite_->setPosition(pos_.x, pos_.y);
+
+    loadSprite(SpriteType::Hover,   "media/textures/toolbar_button_hover.png");
+    loadSprite(SpriteType::Press,   "media/textures/toolbar_button_press.png");
+    loadSprite(SpriteType::Release, "media/textures/toolbar_button_release.png");
+}
+
+void Toolbar::loadSprite(SpriteType type, const std::string& path)
+{
+    auto& spriteInfo = sprites_[static_cast<size_t>(type)];
+    spriteInfo.texture = std::move(ITexture::create());
+    spriteInfo.texture->loadFromFile(path);
+
+    spriteInfo.sprite = std::move(ISprite::create());
+    spriteInfo.sprite->setTexture(spriteInfo.texture.get());
+
+    // TODO: дикий костыль 1.2
+    spriteInfo.sprite->setScale(1.2 * static_cast<double>(childSize_.x) / spriteInfo.sprite->getSize().x, 
+                                1.2 * static_cast<double>(childSize_.y) / spriteInfo.sprite->getSize().y);
+
+    auto color = spriteInfo.sprite->getColor();
+    static const uint8_t goodAlpha = 100;
+    spriteInfo.sprite->setColor(Color(color.r, color.g, color.b, goodAlpha));
 }
 
 ChildInfo Toolbar::getNextChildInfo() const 
@@ -55,23 +77,30 @@ ChildInfo Toolbar::getNextChildInfo() const
 
 void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {
-    // TODO: load sprites
-#if 0
-    switch (button->state()) 
+    //TODO: дикий костыль
+    sprites_[static_cast<size_t>(SpriteType::Hover)]  .sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
+    sprites_[static_cast<size_t>(SpriteType::Release)].sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
+    sprites_[static_cast<size_t>(SpriteType::Press)]  .sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
+
+    switch (button->getState()) 
     {
         case IBarButton::State::Normal:
             break;
         case IBarButton::State::Hover:
-            renderWindow->draw(hoverSprite);
+            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Hover)].sprite.get());
             break;
         case IBarButton::State::Press:
-            renderWindow->draw(pressSprite);
+            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Press)].sprite.get());
             break;
         case IBarButton::State::Released:
-            renderWindow->draw();
+            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Release)].sprite.get());
+            break;
+
+        default:
+            assert(false);
+            std::terminate();
             break;
     }
-#endif
 }
 
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
@@ -80,6 +109,7 @@ void Toolbar::addWindow(std::unique_ptr<IWindow> window)
     try 
     {
         button = dynamic_cast<ABarButton*>(window.get());
+        button->setParent(this);
     }
     catch(...)
     {

@@ -106,6 +106,7 @@ public:
     virtual vec2u getSize() const = 0;
 
     virtual void setColor(const Color &color) = 0;
+    virtual Color getColor() const = 0; // TODO: мое расширение
 
     virtual void setRotation(float angle) = 0;
 

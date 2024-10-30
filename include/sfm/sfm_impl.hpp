@@ -77,6 +77,7 @@ public:
     vec2u getSize() const override;
 
     void setColor(const Color &color) override;
+    Color getColor() const override;
 
     void setRotation(float angle) override;
 

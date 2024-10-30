@@ -56,10 +56,7 @@ Canvas::Canvas(vec2i pos, vec2u size)
     boundariesSprite_->setTexture(boundariesTexture_.get());
 
     auto spriteSize = boundariesSprite_->getSize();
-    //std::cerr << "sprite size - " << boundariesSprite_.getSize().x << " " << boundariesSprite_.getSize().y << "\n";
     boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, static_cast<double>(size_.y) / spriteSize.y);
-    //std::cerr << "sprite size - " << boundariesSprite_.getSize().x << " " << boundariesSprite_.getSize().y << "\n";
-    //pos_ = {200, 200}; // TODO: hardcoded
 
     boundariesSprite_->setPosition(pos_.x, pos_.y);
     layers_.push_back(std::make_unique<Layer>(size_));
@@ -307,8 +304,8 @@ bool loadPlugin2()
 {
     auto rootWindow = getRootWindow();
 
-    const vec2i canvasPos = {200, 200};
-    const vec2u canvasSize = {300, 300};
+    const vec2i canvasPos = {150, 200};
+    const vec2u canvasSize = {1200, 600};
     
     std::unique_ptr<IWindow> canvas{static_cast<IWindow*>(new Canvas{canvasPos, canvasSize})};
 

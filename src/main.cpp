@@ -6,7 +6,7 @@
 
 int main()
 {
-    auto renderWindow = psapi::IRenderWindow::create(800, 600, "PSAPI");
+    auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
 
     loadPlugin2();
     loadPlugin();

@@ -27,32 +27,22 @@ void callLoader(const char* libName)
 
     load_func();
 
-    dlclose(handle);
+    //dlclose(handle);
 }
 
 
 int main()
 {
-    std::cerr << "MAIN\n";
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
-
-#if 0
-    loadPlugin2();
-    std::cerr << "LOAD PLUGIN\n";
-    loadPlugin ();
-    std::cerr << "LOAD PLUGIN 1\n";
-    loadPlugin1();
-    std::cerr << "LOAD PLUGIN 3\n";
-    //loadPlugin3();
-#endif
-
-    callLoader("lib_canvas.dylib");
-    callLoader("lib_toolbar.dylib");
-    callLoader("lib_spray.dylib");
-    callLoader("lib_brush.dylib");
+    renderWindow->setFps(60);
+    
+    callLoader("libs/lib_canvas.dylib");
+    callLoader("libs/lib_toolbar.dylib");
+    callLoader("libs/lib_spray.dylib");
+    callLoader("libs/lib_brush.dylib");
     
     auto rootWindow = psapi::getRootWindow();
-    
+
     while (renderWindow->isOpen())
     {
         psapi::sfm::Event event;

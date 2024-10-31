@@ -87,20 +87,17 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 
 bool loadPlugin()
 {
-    std::cerr << "BRUSH PLUGIN\n";
     auto buttonSprite = std::unique_ptr<ISprite>(ISprite::create());
     auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
 
     buttonTexture.get()->loadFromFile("media/textures/paintbrush.png");
 
-    std::cerr << "loaded from file\n";
     buttonSprite->setTexture(buttonTexture.get());
 
     IWindowContainer* rootWindow = getRootWindow();
     assert(rootWindow);
     auto toolBar = static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId));
     assert(toolBar);
-    std::cerr << "got toolbar\n";
 
     auto info = toolBar->getNextChildInfo();
     auto pos = info.pos;
@@ -112,19 +109,14 @@ bool loadPlugin()
     auto spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
     std::unique_ptr<ps::ABarButton> button{ new ps::BrushButton(std::move(buttonSprite), std::move(buttonTexture)) };
-    std::cerr << "SET SPRITE\n";
 
     button->setPos(pos);
     button->setSize(size);
 
-    std::cerr << "GETTING TOOLBAR\n";
     assert(rootWindow->getWindowById(kToolBarWindowId));
-    
-    std::cerr << "BUTTON ADR - " << button.get() << std::endl;
     
     static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->addWindow(std::move(button));
 
-    std::cerr << "RETURNING\n";
     return true;
 }
 

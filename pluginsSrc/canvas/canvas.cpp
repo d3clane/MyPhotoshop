@@ -111,10 +111,7 @@ void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow)
     auto sprite = ISprite::create();
     sprite->setTexture(texture.get());
     
-    //std::cerr << "sprite size - " << sprite_.getSize().x << " " << sprite_.getSize().y << "\n";
-
     sprite->setPosition(pos_.x, pos_.y);
-    //std::cerr << "sprite pos - " << sprite_.getPosition().x << " " << sprite_.getPosition().y << "\n";
 
     renderWindow->draw(sprite.get());
 }

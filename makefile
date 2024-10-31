@@ -12,14 +12,14 @@ CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs 			  \
 		   -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
 		   -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-protector  						  \
-		   -fPIE -Werror=vla -fPIC -fsanitize=address	  
+		   -fPIE -Werror=vla #-fsanitize=address				  
 
 OUT_O_DIR := build
 COMMONINC := -I./include -I./
 LIB_INC   := -isystem/opt/homebrew/Cellar/sfml/2.6.1/include
 LIB_LINK  := -L/opt/homebrew/Cellar/sfml/2.6.1/lib -lsfml-graphics -lsfml-window -lsfml-system
 
-LDFLAGS   := $(LIB_LINK)
+LDFLAGS   := $(LIB_LINK) -flat_namespace
 
 PROGRAM_DIR  := $(OUT_O_DIR)/bin
 PROGRAM_NAME := ps.out
@@ -36,34 +36,41 @@ CPPSRC = src/main.cpp
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)
 
-CPP_API_PS := src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
-CPP_API_PS_OBJ := $(addprefix $(OUT_O_DIR)/,$(CPP_API_PS:.cpp=.o))
 
-CPPOBJ += $(CPP_API_PS_OBJ)
-
-DYLIBS = lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib
+DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib
+DYLIB_DIR = libs
+DYLIBS := $(addprefix $(DYLIB_DIR)/,$(DYLIBS_NAMES))
+PS_API_LIB := $(DYLIB_DIR)/libapi_photoshop.dylib
 
 .PHONY: all
-all: $(PROGRAM_DIR)/$(PROGRAM_NAME)
+all: dylibs $(PROGRAM_DIR)/$(PROGRAM_NAME)
 
-$(PROGRAM_DIR)/$(PROGRAM_NAME): $(CPPOBJ) $(DYLIBS)
+dylibs: dylibs_create_path $(DYLIBS)
+
+dylibs_create_path:
+	@mkdir -p $(DYLIB_DIR)
+
+$(PROGRAM_DIR)/$(PROGRAM_NAME): $(CPPOBJ) $(PS_API_LIB)
 	@mkdir -p $(@D)
-	$(CC) $(CPPOBJ) -o $@ $(CFLAGS) $(LDFLAGS)
+	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
 $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lib_brush.dylib: pluginsSrc/brush/brush.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ)
+$(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp $(CPP_API_PS_OBJ)
+$(DYLIB_DIR)/lib_brush.dylib: pluginsSrc/brush/brush.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ)
+$(DYLIB_DIR)/lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ)
+$(DYLIB_DIR)/lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #
@@ -83,7 +90,9 @@ lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ
 
 .PHONY: clean
 clean:
-	rm -rf $(CPPOBJ) $(DEPS) $(OUT_O_DIR)/*.x $(OUT_O_DIR)/*.log
+	rm -rf bin/ libs/
+	#rm -rf $(CPPOBJ) $(DEPS) $(OUT_O_DIR)/*.x $(OUT_O_DIR)/*.log  
+	#rm -rf $(DYLIB_DIR)
 
 #NODEPS = clean
 

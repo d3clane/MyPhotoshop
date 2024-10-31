@@ -1,6 +1,7 @@
 #include "api/api_photoshop.hpp"
 
 #include <cassert>
+#include <iostream>
 
 namespace psapi
 {
@@ -28,7 +29,11 @@ private:
 void RootWindow::draw(IRenderWindow* renderWindow) 
 {
     for (auto& window : windows_)
+    {
+        assert(window.get());
+        // std::cerr <<"DRAWING " << window.get() << std::endl;
         window->draw(renderWindow);
+    }
 }
 
 bool RootWindow::update(const IRenderWindow* renderWindow,

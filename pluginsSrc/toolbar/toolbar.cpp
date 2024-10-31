@@ -15,7 +15,6 @@ bool loadPlugin()
     vec2u size = {100, 1080};
     auto toolbar = std::make_unique<Toolbar>(pos, size);
 
-    std::cerr << "TOOLBAR ADR - " << toolbar.get() << std::endl;
     getRootWindow()->addWindow(std::move(toolbar));
     
     return true;
@@ -106,26 +105,16 @@ void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* bu
 
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
 {
-    std::cerr << "ADDING WINDOW\n";
     ABarButton* button = nullptr;
     try
     {
-        button = static_cast<ABarButton*>(window.get());
-        std::cerr << "BUTTON ADDR - " << button << std::endl;
+        button = dynamic_cast<ABarButton*>(window.get());
         assert(button);
-        std::cerr << "BUTTON STATE - " << static_cast<int>(button->getState()) << "\n";
         button->setParent(this);
     }
     catch(...)
     {
-        std::cerr << "Failed to cast window to button\n";
-        assert(false);
-        std::terminate();
-    }
-
-    if (!button)
-    {
-        std::cerr << "Failed to cast window to button\n";
+        std::cerr <<"Failed to cast window to button\n";
         assert(false);
         std::terminate();
     }

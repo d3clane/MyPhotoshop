@@ -18,10 +18,10 @@ static const psapi::sfm::vec2f ToolbarTopLeftPos = psapi::sfm::vec2f(0.00, 0.00)
 static const psapi::sfm::vec2f ToolbarSize       = psapi::sfm::vec2f(0.15, 1);
 
 static const psapi::sfm::vec2f OptionBarTopLeftPos = psapi::sfm::vec2f(0.15, 0.00);
-static const psapi::sfm::vec2f OptionBarSize       = psapi::sfm::vec2f(0.15, 1);
+static const psapi::sfm::vec2f OptionBarSize       = psapi::sfm::vec2f(0.85, 0.15);
 
 static const psapi::sfm::vec2f InstrumentOptionsTopLeftPos = psapi::sfm::vec2f(0.15, 0.15);
-static const psapi::sfm::vec2f InstrumentOptionsSize       = psapi::sfm::vec2f(0.15, 0.15);
+static const psapi::sfm::vec2f InstrumentOptionsSize       = psapi::sfm::vec2f(0.85, 0.15);
 
 namespace psapi {
 

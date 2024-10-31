@@ -11,6 +11,18 @@
 #include <memory>
 #include <vector>
 
+static const psapi::sfm::vec2f CanvasTopLeftPos = psapi::sfm::vec2f(0.15, 0.3);
+static const psapi::sfm::vec2f CanvasSize       = psapi::sfm::vec2f(0.7, 0.7);
+
+static const psapi::sfm::vec2f ToolbarTopLeftPos = psapi::sfm::vec2f(0.00, 0.00);
+static const psapi::sfm::vec2f ToolbarSize       = psapi::sfm::vec2f(0.15, 1);
+
+static const psapi::sfm::vec2f OptionBarTopLeftPos = psapi::sfm::vec2f(0.15, 0.00);
+static const psapi::sfm::vec2f OptionBarSize       = psapi::sfm::vec2f(0.15, 1);
+
+static const psapi::sfm::vec2f InstrumentOptionsTopLeftPos = psapi::sfm::vec2f(0.15, 0.15);
+static const psapi::sfm::vec2f InstrumentOptionsSize       = psapi::sfm::vec2f(0.15, 0.15);
+
 namespace psapi {
 
 namespace sfm {
@@ -28,6 +40,7 @@ using wid_t = int64_t;
 
 
 const wid_t kRootWindowId = 0;
+
 
 using sfm::vec2i;
 using sfm::vec2u;

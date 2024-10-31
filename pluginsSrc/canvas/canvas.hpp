@@ -9,8 +9,8 @@
 extern "C"
 {
 
-bool loadPlugin2();
-void unloadPlugin2();
+bool loadPlugin();
+void unloadPlugin();
 
 }
 

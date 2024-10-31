@@ -4,8 +4,8 @@
 extern "C"
 {
 
-bool loadPlugin3();
-void unloadPlugin3();
+bool loadPlugin();
+void unloadPlugin();
 
 }
 

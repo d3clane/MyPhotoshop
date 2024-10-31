@@ -85,7 +85,7 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 
 } // namespace ps
 
-bool loadPlugin1()
+bool loadPlugin()
 {
     std::cerr << "BRUSH PLUGIN\n";
     auto buttonSprite = std::unique_ptr<ISprite>(ISprite::create());
@@ -128,7 +128,7 @@ bool loadPlugin1()
     return true;
 }
 
-void unloadPlugin1()
+void unloadPlugin()
 {
     return;
 }

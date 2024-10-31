@@ -7,11 +7,36 @@
 
 #include <dlfcn.h>
 
+void callLoader(const char* libName)
+{
+    void *handle = dlopen(libName, RTLD_NOW);
+
+    if (!handle)
+    {
+        std::cerr << "Ошибка загрузки библиотеки: " << dlerror() << std::endl;
+        return;
+    }
+
+    void (*load_func)() = (void (*)())dlsym(handle, "loadPlugin");
+
+    if (!load_func) 
+    {
+        std::cerr << "Ошибка получения функции load(): " << dlerror() << std::endl;
+        return;
+    }
+
+    load_func();
+
+    dlclose(handle);
+}
+
+
 int main()
 {
     std::cerr << "MAIN\n";
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
 
+#if 0
     loadPlugin2();
     std::cerr << "LOAD PLUGIN\n";
     loadPlugin ();
@@ -19,27 +44,13 @@ int main()
     loadPlugin1();
     std::cerr << "LOAD PLUGIN 3\n";
     //loadPlugin3();
-
-#if 0
-    void *handle = dlopen("libbrush.dylib", RTLD_NOW);
-
-    if (!handle)
-    {
-        std::cerr << "Ошибка загрузки библиотеки: " << dlerror() << std::endl;
-        return 1;
-    }
-
-    void (*load_func)() = (void (*)())dlsym(handle, "loadPlugin1");
-
-    if (!load_func) 
-    {
-        std::cerr << "Ошибка получения функции load(): " << dlerror() << std::endl;
-        return 1;
-    }
-
-    load_func();
 #endif
 
+    callLoader("lib_canvas.dylib");
+    callLoader("lib_toolbar.dylib");
+    callLoader("lib_spray.dylib");
+    callLoader("lib_brush.dylib");
+    
     auto rootWindow = psapi::getRootWindow();
     
     while (renderWindow->isOpen())

@@ -12,7 +12,7 @@ CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs 			  \
 		   -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
 		   -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-protector  						  \
-		   -fPIE -Werror=vla -fsanitize=address				  
+		   -fPIE -Werror=vla -fPIC -fsanitize=address	  
 
 OUT_O_DIR := build
 COMMONINC := -I./include -I./
@@ -36,32 +36,34 @@ CPPSRC = src/main.cpp
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)
 
-DYLIBS = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib
+CPP_API_PS := src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
+CPP_API_PS_OBJ := $(addprefix $(OUT_O_DIR)/,$(CPP_API_PS:.cpp=.o))
+
+CPPOBJ += $(CPP_API_PS_OBJ)
+
+DYLIBS = lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib
 
 .PHONY: all
 all: $(PROGRAM_DIR)/$(PROGRAM_NAME)
 
 $(PROGRAM_DIR)/$(PROGRAM_NAME): $(CPPOBJ) $(DYLIBS)
 	@mkdir -p $(@D)
-	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
+	$(CC) $(CPPOBJ) -o $@ $(CFLAGS) $(LDFLAGS)
 
 $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-libapi_photoshop.dylib: src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
+lib_brush.dylib: pluginsSrc/brush/brush.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-lib_brush.dylib: pluginsSrc/brush/brush.cpp src/bars/ps_bar.cpp libapi_photoshop.dylib
+lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp $(CPP_API_PS_OBJ)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp libapi_photoshop.dylib
+lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp src/bars/ps_bar.cpp libapi_photoshop.dylib
-	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
-
-lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp libapi_photoshop.dylib
+lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp $(CPP_API_PS_OBJ)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

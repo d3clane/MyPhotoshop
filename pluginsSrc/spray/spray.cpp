@@ -85,7 +85,7 @@ bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
 
 } // namespace ps
 
-bool loadPlugin3()
+bool loadPlugin()
 {
     auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
     auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
@@ -117,7 +117,7 @@ bool loadPlugin3()
     return true;
 }
 
-void unloadPlugin3()
+void unloadPlugin()
 {
     return;
 }

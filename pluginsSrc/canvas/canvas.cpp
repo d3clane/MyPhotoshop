@@ -300,7 +300,7 @@ bool Canvas::isWindowContainer() const
     return false;
 }
 
-bool loadPlugin2()
+bool loadPlugin()
 {
     auto rootWindow = getRootWindow();
 
@@ -314,7 +314,7 @@ bool loadPlugin2()
     return true;
 }
 
-void unloadPlugin2()
+void unloadPlugin()
 {
     getRootWindow()->removeWindow(kCanvasWindowId);
     return;

@@ -7,7 +7,7 @@
 
 #include <dlfcn.h>
 
-void callLoader(const char* libName)
+void loadPlugin(const char* libName)
 {
     void *handle = dlopen(libName, RTLD_NOW);
 
@@ -36,10 +36,10 @@ int main()
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
     renderWindow->setFps(60);
     
-    callLoader("libs/lib_canvas.dylib");
-    callLoader("libs/lib_toolbar.dylib");
-    callLoader("libs/lib_spray.dylib");
-    callLoader("libs/lib_brush.dylib");
+    loadPlugin("libs/lib_canvas.dylib");
+    loadPlugin("libs/lib_toolbar.dylib");
+    loadPlugin("libs/lib_spray.dylib");
+    loadPlugin("libs/lib_brush.dylib");
     
     auto rootWindow = psapi::getRootWindow();
 
@@ -59,6 +59,4 @@ int main()
 
         renderWindow->display();
     }
-
-    //dlclose(handle);
 }

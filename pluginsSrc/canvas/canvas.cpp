@@ -47,7 +47,7 @@ void Layer::changeSize(vec2u size)
     size_ = size;
     pixels_.resize(static_cast<size_t>(size.x * size.y));
     
-    std::cerr << "CHANGE SIZE LAYER NOT CORRECT IMPLEMENTATION\n";
+    //std::cerr << "CHANGE SIZE LAYER NOT CORRECT IMPLEMENTATION\n";
 }
 
 // Canvas implementation
@@ -63,8 +63,14 @@ Canvas::Canvas(vec2i pos, vec2u size)
     boundariesSprite_ = ISprite::create();
     boundariesSprite_->setTexture(boundariesTexture_.get());
 
+    //static const Color white = {255, 255, 255, 255};
+    //boundariesSprite_->setColor(white);
+
+    std::cout << static_cast<int>(boundariesSprite_->getColor().r) << std::endl;
+
     auto spriteSize = boundariesSprite_->getSize();
-    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, static_cast<double>(size_.y) / spriteSize.y);
+    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, 
+                                static_cast<double>(size_.y) / spriteSize.y);
 
     boundariesSprite_->setPosition(pos_.x, pos_.y);
     layers_.push_back(std::make_unique<Layer>(size_));
@@ -226,8 +232,7 @@ void Canvas::setSize(vec2i size)
     auto spriteSize = boundariesSprite_->getSize();
     boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, 
                                 static_cast<double>(size_.y) / spriteSize.y);
-
-    std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
+    //std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
     
     tempLayer_->changeSize(size_);
     for (auto& layer : layers_) {

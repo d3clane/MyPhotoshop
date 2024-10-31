@@ -12,7 +12,7 @@ extern "C"
 bool loadPlugin() 
 {
     vec2i pos  = {0,   0  };
-    vec2u size = {100, 1080};
+    vec2u size = {0, 0};
     auto toolbar = std::make_unique<Toolbar>(pos, size);
 
     getRootWindow()->addWindow(std::move(toolbar));

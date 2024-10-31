@@ -42,6 +42,14 @@ void Layer::setPixel(vec2i pos, Color pixel)
     pixels_.at(static_cast<size_t>(pos.y * size_.x + pos.x)) = pixel;
 }
 
+void Layer::changeSize(vec2u size) 
+{
+    size_ = size;
+    pixels_.resize(static_cast<size_t>(size.x * size.y));
+    
+    std::cerr << "CHANGE SIZE LAYER NOT CORRECT IMPLEMENTATION\n";
+}
+
 // Canvas implementation
 
 Canvas::Canvas(vec2i pos, vec2u size)
@@ -79,6 +87,10 @@ void Canvas::draw(IRenderWindow* renderWindow)
 
 bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 {
+    auto renderWindowSize = renderWindow->getSize();
+    setSize({renderWindowSize.x * CanvasSize.x , renderWindowSize.y * CanvasSize.y});
+    setPos ({CanvasTopLeftPos.x * renderWindowSize.x, CanvasTopLeftPos.y * renderWindowSize.y});
+
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
     bool pressedRightNow  = isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonPressed;
@@ -202,21 +214,25 @@ bool Canvas::insertEmptyLayer(size_t index)
 void Canvas::setPos(vec2i pos) 
 {
     pos_ = pos;
+
+    boundariesSprite_->setPosition(pos.x, pos.y);
 }
 
 void Canvas::setSize(vec2i size) 
 {
     size_ = {static_cast<unsigned>(size.x), static_cast<unsigned>(size.y)};
 
-    std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
-    assert(false);
+    boundariesSprite_->setScale(1.f, 1.f);
+    auto spriteSize = boundariesSprite_->getSize();
+    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, 
+                                static_cast<double>(size_.y) / spriteSize.y);
 
-#if 0
+    std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
+    
     tempLayer_->changeSize(size_);
     for (auto& layer : layers_) {
         layer->changeSize(size_);
     }
-#endif
 }
 
 void Canvas::setScale(vec2f scale) 
@@ -301,8 +317,8 @@ bool loadPlugin()
 {
     auto rootWindow = getRootWindow();
 
-    const vec2i canvasPos = {150, 200};
-    const vec2u canvasSize = {1200, 600};
+    const vec2i canvasPos = {0, 0};
+    const vec2u canvasSize = {0, 0};
     
     std::unique_ptr<IWindow> canvas{static_cast<IWindow*>(new Canvas{canvasPos, canvasSize})};
 

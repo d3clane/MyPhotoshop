@@ -30,6 +30,9 @@ private:
 
     vec2u size_;
     std::vector<Color> pixels_;
+
+protected:
+    void changeSize(vec2u size);
 };
 
 class Canvas : public ICanvas {

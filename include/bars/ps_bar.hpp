@@ -95,6 +95,9 @@ protected:
 protected:
     void   drawChildren(IRenderWindow* renderWindow);
     bool updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event);
+
+    void setPos (vec2i pos);
+    void setSize(vec2u size);
 };
 
 } // namespace ps

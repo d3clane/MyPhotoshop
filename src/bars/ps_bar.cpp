@@ -52,7 +52,7 @@ void ABarButton::setParent(const IWindow* parent)
     }
     catch(...)
     {
-        std::cerr <<"Can't cast parent to ABar\n";
+        std::cerr << "Can't cast parent to ABar\n";
         assert(false);
         std::terminate();
     }
@@ -168,9 +168,32 @@ void ABar::draw(IRenderWindow* renderWindow)
 
 bool ABar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
 {
+    auto renderWindowSize = renderWindow->getSize();
+    setSize({renderWindowSize.x * ToolbarSize.x,
+             renderWindowSize.y * ToolbarSize.y});
+
+    setPos ({ToolbarTopLeftPos.x * renderWindowSize.x, ToolbarTopLeftPos.y * renderWindowSize.y});
+
     bool updatedSomeone = updateChildren(renderWindow, event);
 
     return updatedSomeone;
+}
+
+void ABar::setPos (vec2i pos)
+{
+    pos_ = pos;
+
+    sprite_->setPosition(pos.x, pos.y);
+}
+
+void ABar::setSize(vec2u size)
+{
+    size_ = size;
+
+    sprite_->setScale(1.f, 1.f);
+    auto spriteSize = sprite_->getSize();
+
+    sprite_->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
 }
 
 IWindow* ABar::getWindowById(wid_t id) 

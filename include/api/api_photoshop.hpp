@@ -11,17 +11,17 @@
 #include <memory>
 #include <vector>
 
-static const psapi::sfm::vec2f CanvasTopLeftPos = psapi::sfm::vec2f(0.15, 0.3);
-static const psapi::sfm::vec2f CanvasSize       = psapi::sfm::vec2f(0.7, 0.7);
+static const psapi::sfm::vec2f CanvasTopLeftPos = psapi::sfm::vec2f(0.1, 0.15);
+static const psapi::sfm::vec2f CanvasSize       = psapi::sfm::vec2f(0.8, 0.7);
 
 static const psapi::sfm::vec2f ToolbarTopLeftPos = psapi::sfm::vec2f(0.00, 0.00);
-static const psapi::sfm::vec2f ToolbarSize       = psapi::sfm::vec2f(0.15, 1);
+static const psapi::sfm::vec2f ToolbarSize       = psapi::sfm::vec2f(0.055, 1);
 
-static const psapi::sfm::vec2f OptionBarTopLeftPos = psapi::sfm::vec2f(0.15, 0.00);
-static const psapi::sfm::vec2f OptionBarSize       = psapi::sfm::vec2f(0.85, 0.15);
+static const psapi::sfm::vec2f OptionBarTopLeftPos = psapi::sfm::vec2f(0.055, 0.00);
+static const psapi::sfm::vec2f OptionBarSize       = psapi::sfm::vec2f(0.9, 0.055);
 
-static const psapi::sfm::vec2f InstrumentOptionsTopLeftPos = psapi::sfm::vec2f(0.15, 0.15);
-static const psapi::sfm::vec2f InstrumentOptionsSize       = psapi::sfm::vec2f(0.85, 0.15);
+static const psapi::sfm::vec2f InstrumentOptionsTopLeftPos = psapi::sfm::vec2f(0.055, 0.055);
+static const psapi::sfm::vec2f InstrumentOptionsSize       = psapi::sfm::vec2f(0.9, 0.055);
 
 namespace psapi {
 

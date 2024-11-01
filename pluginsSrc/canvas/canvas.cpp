@@ -63,14 +63,8 @@ Canvas::Canvas(vec2i pos, vec2u size)
     boundariesSprite_ = ISprite::create();
     boundariesSprite_->setTexture(boundariesTexture_.get());
 
-    //static const Color white = {255, 255, 255, 255};
-    //boundariesSprite_->setColor(white);
-
-    std::cout << static_cast<int>(boundariesSprite_->getColor().r) << std::endl;
-
     auto spriteSize = boundariesSprite_->getSize();
-    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, 
-                                static_cast<double>(size_.y) / spriteSize.y);
+    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, static_cast<double>(size_.y) / spriteSize.y);
 
     boundariesSprite_->setPosition(pos_.x, pos_.y);
     layers_.push_back(std::make_unique<Layer>(size_));
@@ -88,7 +82,7 @@ void Canvas::draw(IRenderWindow* renderWindow)
         drawLayer(*layer.get(), renderWindow);
     }
     
-    drawLayer(*tempLayer_, renderWindow); // TODO: TEMP_LAYER ALWAYS 0 ALPHA WHEN CLEARING PLS PLS PLS
+    drawLayer(*tempLayer_, renderWindow);
 }
 
 bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
@@ -110,22 +104,10 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 
 void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow) 
 {
-#if 0
-    int cnt = 0;
-    for (size_t i = 0; i < layer.size_.x; ++i)
-    {
-        for (size_t j = 0; j < layer.size_.y; ++j)
-        {
-            if (layer.pixels_.data()[i * layer.size_.x + j].a == 255)
-                cnt++;
-        }
-    }
-#endif
-
     auto texture = ITexture::create();
     texture->create(size_.x, size_.y);
     texture->update(layer.pixels_.data(), size_.x, size_.y, 0, 0);
-    
+
     auto sprite = ISprite::create();
     sprite->setTexture(texture.get());
     
@@ -232,6 +214,7 @@ void Canvas::setSize(vec2i size)
     auto spriteSize = boundariesSprite_->getSize();
     boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, 
                                 static_cast<double>(size_.y) / spriteSize.y);
+
     //std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
     
     tempLayer_->changeSize(size_);

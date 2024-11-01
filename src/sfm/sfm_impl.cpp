@@ -6,6 +6,8 @@
 #include <iostream>
 #include <assert.h>
 
+#include <algorithm>
+
 namespace psapi
 {
 
@@ -171,7 +173,7 @@ float RenderWindow::getFps() const
 
 bool Texture::create(unsigned int width, unsigned int height) 
 {
-    return texture_.create(width, height);
+    return texture_.create(std::max(1u, width), std::max(1u, height));
 }
 
 bool Texture::loadFromFile(const std::string& filename, const IntRect& area) 

@@ -198,7 +198,7 @@ public:
     virtual vec2u getSize() const = 0;
     virtual float getOutlineThickness() const = 0;
     virtual const Color &getOutlineColor() const = 0;
-    virtual IImage getImage() const = 0;
+    virtual const IImage* getImage() const = 0;
 
     virtual void move(const vec2f &offset) = 0;
 };

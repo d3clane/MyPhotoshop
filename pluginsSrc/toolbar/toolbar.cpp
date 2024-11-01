@@ -58,6 +58,7 @@ void Toolbar::loadSprite(SpriteType type, const std::string& path)
     spriteInfo.sprite->setTexture(spriteInfo.texture.get());
 
     // TODO: дикий костыль 1.2
+    
     spriteInfo.sprite->setScale(1.2 * static_cast<double>(childSize_.x) / spriteInfo.sprite->getSize().x, 
                                 1.2 * static_cast<double>(childSize_.y) / spriteInfo.sprite->getSize().y);
 
@@ -77,7 +78,7 @@ ChildInfo Toolbar::getNextChildInfo() const
 
 void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {
-    //TODO: дикий костыль
+    //TODO: дикий костыль -6
     sprites_[static_cast<size_t>(SpriteType::Hover)]  .sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
     sprites_[static_cast<size_t>(SpriteType::Release)].sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
     sprites_[static_cast<size_t>(SpriteType::Press)]  .sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);

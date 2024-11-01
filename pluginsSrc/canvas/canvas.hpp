@@ -92,8 +92,8 @@ private:
     vec2u size_;
     vec2f scale_ = {1.0f, 1.0f};
 
-    std::unique_ptr<ITexture> boundariesTexture_;
-    std::unique_ptr<ISprite>  boundariesSprite_;
+    std::unique_ptr<IRectangleShape> boundariesShape_;
+    
     vec2i lastMousePosRelatively_ = {-1, -1};
     bool isPressed_ = false;
     

@@ -18,8 +18,6 @@ bool isHovered(vec2i pos, vec2u size)
 
 // Layer implementation
 
-static const char* canvasTextureInputFile = "media/textures/canvas.png";
-
 Layer::Layer(vec2u size)
     : size_(size),
       pixels_(static_cast<size_t>(size.x) *
@@ -57,22 +55,21 @@ Canvas::Canvas(vec2i pos, vec2u size)
       size_(size),
       pos_(pos)
 {
-    boundariesTexture_ = ITexture::create();
-    boundariesTexture_->loadFromFile(canvasTextureInputFile);
+    boundariesShape_ = IRectangleShape::create(size_.x, size_.y);
 
-    boundariesSprite_ = ISprite::create();
-    boundariesSprite_->setTexture(boundariesTexture_.get());
+    boundariesShape_->setPosition(pos_);
+    boundariesShape_->setSize({size_.x, size_.y});
 
-    auto spriteSize = boundariesSprite_->getSize();
-    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, static_cast<double>(size_.y) / spriteSize.y);
+    static const Color white = {255, 255, 255, 255};
+    boundariesShape_->setFillColor(white);
+    boundariesShape_->setOutlineThickness(0);
 
-    boundariesSprite_->setPosition(pos_.x, pos_.y);
     layers_.push_back(std::make_unique<Layer>(size_));
 }
 
 void Canvas::draw(IRenderWindow* renderWindow) 
 {
-    renderWindow->draw(boundariesSprite_.get());
+    renderWindow->draw(boundariesShape_.get());
 
     drawLayer(*layers_[0].get(), renderWindow);
     for (const auto& layer : layers_) 
@@ -203,20 +200,15 @@ void Canvas::setPos(vec2i pos)
 {
     pos_ = pos;
 
-    boundariesSprite_->setPosition(pos.x, pos.y);
+    boundariesShape_->setPosition(pos);
 }
 
 void Canvas::setSize(vec2i size) 
 {
     size_ = {static_cast<unsigned>(size.x), static_cast<unsigned>(size.y)};
 
-    boundariesSprite_->setScale(1.f, 1.f);
-    auto spriteSize = boundariesSprite_->getSize();
-    boundariesSprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, 
-                                static_cast<double>(size_.y) / spriteSize.y);
+    boundariesShape_->setSize({size_.x, size_.y});
 
-    //std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
-    
     tempLayer_->changeSize(size_);
     for (auto& layer : layers_) {
         layer->changeSize(size_);

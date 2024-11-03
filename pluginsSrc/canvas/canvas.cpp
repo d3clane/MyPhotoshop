@@ -16,12 +16,14 @@ bool isHovered(vec2i pos, vec2u size)
 
 } // namespace anonymous
 
+namespace ps
+{
 // Layer implementation
 
 Layer::Layer(vec2u size)
     : size_(size),
-      pixels_(static_cast<size_t>(size.x) *
-              static_cast<size_t>(size.y), {0, 0, 0, 0})
+      pixels_(static_cast<size_t>(size.x) * static_cast<size_t>(size.y), 
+              {0, 0, 0, 0})
 {
 }
 
@@ -37,15 +39,27 @@ void Layer::setPixel(vec2i pos, Color pixel)
 {
     if (pos.x < 0 || pos.y < 0 || pos.x >= size_.x || pos.y >= size_.y)
         return;
+
     pixels_.at(static_cast<size_t>(pos.y * size_.x + pos.x)) = pixel;
 }
 
 void Layer::changeSize(vec2u size) 
-{
+{   
+    auto newPixels = std::vector<Color>(size.x * size.y);
+
+    for (size_t x = 0; x < size.x; ++x)
+    {
+        for (size_t y = 0; y < size.y; ++y)
+        {
+            if (x >= size_.x || y >= size_.y)
+                continue;
+            
+            newPixels[(y * size.x + x)] = getPixel({static_cast<int>(x), static_cast<int>(y)});
+        }
+    }
+
     size_ = size;
-    pixels_.resize(static_cast<size_t>(size.x * size.y));
-    
-    //std::cerr << "CHANGE SIZE LAYER NOT CORRECT IMPLEMENTATION\n";
+    pixels_.swap(newPixels);
 }
 
 // Canvas implementation
@@ -69,9 +83,11 @@ Canvas::Canvas(vec2i pos, vec2u size)
 
 void Canvas::draw(IRenderWindow* renderWindow) 
 {
+    if (!isActive_)
+        return;
+
     renderWindow->draw(boundariesShape_.get());
 
-    drawLayer(*layers_[0].get(), renderWindow);
     for (const auto& layer : layers_) 
     {
         assert(layer.get());
@@ -79,11 +95,14 @@ void Canvas::draw(IRenderWindow* renderWindow)
         drawLayer(*layer.get(), renderWindow);
     }
     
-    drawLayer(*tempLayer_, renderWindow);
+    drawLayer(*tempLayer_.get(), renderWindow);
 }
 
 bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 {
+    if (!isActive_)
+        return false;
+
     auto renderWindowSize = renderWindow->getSize();
     setSize({renderWindowSize.x * CanvasSize.x , renderWindowSize.y * CanvasSize.y});
     setPos ({CanvasTopLeftPos.x * renderWindowSize.x, CanvasTopLeftPos.y * renderWindowSize.y});
@@ -103,6 +122,10 @@ void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow)
 {
     auto texture = ITexture::create();
     texture->create(size_.x, size_.y);
+
+    if (!layer.pixels_.data()) 
+        return;
+
     texture->update(layer.pixels_.data(), size_.x, size_.y, 0, 0);
 
     auto sprite = ISprite::create();
@@ -217,8 +240,10 @@ void Canvas::setSize(vec2i size)
 
 void Canvas::setScale(vec2f scale) 
 {
-    std::cerr << "NO CORRECT IMPLEMENTATION RIGHT NOW\n";
-    assert(false);
+    setSize({static_cast<unsigned>(size_.x * scale.x / scale_.x), 
+             static_cast<unsigned>(size_.y * scale.y / scale_.y)});
+
+    scale_ = scale;
 }
 
 size_t Canvas::getActiveLayerIndex() const 
@@ -236,10 +261,7 @@ void Canvas::setActiveLayerIndex(size_t index)
 
 bool Canvas::isActive() const
 {
-    std::cerr << "CANVAS IS ACTIVE HAS NO CORRECT IMPL, ALWAYS RETURN TRUE";
-    assert(false);
-
-    return true;
+    return isActive_;
 }
 
 wid_t Canvas::getId() const
@@ -272,26 +294,25 @@ vec2u Canvas::getSize() const
 
 void Canvas::setParent(const IWindow* parent)
 {
-    std::cerr << "NO PARENT FOR CANVAS\n";
     assert(false);
 }
 
 void Canvas::forceActivate() 
 {
-    std::cerr << "CANVAS ALWAYS ACTIVATED\n";
-    assert(false);
+    isActive_ = true;
 }
 
 void Canvas::forceDeactivate()
 {
-    std::cerr << "CANVAS CAN'T BE DEACTIVATED\n";
-    assert(false);
+    isActive_ = false;
 }
 
 bool Canvas::isWindowContainer() const
 {
     return false;
 }
+
+} // namespace ps
 
 bool loadPlugin()
 {

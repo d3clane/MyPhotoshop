@@ -24,9 +24,6 @@ public:
     BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
     virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
-
-protected:
-    bool released_;
 };
 
 BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
@@ -37,30 +34,13 @@ BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITextu
 
 bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
-    bool hovered = isHovered(Mouse::getPosition(renderWindow));
-    bool pressed = isPressed(event);
+    bool updatedState = updateState(renderWindow, event);
 
-    bool clicked = isClicked(event);
-
-    if (clicked)
-    {
-        if (!released_)
-            state_ = State::Released;
-        else
-            state_ = State::Normal;
-
-        released_ = !released_;
-    }
-    
     if (!released_)
     {
-        if (hovered)      state_ = State::Hover;
-        else if (pressed) state_ = State::Press;
-        else              state_ = State::Normal;
-
-        return true;
+        return updatedState;
     }
-
+    
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
 
     if (!canvas)
@@ -76,11 +56,12 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 
     auto mousePos = canvas->getMousePosition();
 
+    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
-            canvas->getLayer(activeLayerIndex)->setPixel({mousePos.x + i, mousePos.y + j}, {0xFF, 0x00, 0x00, 0xFF});
+            canvas->getLayer(activeLayerIndex)->setPixel({mousePos.x + i, mousePos.y + j}, redColor);
     
-    return true;
+    return updatedState;
 }
 
 } // namespace ps

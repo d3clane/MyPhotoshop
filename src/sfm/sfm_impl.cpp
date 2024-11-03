@@ -208,25 +208,23 @@ void Texture::update(const Color* pixels,
                      unsigned int width, unsigned int height, 
                      unsigned int x, unsigned int y) 
 {
+    assert(pixels || (width == 0 || height == 0));
+
     texture_.update(reinterpret_cast<const sf::Uint8*>(pixels), width, height, x, y);
 }
 
 void Texture::update(const IImage* image) 
 {
-    std::cerr << "NO IMPLEMENTATION RIGHT NOW\n";
-    assert(false);
-#if 0
-    const Image* sfmImage = static_cast<const Image*>(image);
-    texture_.update(sfmImage->image_);
-#endif
+    const Image* sfmlImage = static_cast<const Image*>(image);
+    texture_.update(sfmlImage->image_);
 }
 
 std::unique_ptr<IImage> Texture::copyToImage() const
 {
-    std::cerr << "NO IMPLEMENTATION RIGHT NOW\n";
-    assert(false);
+    Image* img = new Image();
+    img->image_ = texture_.copyToImage();
 
-    return nullptr;
+    return std::unique_ptr<IImage>(img);
 }
 
 void Sprite::setTexture(const ITexture* texture, bool reset_rect) 

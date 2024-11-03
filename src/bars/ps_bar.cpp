@@ -104,6 +104,33 @@ bool ABarButton::isClicked(const Event& event)
     return (event.type == event.MouseButtonReleased && isHovered({event.mouseButton.x, event.mouseButton.y}));
 }
 
+bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
+{
+    bool hovered = isHovered(Mouse::getPosition(renderWindow));
+    bool pressed = isPressed(event);
+
+    bool clicked = isClicked(event);
+
+    if (clicked)
+    {
+        if (!released_)
+            state_ = State::Released;
+        else
+            state_ = State::Normal;
+
+        released_ = !released_;
+    }
+    
+    if (!released_)
+    {
+        if (hovered)      state_ = State::Hover;
+        else if (pressed) state_ = State::Press;
+        else              state_ = State::Normal;
+    }
+
+    return clicked || hovered || pressed;
+}
+
 void ABarButton::setPos (vec2i pos)
 {
     pos_ = pos;

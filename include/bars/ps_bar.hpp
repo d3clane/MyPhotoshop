@@ -49,13 +49,16 @@ protected:
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
 
-    State state_;
+    State state_ = State::Normal;
+
+    bool released_ = false;
 
 protected:
     bool isHovered(vec2i mousePos);
     bool isPressed (const Event& event);
     bool isClicked(const Event& event);
 
+    bool updateState(const IRenderWindow* renderWindow, const Event& event);
 };
 
 class ABar : public IBar {

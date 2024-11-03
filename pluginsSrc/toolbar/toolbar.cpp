@@ -115,7 +115,7 @@ void Toolbar::addWindow(std::unique_ptr<IWindow> window)
     }
     catch(...)
     {
-        std::cerr <<"Failed to cast window to button\n";
+        std::cerr << "Failed to cast window to button\n";
         assert(false);
         std::terminate();
     }

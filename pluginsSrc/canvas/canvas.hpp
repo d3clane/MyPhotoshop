@@ -96,6 +96,7 @@ private:
     
     vec2i lastMousePosRelatively_ = {-1, -1};
     bool isPressed_ = false;
+    bool isActive_ = true;
     
     // private function
 private:

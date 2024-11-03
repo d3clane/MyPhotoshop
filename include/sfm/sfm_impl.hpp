@@ -95,7 +95,9 @@ class Image : public IImage
 {
 public:
     Image() = default;
+    Image(const Image& other) { image_ = other.image_; }
     virtual ~Image() = default;
+
 
     void create(unsigned int width, unsigned int height, const Color &color = Color(0, 0, 0)) override;
     void create(vec2u size,                              const Color &color = Color(0, 0, 0)) override;

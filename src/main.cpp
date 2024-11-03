@@ -30,7 +30,6 @@ void loadPlugin(const char* libName)
     //dlclose(handle);
 }
 
-
 int main()
 {
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "PSAPI");
@@ -40,6 +39,7 @@ int main()
     loadPlugin("libs/lib_toolbar.dylib");
     loadPlugin("libs/lib_spray.dylib");
     loadPlugin("libs/lib_brush.dylib");
+    loadPlugin("libs/lib_line.dylib");
     
     auto rootWindow = psapi::getRootWindow();
 

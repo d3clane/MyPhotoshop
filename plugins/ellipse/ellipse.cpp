@@ -1,4 +1,5 @@
-#include "line.hpp"
+#include "ellipse.hpp"
+
 #include <string>
 #include <dlfcn.h>
 
@@ -18,27 +19,58 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class LineButton : public ABarButton 
+namespace 
+{
+
+struct EllipseBounds
+{
+    vec2i topLeft;
+    vec2i bottomRight;
+};
+
+EllipseBounds getEllipseBounds(vec2i& topLeftNow, const vec2i& bottomRightNow)
+{
+    vec2i topLeft = topLeftNow;
+    vec2i bottomRight = bottomRightNow;
+
+    if (topLeftNow.x > bottomRightNow.x)
+    {
+        topLeft.x = bottomRightNow.x;
+        bottomRight.x = topLeftNow.x;
+    }
+
+    if (topLeftNow.y > bottomRightNow.y)
+    {
+        topLeft.y = bottomRightNow.y;
+        bottomRight.y = topLeftNow.y;
+    }
+
+    return {topLeft, bottomRight};
+}
+
+} // namespace anonymous
+
+class EllipseButton : public ABarButton 
 {
 public:
-    LineButton() = default;
-    LineButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
+    EllipseButton() = default;
+    EllipseButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
     virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
 
 private:
     bool canvasIsAlreadyPressed = false;
 
-    vec2i lineBeginPos_;
+    vec2i beginEllipsePos_;
 };
 
-LineButton::LineButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
+EllipseButton::EllipseButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
 {
     mainSprite_ = std::move(sprite);
     mainTexture_ = std::move(texture);
 }
 
-bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
+bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updateStateRes = updateState(renderWindow, event);
 
@@ -71,26 +103,30 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 
     if (!canvasIsAlreadyPressed)
     {
-        lineBeginPos_ = canvas->getMousePosition() + canvasPos;
+        beginEllipsePos_ = canvas->getMousePosition() + canvasPos;
         canvasIsAlreadyPressed = true;
     }
 
     vec2i mousePos = canvas->getMousePosition() + canvasPos;
 
-    const float lineLength = len(mousePos, lineBeginPos_);
-    const float angle = std::atan2(mousePos.y - lineBeginPos_.y, mousePos.x - lineBeginPos_.x);
+    EllipseBounds bounds = getEllipseBounds(beginEllipsePos_, mousePos);
 
-    static const size_t thickness = 10;
-    std::unique_ptr<IRectangleShape> line = IRectangleShape::create(lineLength, thickness);
+    vec2i topLeft     = bounds.topLeft;
+    vec2i bottomRight = bounds.bottomRight;
+    
+    const unsigned ellipseYSize = bottomRight.y - topLeft.y;
+    const unsigned ellipseXSize = bottomRight.x - topLeft.x;
+
+    std::unique_ptr<IEllipseShape> ellipse = IEllipseShape::create(ellipseXSize, ellipseYSize);
+    if (!ellipse)
+        return updateStateRes;
 
     static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    line->setFillColor(redColor);
+    ellipse->setFillColor(redColor);
+    ellipse->setOutlineThickness(0);
+    ellipse->setPosition(topLeft);
 
-    line->setOutlineThickness(0);
-    line->setRotation(angle * 180 / M_PI);
-    line->setPosition(lineBeginPos_);
-
-    const IImage* image = line->getImage();
+    const IImage* image = ellipse->getImage();
     if (!image)
         return updateStateRes;
 
@@ -124,7 +160,7 @@ bool loadPlugin() // onLoadPlugin
     
     auto spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
-    std::unique_ptr<ps::ABarButton> button{ new ps::LineButton(std::move(buttonSprite), std::move(buttonTexture)) };
+    std::unique_ptr<ps::ABarButton> button{ new ps::EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);
     button->setSize(size);

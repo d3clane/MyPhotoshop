@@ -40,7 +40,7 @@ CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)
 
 
-DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib lib_line.dylib
+DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_spray.dylib lib_brush.dylib lib_line.dylib lib_ellipse.dylib
 DYLIB_DIR = libs
 DYLIBS := $(addprefix $(DYLIB_DIR)/,$(DYLIBS_NAMES))
 PS_API_LIB := $(DYLIB_DIR)/libapi_photoshop.dylib
@@ -77,6 +77,9 @@ $(DYLIB_DIR)/lib_spray.dylib: plugins/spray/spray.cpp $(PLUGIN_LIB) $(PS_API_LIB
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_line.dylib: plugins/line/line.cpp $(PLUGIN_LIB) $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_ellipse.dylib: plugins/ellipse/ellipse.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

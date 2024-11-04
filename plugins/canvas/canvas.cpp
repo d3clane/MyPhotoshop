@@ -109,11 +109,13 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
-    bool pressedRightNow  = isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonPressed;
-    bool releasedRightNow = isHovered(lastMousePosRelatively_, size_) && event.type == Event::MouseButtonReleased;
+    bool hoveredRightNow  = isHovered(lastMousePosRelatively_, size_);
+    bool pressedRightNow  = hoveredRightNow && event.type == Event::MouseButtonPressed;
+    bool releasedRightNow = hoveredRightNow && event.type == Event::MouseButtonReleased;
 
     if (pressedRightNow)  isPressed_ = true;
     if (releasedRightNow) isPressed_ = false;
+    if (isPressed_ && !hoveredRightNow && event.type == Event::MouseButtonReleased) isPressed_ = false;
 
     return true;
 }

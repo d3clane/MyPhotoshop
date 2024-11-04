@@ -29,6 +29,9 @@ public:
 
 protected:
     Interpolator interpolator_;
+
+private:
+    void drawPoint(ILayer* layer, const vec2d& point, const Color& color);
 };
 
 BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
@@ -42,9 +45,7 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
     bool updatedState = updateState(renderWindow, event);
 
     if (!released_)
-    {
         return updatedState;
-    }
     
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
 
@@ -60,29 +61,33 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
         return true;
     }
 
-    size_t activeLayerIndex = canvas->getActiveLayerIndex();
-
-    auto mousePos = canvas->getMousePosition();
-
     if (interpolator_.isPossibleToDraw())
     {
         static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
+
+        size_t activeLayerIndex = canvas->getActiveLayerIndex();
         ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-        for (double t = 1; t < 2; t += 0.01)
-        {
-            //std::cerr << t << " " << interpolator_[t].x << " " << interpolator_[t].y << "\n";
-            for (int i = 0; i < 4; ++i)
-                for (int j = 0; j < 4; ++j)
-                {
-                    vec2d pos = interpolator_[t] + vec2d{i, j};
-                    activeLayer->setPixel(vec2i{pos.x, pos.y}, redColor);
-                }
-        }
+
+        for (double interpolatedPos = 1; interpolatedPos < 2; interpolatedPos += 0.01)
+            drawPoint(activeLayer, interpolator_[interpolatedPos], redColor);
     }
 
+    vec2i mousePos = canvas->getMousePosition();
     interpolator_.push({mousePos.x, mousePos.y});
 
     return updatedState;
+}
+
+void BrushButton::drawPoint(ILayer* layer, const vec2d& point, const Color& color)
+{
+    for (int i = -2; i <= 2; ++i)
+    {
+        for (int j = -2; j <= 2; ++j)
+        {
+            vec2d pos = point + vec2d{i, j};
+            layer->setPixel(vec2i{pos.x, pos.y}, color);
+        }
+    }
 }
 
 } // namespace ps

@@ -53,9 +53,8 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     }
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
-
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-    ILayer* tempLayer = canvas->getTempLayer();
+    ILayer* tempLayer   = canvas->getTempLayer();
 
     if (!canvas->isPressed() && canvasIsAlreadyPressed)
         copyLayerToLayer(activeLayer, tempLayer, canvas->getSize());
@@ -76,7 +75,7 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
         canvasIsAlreadyPressed = true;
     }
 
-    auto mousePos  = canvas->getMousePosition() + canvasPos;
+    vec2i mousePos = canvas->getMousePosition() + canvasPos;
 
     const float lineLength = len(mousePos, mouseBeginPos_);
     const float angle = std::atan2(mousePos.y - mouseBeginPos_.y, mousePos.x - mouseBeginPos_.x);

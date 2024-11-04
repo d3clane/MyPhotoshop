@@ -6,6 +6,7 @@
 #include "api/api_photoshop.hpp"
 #include "api/api_bar.hpp"
 #include "api/api_canvas.hpp"
+#include "canvas/canvas.hpp"
 
 #include "bars/ps_bar.hpp"
 
@@ -50,26 +51,15 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
         std::cerr << "CANVAS NOT FOUND!\n";
         assert(0);
     }
-
+    
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
+
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-
     ILayer* tempLayer = canvas->getTempLayer();
-    int cnt = 0;
-    if (!canvas->isPressed() && canvasIsAlreadyPressed)
-    {
-        for (size_t x = 0; x < canvas->getSize().x; ++x)
-        {
-            for (size_t y = 0; y < canvas->getSize().y; ++y)
-            {
-                Color tempLayerPixelColor = tempLayer->getPixel({static_cast<int>(x), static_cast<int>(y)});
-                if (tempLayerPixelColor.a == 0)
-                    continue;
-                activeLayer->setPixel({static_cast<int>(x), static_cast<int>(y)}, tempLayerPixelColor);
-            }
-        }
-    }
 
+    if (!canvas->isPressed() && canvasIsAlreadyPressed)
+        copyLayerToLayer(activeLayer, tempLayer, canvas->getSize());
+    
     canvas->cleanTempLayer();
 
     if (!canvas->isPressed())
@@ -88,14 +78,15 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 
     auto mousePos  = canvas->getMousePosition() + canvasPos;
 
-    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    static const size_t thickness = 10;
-
     const float lineLength = len(mousePos, mouseBeginPos_);
     const float angle = std::atan2(mousePos.y - mouseBeginPos_.y, mousePos.x - mouseBeginPos_.x);
 
+    static const size_t thickness = 10;
     std::unique_ptr<IRectangleShape> line = IRectangleShape::create(lineLength, thickness);
+
+    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
     line->setFillColor(redColor);
+
     line->setOutlineThickness(0);
     line->setRotation(angle * 180 / M_PI);
     line->setPosition(mouseBeginPos_);
@@ -104,16 +95,7 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     if (!image)
         return updateStateRes;
 
-    vec2u imageSize = image->getSize();
-    assert(imageSize.x == 1920 && imageSize.y == 1080);
-
-    for (size_t x = 0; x < imageSize.x; ++x)
-    {
-        for (size_t y = 0; y < imageSize.y; ++y)
-        {
-            tempLayer->setPixel({x - canvasPos.x, y - canvasPos.y}, image->getPixel(x, y));
-        }
-    }
+    copyImageToLayer(tempLayer, image, canvasPos, image->getSize());
 
     return true;
 }

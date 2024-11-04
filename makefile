@@ -15,7 +15,7 @@ CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -fPIE -Werror=vla #-fsanitize=address				  
 
 OUT_O_DIR := build
-COMMONINC := -I./include -I./
+COMMONINC := -I./include -I./ -I./pluginsSrc/pluginLib
 LIB_INC   := -isystem/opt/homebrew/Cellar/sfml/2.6.1/include
 LIB_LINK  := -L/opt/homebrew/Cellar/sfml/2.6.1/lib -lsfml-graphics -lsfml-window -lsfml-system
 
@@ -61,19 +61,19 @@ $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_brush.dylib: pluginsSrc/brush/brush.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_brush.dylib: pluginsSrc/brush/brush.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_spray.dylib: pluginsSrc/spray/spray.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_spray.dylib: pluginsSrc/spray/spray.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_line.dylib: pluginsSrc/line/line.cpp src/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_line.dylib: pluginsSrc/line/line.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp pluginsSrc/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

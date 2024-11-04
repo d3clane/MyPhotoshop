@@ -1,7 +1,7 @@
-#include "pluginsSrc/canvas/canvas.hpp"
-#include "pluginsSrc/toolbar/toolbar.hpp"
-#include "pluginsSrc/brush/brush.hpp"
-#include "pluginsSrc/spray/spray.hpp"
+#include "plugins/canvas/canvas.hpp"
+#include "plugins/toolbar/toolbar.hpp"
+#include "plugins/brush/brush.hpp"
+#include "plugins/spray/spray.hpp"
 
 #include "api/api_sfm.hpp"
 

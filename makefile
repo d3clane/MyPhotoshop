@@ -15,7 +15,8 @@ CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -fPIE -Werror=vla #-fsanitize=address				  
 
 OUT_O_DIR := build
-COMMONINC := -I./include -I./ -I./pluginsSrc/pluginLib
+COMMONINC := -I./include -I./ -I./plugins/pluginLib
+
 LIB_INC   := -isystem/opt/homebrew/Cellar/sfml/2.6.1/include
 LIB_LINK  := -L/opt/homebrew/Cellar/sfml/2.6.1/lib -lsfml-graphics -lsfml-window -lsfml-system
 
@@ -32,6 +33,8 @@ override CFLAGS += $(COMMONINC)
 override CFLAGS += $(LIB_INC)
 
 CPPSRC = src/main.cpp
+PLUGIN_LIB_NAMES := bars/ps_bar.cpp canvas/canvas.cpp interpolation/src/catmullRom.cpp interpolation/src/interpolator.cpp
+PLUGIN_LIB = $(addprefix plugins/pluginLib/, $(PLUGIN_LIB_NAMES))
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)
@@ -61,19 +64,19 @@ $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_brush.dylib: pluginsSrc/brush/brush.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_canvas.dylib: pluginsSrc/canvas/canvas.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_toolbar.dylib: pluginsSrc/toolbar/toolbar.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_toolbar.dylib: plugins/toolbar/toolbar.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_spray.dylib: pluginsSrc/spray/spray.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_spray.dylib: plugins/spray/spray.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_line.dylib: pluginsSrc/line/line.cpp pluginsSrc/pluginLib/bars/ps_bar.cpp pluginsSrc/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
+$(DYLIB_DIR)/lib_line.dylib: plugins/line/line.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

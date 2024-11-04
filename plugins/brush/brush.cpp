@@ -9,6 +9,8 @@
 
 #include "bars/ps_bar.hpp"
 
+#include "interpolation/include/interpolator.hpp"
+
 #include <iostream>
 
 namespace ps
@@ -24,6 +26,9 @@ public:
     BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
     virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
+
+protected:
+    Interpolator interpolator_;
 };
 
 BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
@@ -50,17 +55,33 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
     }
 
     if (!canvas->isPressed())
+    {
+        interpolator_.clear();
         return true;
+    }
 
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
 
     auto mousePos = canvas->getMousePosition();
 
-    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j)
-            canvas->getLayer(activeLayerIndex)->setPixel({mousePos.x + i, mousePos.y + j}, redColor);
-    
+    if (interpolator_.isPossibleToDraw())
+    {
+        static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
+        ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
+        for (double t = 1; t < 2; t += 0.01)
+        {
+            //std::cerr << t << " " << interpolator_[t].x << " " << interpolator_[t].y << "\n";
+            for (int i = 0; i < 4; ++i)
+                for (int j = 0; j < 4; ++j)
+                {
+                    vec2d pos = interpolator_[t] + vec2d{i, j};
+                    activeLayer->setPixel(vec2i{pos.x, pos.y}, redColor);
+                }
+        }
+    }
+
+    interpolator_.push({mousePos.x, mousePos.y});
+
     return updatedState;
 }
 

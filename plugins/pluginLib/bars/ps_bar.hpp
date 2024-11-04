@@ -51,8 +51,6 @@ protected:
 
     State state_ = State::Normal;
 
-    bool released_ = false;
-
 protected:
     bool isHovered(vec2i mousePos);
     bool isPressed (const Event& event);

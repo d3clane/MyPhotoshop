@@ -44,7 +44,7 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updatedState = updateState(renderWindow, event);
 
-    if (!released_)
+    if (state_ != State::Released)
         return updatedState;
     
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));

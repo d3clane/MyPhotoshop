@@ -113,15 +113,13 @@ bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& eve
 
     if (clicked)
     {
-        if (!released_)
+        if (state_ != State::Released)
             state_ = State::Released;
         else
             state_ = State::Normal;
-
-        released_ = !released_;
     }
     
-    if (!released_)
+    if (state_ != State::Released)
     {
         if (hovered)      state_ = State::Hover;
         else if (pressed) state_ = State::Press;
@@ -163,8 +161,27 @@ void ABar::drawChildren(IRenderWindow* renderWindow)
 bool ABar::updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event) 
 {
     bool updatedSomeone = false;
-    for (const auto& window : windows_) 
-        updatedSomeone |= window->update(renderWindow, event);
+
+    size_t lastReleasedButtonPos = static_cast<size_t>(-1); 
+    size_t windowsSize = windows_.size();
+    for (size_t i = 0; i < windowsSize; ++i)
+    {
+        ABarButton::State state = windows_[i]->getState();
+        updatedSomeone |= windows_[i]->update(renderWindow, event);
+
+        if (windows_[i]->getState() == ABarButton::State::Released && state != ABarButton::State::Released)
+            lastReleasedButtonPos = i;
+    }
+
+    if (lastReleasedButtonPos != static_cast<size_t>(-1))
+    {
+        for (size_t i = 0; i < windowsSize; ++i)
+        {
+            if (i == lastReleasedButtonPos)
+                continue;
+            windows_[i]->setState(ABarButton::State::Normal);
+        }
+    }
 
     return updatedSomeone;
 }

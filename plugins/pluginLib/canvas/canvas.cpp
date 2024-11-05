@@ -1,5 +1,7 @@
 #include "canvas.hpp"
 
+#include <cassert>
+
 using namespace psapi;
 using namespace psapi::sfm;
 

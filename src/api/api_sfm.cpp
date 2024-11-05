@@ -1,6 +1,8 @@
 #include "sfm/sfm_impl.hpp"
 #include "api/api_sfm.hpp"
 
+#include <cassert>
+
 namespace psapi
 {
 

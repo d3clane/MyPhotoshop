@@ -1,6 +1,6 @@
 #include "brush.hpp"
 #include <string>
-#include <dlfcn.h>
+#include <cassert>
 
 #include "api/api_sfm.hpp"
 #include "api/api_photoshop.hpp"

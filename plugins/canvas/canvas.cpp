@@ -6,16 +6,6 @@
 
 using namespace ps;
 
-namespace
-{
-
-bool isHovered(vec2i pos, vec2u size)
-{
-    return pos.x >= 0 && pos.y >= 0 && pos.x < size.x && pos.y < size.y;
-}
-
-} // namespace anonymous
-
 namespace ps
 {
 // Layer implementation
@@ -66,8 +56,7 @@ void Layer::changeSize(vec2u size)
 
 Canvas::Canvas(vec2i pos, vec2u size)
     : tempLayer_(std::make_unique<Layer>(size)),
-      size_(size),
-      pos_(pos)
+      AWindow(pos, size, kCanvasWindowId)
 {
     boundariesShape_ = IRectangleShape::create(size_.x, size_.y);
 
@@ -109,13 +98,7 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
-    bool hoveredRightNow  = isHovered(lastMousePosRelatively_, size_);
-    bool pressedRightNow  = hoveredRightNow && event.type == Event::MouseButtonPressed;
-    bool releasedRightNow = hoveredRightNow && event.type == Event::MouseButtonReleased;
-
-    if (pressedRightNow)  isPressed_ = true;
-    if (releasedRightNow) isPressed_ = false;
-    if (isPressed_ && !hoveredRightNow && event.type == Event::MouseButtonReleased) isPressed_ = false;
+    isPressed_ = updateIsPressed(event, isPressed_, lastMousePosRelatively_ + pos_);
 
     return true;
 }
@@ -279,7 +262,7 @@ IWindow* Canvas::getWindowById(wid_t id)
 const IWindow* Canvas::getWindowById(wid_t id) const
 {
     if (id == kCanvasWindowId)
-        return this;
+        return static_cast<const ICanvas*>(this);
     
     return nullptr;
 }
@@ -323,7 +306,7 @@ bool loadPlugin()
     const vec2i canvasPos = {0, 0};
     const vec2u canvasSize = {0, 0};
     
-    std::unique_ptr<IWindow> canvas{static_cast<IWindow*>(new Canvas{canvasPos, canvasSize})};
+    std::unique_ptr<IWindow> canvas{static_cast<ICanvas*>(new Canvas{canvasPos, canvasSize})};
 
     rootWindow->addWindow(std::move(canvas));
 

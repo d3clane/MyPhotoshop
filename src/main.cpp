@@ -33,7 +33,7 @@ void loadPlugin(const char* libName)
 int main()
 {
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "photoshop");
-    renderWindow->setFps(30);
+    renderWindow->setFps(60);
     
     loadPlugin("libs/lib_canvas.dylib");
     loadPlugin("libs/lib_toolbar.dylib");

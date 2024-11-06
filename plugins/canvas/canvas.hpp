@@ -3,6 +3,7 @@
 
 #include "api/api_canvas.hpp"
 #include "api/api_sfm.hpp"
+#include "windows/windows.hpp"
 
 #include <iostream>
 
@@ -19,7 +20,8 @@ namespace ps {
 using namespace psapi;
 using namespace psapi::sfm;
 
-class Layer : public ILayer {
+class Layer : public ILayer 
+{
 public:
     explicit Layer(vec2u size);
     Color getPixel(vec2i pos)        const override;
@@ -35,7 +37,8 @@ protected:
     void changeSize(vec2u size);
 };
 
-class Canvas : public ICanvas {
+class Canvas : public AWindow, public ICanvas
+{
 public:
     Canvas(vec2i pos, vec2u size);
     ~Canvas() = default;
@@ -66,17 +69,19 @@ public:
 
     void draw(IRenderWindow* renderWindow) override;
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
-    wid_t getId() const override;
-    IWindow* getWindowById(wid_t id) override;
-    const IWindow* getWindowById(wid_t id) const override;
-    vec2i getPos() const override;
 
+    wid_t getId() const override;
+
+    IWindow* getWindowById(wid_t id) override;
+
+    const IWindow* getWindowById(wid_t id) const override;
+
+    vec2i getPos() const override;
     vec2u getSize() const override;
 
     void setParent(const IWindow* parent) override;
 
     void forceActivate() override;
-
     void forceDeactivate() override;
 
     bool isActive() const override;
@@ -88,15 +93,12 @@ private:
     std::unique_ptr<Layer> tempLayer_;
     std::vector<std::unique_ptr<Layer>> layers_;
 
-    vec2i pos_;
-    vec2u size_;
     vec2f scale_ = {1.0f, 1.0f};
 
     std::unique_ptr<IRectangleShape> boundariesShape_;
     
     vec2i lastMousePosRelatively_ = {-1, -1};
     bool isPressed_ = false;
-    bool isActive_ = true;
     
     // private function
 private:

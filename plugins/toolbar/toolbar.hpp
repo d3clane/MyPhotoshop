@@ -3,17 +3,20 @@
 
 #include "bars/ps_bar.hpp"
 
-extern "C" {
+extern "C" 
+{
     bool   loadPlugin();
     void unloadPlugin();
 }
 
-namespace ps {
+namespace ps 
+{
 
 using namespace psapi;
 using namespace psapi::sfm;
 
-class Toolbar : public ABar {
+class Toolbar : public ABar 
+{
 private:
     struct SpriteInfo
     {

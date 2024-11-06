@@ -79,6 +79,7 @@ public:
 
     bool isActive() const override;
     bool isWindowContainer() const override;
+
 protected:
     wid_t id_ = kToolBarWindowId;
 

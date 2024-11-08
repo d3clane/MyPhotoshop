@@ -75,6 +75,9 @@ Canvas::Canvas(vec2i pos, vec2u size)
     : tempLayer_(std::make_unique<Layer>(size)),
       AWindow(pos, size, kCanvasWindowId)
 {
+    static const size_t fullSizeMultiplier = 5;
+    fullSize_ = {size_.x * fullSizeMultiplier, size_.y * fullSizeMultiplier};
+    
     boundariesShape_ = IRectangleShape::create(size_.x, size_.y);
 
     boundariesShape_->setFillColor({255, 255, 255, 255});
@@ -82,6 +85,7 @@ Canvas::Canvas(vec2i pos, vec2u size)
     boundariesShape_->setOutlineThickness(0);
 
     layers_.push_back(std::make_unique<Layer>(size_));
+
 }
 
 void Canvas::draw(IRenderWindow* renderWindow) 

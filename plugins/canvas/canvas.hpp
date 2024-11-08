@@ -109,6 +109,8 @@ private:
     vec2i lastMousePosRelatively_ = {-1, -1};
     bool isPressed_ = false;
 
+    vec2u fullSize_;
+
     // private function
 private:
     void drawLayer(const Layer& layer, IRenderWindow* renderWindow);

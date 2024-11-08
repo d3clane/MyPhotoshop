@@ -33,6 +33,7 @@ public:
     PressButton(vec2i pos, vec2u size, wid_t id);
 
     State getState() const;
+    void setState(State state);
 
     void setShape(std::unique_ptr<IRectangleShape> shape, State state);
     

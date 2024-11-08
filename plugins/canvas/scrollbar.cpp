@@ -17,6 +17,11 @@ PressButton::State PressButton::getState() const
     return state_;
 }
 
+void PressButton::setState(State state)
+{
+    state_ = state;
+}
+
 void PressButton::setShape(std::unique_ptr<IRectangleShape> shape, State state)
 {
     auto& myShape = shapes_[static_cast<size_t>(state)];
@@ -45,16 +50,15 @@ bool ScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
     if (eventUsed)
         return true;
 
-    vec2i mousePos = sfm::Mouse::getPosition();
+    vec2i mousePos = sfm::Mouse::getPosition(renderWindow);
     bool isHovered = checkIsHovered(mousePos);
     bool isPressed = (event.type == Event::MouseButtonPressed);
 
     if (!isHovered || !isPressed)
         return false;
 
-    vec2i newPos{mousePos.x - pos_.x, mousePos.y - pos_.y};
-    newPos = shrinkPosToBoundaries(newPos, size_);
-    moveButton_->setPos(newPos);
+    moveButton_->setPos(shrinkPosToBoundaries(mousePos, moveButton_->getSize()));
+    moveButton_->setState(PressButton::State::Pressed);
 
     return true;
 }
@@ -98,13 +102,10 @@ vec2i ScrollBar::shrinkPosToBoundaries(vec2i pos, vec2u size) const
     
     if (newPos.y < pos_.y)
         newPos.y = pos_.y;
-
     if (newPos.x + size.x > pos_.x + size_.x)
         newPos.x = pos_.x + size_.x - size.x;
-    
     if (newPos.y + size.y > pos_.y + size_.y)
         newPos.y = pos_.y + size_.y - size.y;
-
     return newPos;
 }
 
@@ -191,7 +192,7 @@ void ScrollBarButton::move(vec2i delta)
 void ScrollBarButton::setPos(vec2i pos)
 {
     // TODO: move scrollable
-    vec2i delta = vec2i{pos.x - pos_.x, pos.y - pos_.y};
+    vec2i delta = vec2i{pos.x - pos_.x - size_.x / 2, pos.y - pos_.y - size_.y / 2};
     move(delta);
 }
 
@@ -217,7 +218,7 @@ bool ScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Event
     if (!isPressed)
         return false;
 
-    setPos(mousePos - vec2i{size_.x / 2, size_.y / 2});
+    setPos(mousePos);
 
     return true;
 }

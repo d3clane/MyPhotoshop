@@ -21,21 +21,30 @@ namespace ps {
 using namespace psapi;
 using namespace psapi::sfm;
 
-class Layer : public ILayer 
+struct CutRect
+{
+    vec2i pos;
+    vec2u size;
+};
+
+class Layer : public ILayer
 {
 public:
     explicit Layer(vec2u size);
-    Color getPixel(vec2i pos)        const override;
+    Color getPixel(vec2i pos) const override;
     void  setPixel(vec2i pos, Color pixel) override;
 
 private:
     friend class Canvas;
+    
+    vec2u fullSize_;
+    CutRect area_;
 
-    vec2u size_;
     std::vector<Color> pixels_;
 
 protected:
-    void changeSize(vec2u size);
+    void changeFullSize(vec2u size);
+    void changeArea(const CutRect& area);
 };
 
 class Canvas : public AWindow, public ICanvas, public IScrollable
@@ -111,7 +120,9 @@ private:
 
     vec2u fullSize_;
 
-    // private function
+    vec2f scroll_ = {0.0f, 0.0f};
+
+    // private functions
 private:
     void drawLayer(const Layer& layer, IRenderWindow* renderWindow);
 };

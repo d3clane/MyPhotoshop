@@ -23,34 +23,65 @@ std::unique_ptr<IRectangleShape> createColorRectShape(Color color)
     return shape;
 }
 
+vec2u calculateFullSize(vec2u size)
+{
+    static const size_t prettyCoeff = 2;
+
+    return size * prettyCoeff;
+}
+
+vec2i calculateCutRectangleTopLeft(vec2u fullSize, vec2f scroll)
+{
+    return vec2i(static_cast<int>(scroll.x * static_cast<float>(fullSize.x)), 
+                 static_cast<int>(scroll.y * static_cast<float>(fullSize.y)));
+}
+
+std::vector<Color> cutRectangle(const std::vector<Color>& pixels, vec2u pixelsArrayFullSize, 
+                                vec2i pos, vec2u size)
+{
+    std::vector<Color> result(size.x * size.y);
+
+    for (size_t x = 0; x < size.x; ++x)
+    {
+        for (size_t y = 0; y < size.y; ++y)
+        {
+            result[(y * size.x + x)] = pixels[((pos.y + y) * pixelsArrayFullSize.x + pos.x + x)];
+        }
+    }
+
+    return result;
+}
+
+size_t getCutRectPosInFullPixelsArray(CutRect area, vec2i pos, vec2u fullSize)
+{
+    return static_cast<size_t>((area.pos.y + pos.y) * fullSize.x + area.pos.x + pos.x);
+}
+
 } // namespace anonymous
 
 // Layer implementation
 
-Layer::Layer(vec2u size)
-    : size_(size),
-      pixels_(static_cast<size_t>(size.x) * static_cast<size_t>(size.y), 
-              {0, 0, 0, 0})
+Layer::Layer(vec2u size) : fullSize_(size), pixels_(size.x * size.y)
 {
 }
 
 Color Layer::getPixel(vec2i pos) const 
 {
-    if (pos.x < 0 || pos.y < 0 || pos.x >= size_.x || pos.y >= size_.y)
+    if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
         return {0, 0, 0, 0};
 
-    return pixels_.at(static_cast<size_t>(pos.y * size_.x + pos.x));
+    return pixels_.at(getCutRectPosInFullPixelsArray(area_, pos, fullSize_));
 }
 
 void Layer::setPixel(vec2i pos, Color pixel) 
 {
-    if (pos.x < 0 || pos.y < 0 || pos.x >= size_.x || pos.y >= size_.y)
+    if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
         return;
 
-    pixels_.at(static_cast<size_t>(pos.y * size_.x + pos.x)) = pixel;
+    pixels_.at(getCutRectPosInFullPixelsArray(area_, pos, fullSize_)) = pixel;
 }
 
-void Layer::changeSize(vec2u size) 
+void Layer::changeFullSize(vec2u size) 
 {   
     auto newPixels = std::vector<Color>(size.x * size.y);
 
@@ -58,25 +89,29 @@ void Layer::changeSize(vec2u size)
     {
         for (size_t y = 0; y < size.y; ++y)
         {
-            if (x >= size_.x || y >= size_.y)
+            if (x >= fullSize_.x || y >= fullSize_.y)
                 continue;
             
             newPixels[(y * size.x + x)] = getPixel({static_cast<int>(x), static_cast<int>(y)});
         }
     }
 
-    size_ = size;
+    fullSize_ = size;
     pixels_.swap(newPixels);
+}
+
+void Layer::changeArea(const CutRect& area)
+{
+    area_ = area;
 }
 
 // Canvas implementation
 
-Canvas::Canvas(vec2i pos, vec2u size)
-    : tempLayer_(std::make_unique<Layer>(size)),
-      AWindow(pos, size, kCanvasWindowId)
+Canvas::Canvas(vec2i pos, vec2u size) : AWindow(pos, size, kCanvasWindowId)
 {
-    static const size_t fullSizeMultiplier = 5;
-    fullSize_ = {size_.x * fullSizeMultiplier, size_.y * fullSizeMultiplier};
+    fullSize_ = calculateFullSize(size);
+
+    tempLayer_ = std::make_unique<Layer>(fullSize_);
     
     boundariesShape_ = IRectangleShape::create(size_.x, size_.y);
 
@@ -84,8 +119,7 @@ Canvas::Canvas(vec2i pos, vec2u size)
     boundariesShape_->setPosition(pos_);
     boundariesShape_->setOutlineThickness(0);
 
-    layers_.push_back(std::make_unique<Layer>(size_));
-
+    layers_.push_back(std::make_unique<Layer>(fullSize_));
 }
 
 void Canvas::draw(IRenderWindow* renderWindow) 
@@ -129,7 +163,9 @@ void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow)
     if (!layer.pixels_.data()) 
         return;
 
-    texture->update(layer.pixels_.data(), size_.x, size_.y, 0, 0);
+    vec2i topLeft = calculateCutRectangleTopLeft(fullSize_, scroll_);
+    std::vector<Color> pixels = cutRectangle(layer.pixels_, fullSize_, topLeft, size_);
+    texture->update(pixels.data(), size_.x, size_.y, 0, 0);
 
     auto sprite = ISprite::create();
     sprite->setTexture(texture.get());
@@ -172,9 +208,9 @@ const ILayer* Canvas::getTempLayer() const
 void Canvas::cleanTempLayer() 
 {
     Color pixel = {0u, 0u, 0u, 0u}; // important that alpha is 0
-    for (int x = 0; x < size_.x; x++) 
+    for (int x = 0; x < fullSize_.x; x++) 
     {
-        for (int y = 0; y < size_.y; y++) 
+        for (int y = 0; y < fullSize_.y; y++) 
             tempLayer_->setPixel({x, y}, pixel);
     }
 }
@@ -199,10 +235,10 @@ bool Canvas::insertLayer(size_t index, std::unique_ptr<ILayer> layer)
         return false;
     }
 
-    std::unique_ptr<Layer> new_layer = std::make_unique<Layer>(size_);
-    for (int x = 0; x < size_.x; x++) 
+    std::unique_ptr<Layer> new_layer = std::make_unique<Layer>(fullSize_);
+    for (int x = 0; x < fullSize_.x; x++) 
     {
-        for (int y = 0; y < size_.y; y++) 
+        for (int y = 0; y < fullSize_.y; y++) 
         {
             vec2i pos = {x, y};
             new_layer->setPixel(pos, layer->getPixel(pos));
@@ -218,7 +254,7 @@ bool Canvas::insertEmptyLayer(size_t index)
     if (index > layers_.size()) 
         return false;
 
-    layers_.insert(layers_.begin() + index, std::make_unique<Layer>(size_));
+    layers_.insert(layers_.begin() + index, std::make_unique<Layer>(fullSize_));
     return true;
 }
 
@@ -232,12 +268,13 @@ void Canvas::setPos(vec2i pos)
 void Canvas::setSize(vec2i size) 
 {
     size_ = {static_cast<unsigned>(size.x), static_cast<unsigned>(size.y)};
+    fullSize_ = calculateFullSize(size_);
 
     boundariesShape_->setSize({size_.x, size_.y});
 
-    tempLayer_->changeSize(size_);
+    tempLayer_->changeFullSize(fullSize_);
     for (auto& layer : layers_) {
-        layer->changeSize(size_);
+        layer->changeFullSize(fullSize_);
     }
 }
 
@@ -317,17 +354,33 @@ bool Canvas::isWindowContainer() const
 
 void Canvas::scroll(vec2f delta)
 {
-
+    setScroll(scroll_ + delta);
 }
 
 void Canvas::setScroll(vec2f scroll)
 {
+    vec2f newScroll = scroll;
 
+    newScroll.x = newScroll.x > 1 ? 1 : newScroll.x;
+    newScroll.y = newScroll.y > 1 ? 1 : newScroll.y;
+    newScroll.x = newScroll.x < 0 ? 0 : newScroll.x;
+    newScroll.y = newScroll.y < 0 ? 0 : newScroll.y;
+
+    scroll_ = newScroll;
+
+    CutRect cutRectangle;
+    cutRectangle.pos  = calculateCutRectangleTopLeft(fullSize_, scroll_);
+    cutRectangle.size = size_;
+
+    for (auto& layer : layers_) 
+        layer->changeArea(cutRectangle);
+
+    tempLayer_->changeArea(cutRectangle);
 }
 
 vec2f Canvas::getScroll()
 {
-    return {0, 0};
+    return scroll_;
 }
 
 vec2u Canvas::getVisibleSize()
@@ -337,7 +390,7 @@ vec2u Canvas::getVisibleSize()
 
 vec2u Canvas::getFullSize()
 {
-    return size_ * 10;
+    return fullSize_;
 }
 
 } // namespace ps
@@ -356,7 +409,7 @@ std::unique_ptr<ScrollBar> createScrollBar(const Canvas* canvas)
 
 std::unique_ptr<Canvas> createCanvas()
 {
-    const vec2i canvasPos = {0, 0};
+    const vec2i canvasPos  = {0, 0};
     const vec2u canvasSize = {0, 0};
     
     return std::make_unique<Canvas>(canvasPos, canvasSize);

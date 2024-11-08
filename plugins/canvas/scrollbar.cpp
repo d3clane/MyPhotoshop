@@ -185,8 +185,11 @@ void ScrollBarButton::move(vec2i delta)
     for (auto& shape : shapes_)
         shape->setPosition(newPos);
 
+    // TODO: actually easy to fix to create not only horizontal one
     pos_ = newPos;
     scroll_ = static_cast<float>(pos_.x) / static_cast<float>(size_.x);
+
+    scrollable_->setScroll(vec2f{scroll_, 0}); // TODO: only horizontal 
 }
 
 void ScrollBarButton::setPos(vec2i pos)

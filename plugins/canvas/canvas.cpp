@@ -1,5 +1,6 @@
 #include "canvas.hpp"
 #include "api/api_sfm.hpp"
+#include "scrollbar.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -8,6 +9,22 @@ using namespace ps;
 
 namespace ps
 {
+
+namespace 
+{
+
+std::unique_ptr<IRectangleShape> createColorRectShape(size_t width, size_t height, Color color)
+{
+    std::unique_ptr<IRectangleShape> shape = IRectangleShape::create(width, height);
+
+    shape->setFillColor(color);
+    shape->setOutlineThickness(0);
+
+    return shape;
+}
+
+} // namespace anonymous
+
 // Layer implementation
 
 Layer::Layer(vec2u size)
@@ -58,13 +75,9 @@ Canvas::Canvas(vec2i pos, vec2u size)
     : tempLayer_(std::make_unique<Layer>(size)),
       AWindow(pos, size, kCanvasWindowId)
 {
-    boundariesShape_ = IRectangleShape::create(size_.x, size_.y);
+    boundariesShape_ = createColorRectShape(size_.x, size_.y, {255, 255, 255, 255});
 
     boundariesShape_->setPosition(pos_);
-    boundariesShape_->setSize({size_.x, size_.y});
-
-    static const Color white = {255, 255, 255, 255};
-    boundariesShape_->setFillColor(white);
     boundariesShape_->setOutlineThickness(0);
 
     layers_.push_back(std::make_unique<Layer>(size_));
@@ -299,16 +312,56 @@ bool Canvas::isWindowContainer() const
 
 } // namespace ps
 
+namespace
+{
+
+std::unique_ptr<ScrollBar> createScrollBar()
+{
+    std::unique_ptr<ScrollBar> scrollBar{new ScrollBar{vec2i{175, 100}, vec2u{1000, 50}, kInvalidWindowId}};
+    auto scrollBarShape = createColorRectShape(1000, 50, {255, 255, 255, 255});
+    scrollBar->setShape(std::move(scrollBarShape));
+    scrollBarShape.release();
+
+    return scrollBar;
+}
+
+std::unique_ptr<ICanvas> createCanvas()
+{
+    const vec2i canvasPos = {0, 0};
+    const vec2u canvasSize = {0, 0};
+    
+    return std::unique_ptr<ICanvas>(new Canvas{canvasPos, canvasSize});
+}
+
+std::unique_ptr<ScrollBarButton> createMoveButton()
+{
+    std::unique_ptr<ScrollBarButton> moveButton{
+        new ScrollBarButton{vec2i{175, 100}, vec2u{150, 50}, kInvalidWindowId}
+    };
+
+    moveButton->setShape(createColorRectShape(150, 50, {211, 211, 211, 255}), PressButton::State::Normal);
+    moveButton->setShape(createColorRectShape(150, 50, {169, 169, 169, 255}), PressButton::State::Hovered);
+    moveButton->setShape(createColorRectShape(150, 50, {128, 128, 128, 255}), PressButton::State::Pressed);
+
+    return moveButton;
+}
+
+} // namespace anonymous
+
 bool loadPlugin()
 {
     auto rootWindow = getRootWindow();
 
-    const vec2i canvasPos = {0, 0};
-    const vec2u canvasSize = {0, 0};
-    
-    std::unique_ptr<IWindow> canvas{static_cast<ICanvas*>(new Canvas{canvasPos, canvasSize})};
+    std::unique_ptr<ICanvas> canvas = createCanvas();
+    std::unique_ptr<ScrollBar> scrollBar = createScrollBar();
+    std::unique_ptr<ScrollBarButton> moveButton = createMoveButton();
+
+    scrollBar->setMoveButton(std::move(moveButton));
+    moveButton.release();
 
     rootWindow->addWindow(std::move(canvas));
+    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBar.release()));
+    canvas.release();
 
     return true;
 }

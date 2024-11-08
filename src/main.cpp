@@ -61,3 +61,30 @@ int main()
         renderWindow->display();
     }
 }
+
+#if 0
+int getTime();
+
+
+void sayThanks()
+{
+    int time = getTime();
+
+    if (time == 0)
+        printf("спасибо!!!");
+    else if (time == 1)
+        printf("спасибо!!!");
+    else if (time == 2)
+        printf("спасибо!!!");
+    else if (time == 3)
+        printf("спасибо!!!");
+    else if (time == 4)
+        printf("спасибо!!!");
+    else if (time == 5)
+        printf("спасибо!!!");
+    else if (time == 6)
+        printf("спасибо!!!");
+    else if (time == 7)
+        printf("спасибо!!!");
+}
+#endif

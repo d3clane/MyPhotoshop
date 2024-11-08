@@ -67,7 +67,7 @@ $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.
 $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp $(PLUGIN_LIB) $(PS_API_LIB)
+$(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp plugins/canvas/scrollbar.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_toolbar.dylib: plugins/toolbar/toolbar.cpp $(PLUGIN_LIB) $(PS_API_LIB)

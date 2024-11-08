@@ -17,7 +17,6 @@ public:
     wid_t getId() const override;
 
     IWindow* getWindowById(wid_t id) override;
-
     const IWindow* getWindowById(wid_t id) const override;
 
     vec2i getPos() const override;
@@ -84,6 +83,29 @@ public:
 protected:
     std::unique_ptr<ISprite> sprite_;
     std::unique_ptr<ITexture> texture_;
+};
+
+class AWindowContainer : public IWindowContainer, public AWindow
+{
+public:
+    AWindowContainer(vec2i pos, vec2u size, wid_t id) : AWindow(pos, size, id) {};
+
+    IWindow* getWindowById(wid_t id) override = 0;
+    const IWindow* getWindowById(wid_t id) const override = 0;
+
+    bool isWindowContainer() const override { return true; }
+
+    wid_t getId() const override { return AWindow::getId(); };
+
+    vec2i getPos() const override { return AWindow::getPos(); };
+    vec2u getSize() const override { return AWindow::getSize(); };
+
+    void setParent(const IWindow* parent) override { AWindow::setParent(parent); };
+
+    void forceActivate() override { AWindow::forceActivate(); };
+    void forceDeactivate() override { AWindow::forceDeactivate(); };
+
+    bool isActive() const override { return AWindow::isActive(); };
 };
 
 } // namespace ps

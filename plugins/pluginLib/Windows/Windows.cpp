@@ -1,5 +1,7 @@
 #include "windows.hpp"
 
+#include <iostream>
+
 namespace ps
 {
 
@@ -61,6 +63,7 @@ bool AWindow::isWindowContainer() const
 
 bool AWindow::checkIsHovered(vec2i mousePos)
 {
+    //std::cerr << "CHECK IS HOVERED, POS: " << pos_.x << " " << pos_.y << " SIZE: " << size_.x << " " << size_.y << "MOUSE POS: " << mousePos.x << " " << mousePos.y << std::endl;
     return mousePos.x >= pos_.x && mousePos.x < static_cast<int>(pos_.x + size_.x)
         && mousePos.y >= pos_.y && mousePos.y < static_cast<int>(pos_.y + size_.y);
 }

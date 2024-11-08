@@ -1,18 +1,22 @@
 #ifndef PLUGINS_CANVAS_SCROLLBAR_HPP
 #define PLUGINS_CANVAS_SCROLLBAR_HPP
 
+#include "api/api_photoshop.hpp"
 #include "windows/windows.hpp"
 
 namespace ps
 {
 
-class Scrollable
+class IScrollable
 {
 public:
     virtual void scroll(vec2f delta) = 0;
     virtual void setScroll(vec2f scroll) = 0;
 
     virtual vec2f getScroll() = 0;
+
+    virtual vec2u getVisibleSize() = 0;
+    virtual vec2u getFullSize() = 0;
 };
 
 class PressButton : public AWindow
@@ -31,12 +35,13 @@ public:
     State getState() const;
 
     void setShape(std::unique_ptr<IRectangleShape> shape, State state);
-
+    
 protected:
     State state_ = State::Normal;
     
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(State::Count)];
 };
+
 
 class ScrollBarButton : public PressButton
 {
@@ -51,8 +56,16 @@ public:
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
 
+    void setScrollable(IScrollable* scrollable);
+
 protected:
-    Scrollable* scrollable_ = nullptr;
+    void updatePos();
+    void updateSize();
+
+protected:
+    IScrollable* scrollable_ = nullptr;
+
+    float scroll_;
 };
 
 class ArrowButton : public PressButton
@@ -79,7 +92,13 @@ public:
 
     void setShape(std::unique_ptr<IRectangleShape> shape);
     void setMoveButton(std::unique_ptr<ScrollBarButton> moveButton);
-    const ScrollBarButton* getMoveButton() const;
+
+protected:
+    void updatePos();
+    void updateSize();
+
+    void setPos (vec2i pos );
+    void setSize(vec2u size);
 
 protected:
     std::unique_ptr<IRectangleShape> shape_;

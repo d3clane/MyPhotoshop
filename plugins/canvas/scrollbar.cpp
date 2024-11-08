@@ -37,6 +37,9 @@ bool ScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
 {
     if (!isActive_)
         return false;
+
+    updatePos();
+    updateSize();
     
     bool eventUsed = moveButton_->update(renderWindow, event);
     if (eventUsed)
@@ -120,6 +123,42 @@ void ScrollBar::setMoveButton(std::unique_ptr<ScrollBarButton> moveButton)
     moveButton_->setParent(static_cast<IWindowContainer*>(this));
 }
 
+void ScrollBar::setPos(vec2i pos)
+{
+    pos_ = pos;
+
+    shape_->setPosition(pos_);
+}
+
+void ScrollBar::setSize(vec2u size)
+{
+    size_ = size;
+
+    shape_->setSize(size_);
+}
+
+void ScrollBar::updatePos()
+{
+    assert(parent_);
+
+    vec2i parentPos = parent_->getPos();
+    vec2u parentSize = parent_->getSize();
+    
+    setPos(vec2i{ parentPos.x, parentPos.y + parentSize.y });
+}
+
+void ScrollBar::updateSize()
+{
+    assert(parent_);
+
+    vec2u parentSize = parent_->getSize();
+
+    static const size_t prettyCoeff = 40;
+    static const size_t minYSize = 5;
+
+    setSize(vec2u{parentSize.x, std::max(minYSize, parentSize.y / prettyCoeff)});
+}
+
 // Scrollbar button
 
 ScrollBarButton::ScrollBarButton(vec2i pos, vec2u size, wid_t id) : PressButton(pos, size, id)
@@ -146,6 +185,7 @@ void ScrollBarButton::move(vec2i delta)
         shape->setPosition(newPos);
 
     pos_ = newPos;
+    scroll_ = static_cast<float>(pos_.x) / static_cast<float>(size_.x);
 }
 
 void ScrollBarButton::setPos(vec2i pos)
@@ -162,6 +202,9 @@ void ScrollBarButton::draw(IRenderWindow* renderWindow)
 
 bool ScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Event& event)
 {
+    updatePos();
+    updateSize();
+
     vec2i mousePos = sfm::Mouse::getPosition(renderWindow);
 
     bool isPressed = updateIsPressed(event, state_ == State::Pressed, mousePos);
@@ -177,6 +220,35 @@ bool ScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Event
     setPos(mousePos - vec2i{size_.x / 2, size_.y / 2});
 
     return true;
+}
+
+void ScrollBarButton::setScrollable(IScrollable* scrollable)
+{
+    scrollable_ = scrollable;
+}
+
+void ScrollBarButton::updatePos()
+{
+    assert(parent_);
+
+    // TODO: set pos correctly by scroll
+    if (scroll_ > 0)
+        return;
+
+    setPos(parent_->getPos());
+}
+
+void ScrollBarButton::updateSize()
+{
+    assert(parent_);
+    assert(scrollable_);
+
+    vec2u parentSize = parent_->getSize();
+
+    double xRatio = static_cast<double>(scrollable_->getVisibleSize().x) / 
+                    static_cast<double>(scrollable_->getFullSize   ().x);
+
+    setSize(vec2u{static_cast<unsigned>(parentSize.x * xRatio), parentSize.y});
 }
 
 } // namespace ps

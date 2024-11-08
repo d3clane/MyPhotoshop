@@ -4,6 +4,7 @@
 #include "api/api_canvas.hpp"
 #include "api/api_sfm.hpp"
 #include "windows/windows.hpp"
+#include "scrollbar.hpp"
 
 #include <iostream>
 
@@ -37,7 +38,7 @@ protected:
     void changeSize(vec2u size);
 };
 
-class Canvas : public AWindow, public ICanvas
+class Canvas : public AWindow, public ICanvas, public IScrollable
 {
 public:
     Canvas(vec2i pos, vec2u size);
@@ -87,6 +88,14 @@ public:
     bool isActive() const override;
     bool isWindowContainer() const override;
 
+    void scroll(vec2f delta) override;
+    void setScroll(vec2f scroll) override;
+
+    vec2f getScroll() override;
+
+    vec2u getVisibleSize() override;
+    vec2u getFullSize() override;
+
 private:
     size_t activeLayer_ = 0;
 
@@ -99,7 +108,7 @@ private:
     
     vec2i lastMousePosRelatively_ = {-1, -1};
     bool isPressed_ = false;
-    
+
     // private function
 private:
     void drawLayer(const Layer& layer, IRenderWindow* renderWindow);

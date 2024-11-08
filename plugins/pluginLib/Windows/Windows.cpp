@@ -36,11 +36,6 @@ vec2u AWindow::getSize() const
     return size_;
 }
 
-void AWindow::setParent(const IWindow* parent)
-{
-    parent_ = parent;
-}
-
 void AWindow::forceActivate()
 {
     isActive_ = true;
@@ -82,18 +77,9 @@ bool AWindow::updateIsPressed(const Event& event, bool prevPressedState, vec2i m
     return isPressed;
 }
 
-// ASpritedWindow implementation
-
-ASpritedWindow::ASpritedWindow(
-    vec2i pos, vec2u size, wid_t id, 
-    std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture
-) : AWindow(pos, size, id), sprite_(std::move(sprite)), texture_(std::move(texture))
+void AWindow::setParent(const IWindow* parent)
 {
-}
-
-void ASpritedWindow::draw(IRenderWindow* renderWindow)
-{
-    sprite_->draw(renderWindow);
+    parent_ = parent;
 }
 
 // AWindowVector implementation
@@ -118,21 +104,22 @@ void AWindowVector::drawChildren(IRenderWindow* renderWindow)
         window->draw(renderWindow);
 }
 
-// ASpritedWindowVector implementation
 
-ASpritedWindowVector::ASpritedWindowVector(
-    vec2i pos, vec2u size, wid_t id, 
-    std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture
-) : AWindowVector(pos, size, id), sprite_(std::move(sprite)), texture_(std::move(texture))
+// AWindowContainer implementation
+
+AWindowContainer::AWindowContainer(vec2i pos, vec2u size, wid_t id) : AWindow(pos, size, id)
 {
 }
 
-void ASpritedWindowVector::draw(IRenderWindow* renderWindow)
-{
-    sprite_->draw(renderWindow);
+bool AWindowContainer::isWindowContainer() const        { return true; }
 
-    drawChildren(renderWindow);
-}
+wid_t AWindowContainer::getId() const                   { return AWindow::getId(); }
+vec2i AWindowContainer::getPos() const                  { return AWindow::getPos(); }
+vec2u AWindowContainer::getSize() const                 { return AWindow::getSize(); }
 
+void AWindowContainer::forceActivate()                  { AWindow::forceActivate(); }
+void AWindowContainer::forceDeactivate()                { AWindow::forceDeactivate(); }
+bool AWindowContainer::isActive() const                 { return AWindow::isActive(); }
+void AWindowContainer::setParent(const IWindow* parent) { AWindow::setParent(parent); }
 
 } // namespace ps

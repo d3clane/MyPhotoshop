@@ -17,7 +17,7 @@ void copyLayerToLayer(ILayer* dst, const ILayer* src, const vec2u& size)
             Color color = src->getPixelOnScreen({static_cast<int>(x), static_cast<int>(y)});
             if (color.a == 0)
                 continue;
-            dst->setPixel({static_cast<int>(x), static_cast<int>(y)}, color);
+            dst->setPixelOnScreen({static_cast<int>(x), static_cast<int>(y)}, color);
         }
     }
 }
@@ -30,7 +30,10 @@ void copyImageToLayer(ILayer* dst, const IImage* src, const vec2i& layerPos, con
     {
         for (size_t y = 0; y < size.y; ++y)
         {
-            dst->setPixel(vec2i{x, y} - layerPos, src->getPixel(x, y));
+            if (src->getPixel(x, y).a == 0)
+                continue;
+
+            dst->setPixelOnScreen(vec2i{x, y} - layerPos, src->getPixel(x, y));
         }
     }
 }

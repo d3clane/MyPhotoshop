@@ -85,7 +85,7 @@ void BrushButton::drawPoint(ILayer* layer, const vec2d& point, const Color& colo
         for (int j = -2; j <= 2; ++j)
         {
             vec2d pos = point + vec2d{i, j};
-            layer->setPixel(vec2i{pos.x, pos.y}, color);
+            layer->setPixelOnScreen(vec2i{pos.x, pos.y}, color);
         }
     }
 }

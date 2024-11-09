@@ -32,7 +32,7 @@ class Layer : public ILayer
 public:
     explicit Layer(vec2u size);
     Color getPixelOnScreen(vec2i pos) const override;
-    void  setPixel(vec2i pos, Color pixel) override;
+    void  setPixelOnScreen(vec2i pos, Color pixel) override;
 
 private:
     friend class Canvas;

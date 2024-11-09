@@ -59,7 +59,7 @@ public:
     virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
 
 private:
-    bool canvasIsAlreadyPressed = false;
+    bool canvasIsAlreadyPressed_ = false;
 
     vec2i beginEllipsePos_;
 };
@@ -88,23 +88,23 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
     ILayer* tempLayer   = canvas->getTempLayer();
 
-    if (!canvas->isPressed() && canvasIsAlreadyPressed)
+    if (!canvas->isPressed() && canvasIsAlreadyPressed_)
         copyLayerToLayer(activeLayer, tempLayer, canvas->getSize());
     
     canvas->cleanTempLayer();
 
     if (!canvas->isPressed())
     {
-        canvasIsAlreadyPressed = false;
+        canvasIsAlreadyPressed_ = false;
         return updateStateRes;
     }
 
     vec2i canvasPos = canvas->getPos();
 
-    if (!canvasIsAlreadyPressed)
+    if (!canvasIsAlreadyPressed_)
     {
         beginEllipsePos_ = canvas->getMousePosition() + canvasPos;
-        canvasIsAlreadyPressed = true;
+        canvasIsAlreadyPressed_ = true;
     }
 
     vec2i mousePos = canvas->getMousePosition() + canvasPos;

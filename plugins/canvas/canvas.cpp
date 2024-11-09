@@ -25,7 +25,7 @@ std::unique_ptr<IRectangleShape> createColorRectShape(Color color)
 
 vec2u calculateFullSize(vec2u size)
 {
-    static const size_t prettyCoeff = 2;
+    static const size_t prettyCoeff = 10;
 
     return size * prettyCoeff;
 }
@@ -52,8 +52,8 @@ std::vector<Color> cutRectangle(const std::vector<Color>& pixels, vec2u pixelsAr
     {
         for (size_t y = 0; y < size.y; ++y)
         {
-            // TODO: 
-            result[(y * size.x + x)] = pixels[getCutRectPosInFullPixelsArray(area, vec2i{x, y}, pixelsArrayFullSize)];
+            size_t pixelPos = getCutRectPosInFullPixelsArray(area, vec2i{x, y}, pixelsArrayFullSize);
+            result[(y * size.x + x)] = pixels[pixelPos];
         }
     }
 
@@ -76,7 +76,7 @@ Color Layer::getPixelOnScreen(vec2i pos) const
     return pixels_.at(getCutRectPosInFullPixelsArray(area_, pos, fullSize_));
 }
 
-void Layer::setPixel(vec2i pos, Color pixel) 
+void Layer::setPixelOnScreen(vec2i pos, Color pixel) 
 {
     if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
         return;
@@ -215,7 +215,7 @@ void Canvas::cleanTempLayer()
     for (int x = 0; x < fullSize_.x; x++) 
     {
         for (int y = 0; y < fullSize_.y; y++) 
-            tempLayer_->setPixel({x, y}, pixel);
+            tempLayer_->setPixelOnScreen({x, y}, pixel);
     }
 }
 
@@ -245,7 +245,7 @@ bool Canvas::insertLayer(size_t index, std::unique_ptr<ILayer> layer)
         for (int y = 0; y < fullSize_.y; y++) 
         {
             vec2i pos = {x, y};
-            newLayer->setPixel(pos, layer->getPixelOnScreen(pos));
+            newLayer->setPixelOnScreen(pos, layer->getPixelOnScreen(pos));
         }
     }
 

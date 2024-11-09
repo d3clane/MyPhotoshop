@@ -18,19 +18,37 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
+namespace
+{
+
 class LineButton : public ABarButton 
 {
 public:
     LineButton() = default;
     LineButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    void draw(IRenderWindow* renderWindow) override;
 
 private:
-    bool canvasIsAlreadyPressed = false;
+    bool canvasIsAlreadyPressed_ = false;
 
     vec2i lineBeginPos_;
+
+    std::unique_ptr<IRectangleShape> line_; // crutch to not to copy every time on canvas
 };
+
+void copyLineToLayer(ILayer* layer, const IRectangleShape* line, vec2i canvasPos)
+{
+    const IImage* image = line->getImage();
+    if (!image)
+        return;
+
+    copyImageToLayer(layer, image, canvasPos, image->getSize());
+}
+
+
+} // namespace anonymous
 
 LineButton::LineButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
 {
@@ -54,25 +72,24 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-    ILayer* tempLayer   = canvas->getTempLayer();
+    vec2i canvasPos = canvas->getPos();
 
-    if (!canvas->isPressed() && canvasIsAlreadyPressed)
-        copyLayerToLayer(activeLayer, tempLayer, canvas->getSize());
+    if (!canvas->isPressed() && canvasIsAlreadyPressed_)
+    {
+        copyLineToLayer(activeLayer, line_.get(), canvasPos);
+        line_.reset();
+    }
     
-    canvas->cleanTempLayer();
-
     if (!canvas->isPressed())
     {
-        canvasIsAlreadyPressed = false;
+        canvasIsAlreadyPressed_ = false;
         return updateStateRes;
     }
 
-    vec2i canvasPos = canvas->getPos();
-
-    if (!canvasIsAlreadyPressed)
+    if (!canvasIsAlreadyPressed_)
     {
         lineBeginPos_ = canvas->getMousePosition() + canvasPos;
-        canvasIsAlreadyPressed = true;
+        canvasIsAlreadyPressed_ = true;
     }
 
     vec2i mousePos = canvas->getMousePosition() + canvasPos;
@@ -81,23 +98,27 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     const float angle = std::atan2(mousePos.y - lineBeginPos_.y, mousePos.x - lineBeginPos_.x);
 
     static const size_t thickness = 10;
-    std::unique_ptr<IRectangleShape> line = IRectangleShape::create(lineLength, thickness);
+    line_ = IRectangleShape::create(lineLength, thickness);
 
     static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    line->setFillColor(redColor);
+    line_->setFillColor(redColor);
+    line_->setOutlineThickness(0);
+    line_->setRotation(angle * 180 / M_PI);
+    line_->setPosition(lineBeginPos_);
 
-    line->setOutlineThickness(0);
-    line->setRotation(angle * 180 / M_PI);
-    line->setPosition(lineBeginPos_);
-
-    const IImage* image = line->getImage();
-    if (!image)
-        return updateStateRes;
-
-    copyImageToLayer(tempLayer, image, canvasPos, image->getSize());
-
+    const_cast<IRenderWindow*>(renderWindow)->draw(line_.get()); // crutch
+    
     return true;
 }
+
+void LineButton::draw(IRenderWindow* renderWindow)
+{
+    ABarButton::draw(renderWindow);
+
+    if (line_)
+        renderWindow->draw(line_.get());
+}
+
 
 } // namespace ps
 

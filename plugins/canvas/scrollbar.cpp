@@ -97,15 +97,11 @@ vec2i ScrollBar::shrinkPosToBoundaries(vec2i pos, vec2u size) const
     assert(size_.y >= size.y);
 
     vec2i newPos = pos;
-    if (newPos.x < pos_.x)
-        newPos.x = pos_.x;
-    
-    if (newPos.y < pos_.y)
-        newPos.y = pos_.y;
-    if (newPos.x + size.x > pos_.x + size_.x)
-        newPos.x = pos_.x + size_.x - size.x;
-    if (newPos.y + size.y > pos_.y + size_.y)
-        newPos.y = pos_.y + size_.y - size.y;
+    newPos.x = newPos.x < pos_.x ? pos_.x : newPos.x;
+    newPos.y = newPos.y < pos_.y ? pos_.y : newPos.y;
+    newPos.x = newPos.x + size.x > pos_.x + size_.x ? pos_.x + size_.x - size.x : newPos.x;
+    newPos.y = newPos.y + size.y > pos_.y + size_.y ? pos_.y + size_.y - size.y : newPos.y;
+
     return newPos;
 }
 
@@ -176,7 +172,8 @@ void ScrollBarButton::setSize(vec2u size)
 
 void ScrollBarButton::move(vec2i delta)
 {
-    // TODO: move scrollable
+    assert(scrollable_);
+
     assert(parent_);
     const ScrollBar* parent = dynamic_cast<const ScrollBar*>(parent_); // TODO: change
     assert(parent);
@@ -186,15 +183,18 @@ void ScrollBarButton::move(vec2i delta)
         shape->setPosition(newPos);
 
     // TODO: actually easy to fix to create not only horizontal one
+
+    vec2u parentSize = parent->getSize();
+    if (parentSize.x != 0)
+        scroll_ = static_cast<float>(newPos.x - zeroScrollPos_.x) / static_cast<float>(parentSize.x - size_.x);
+
     pos_ = newPos;
-    scroll_ = static_cast<float>(pos_.x) / static_cast<float>(size_.x);
 
     scrollable_->setScroll(vec2f{scroll_, 0}); // TODO: only horizontal 
 }
 
 void ScrollBarButton::setPos(vec2i pos)
 {
-    // TODO: move scrollable
     vec2i delta = vec2i{pos.x - pos_.x - size_.x / 2, pos.y - pos_.y - size_.y / 2};
     move(delta);
 }
@@ -206,7 +206,7 @@ void ScrollBarButton::draw(IRenderWindow* renderWindow)
 
 bool ScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Event& event)
 {
-    updatePos();
+    updateZeroScrollPos();
     updateSize();
 
     vec2i mousePos = sfm::Mouse::getPosition(renderWindow);
@@ -231,7 +231,8 @@ void ScrollBarButton::setScrollable(IScrollable* scrollable)
     scrollable_ = scrollable;
 }
 
-void ScrollBarButton::updatePos()
+// TODO: need to have fields like beginPos for scrolling. On updating pos need to actually change INIT POS, not pos, error will be fixed
+void ScrollBarButton::updateZeroScrollPos()
 {
     assert(parent_);
 
@@ -239,7 +240,17 @@ void ScrollBarButton::updatePos()
     if (scroll_ > 0)
         return;
 
-    setPos(parent_->getPos());
+    assert(parent_);
+    const ScrollBar* parent = dynamic_cast<const ScrollBar*>(parent_); // TODO: change
+    assert(parent);
+
+    vec2i newPos = parent->shrinkPosToBoundaries(parent_->getPos() , size_);
+
+    for (auto& shape : shapes_)
+        shape->setPosition(newPos);
+
+    zeroScrollPos_ = newPos;
+    pos_ = newPos;
 }
 
 void ScrollBarButton::updateSize()

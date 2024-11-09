@@ -32,6 +32,7 @@ vec2u calculateFullSize(vec2u size)
 
 vec2i calculateCutRectangleTopLeft(vec2u fullSize, vec2f scroll)
 {
+    //std::cerr << "SCROLL: " << scroll.x << " " << scroll.y << std::endl;
     return vec2i(static_cast<int>(scroll.x * static_cast<float>(fullSize.x)), 
                  static_cast<int>(scroll.y * static_cast<float>(fullSize.y)));
 }
@@ -120,6 +121,8 @@ Canvas::Canvas(vec2i pos, vec2u size) : AWindow(pos, size, kCanvasWindowId)
     boundariesShape_->setOutlineThickness(0);
 
     layers_.push_back(std::make_unique<Layer>(fullSize_));
+
+    std::cerr << "INIT SCROLL - " << scroll_.x << " " << scroll_.y << std::endl;
 }
 
 void Canvas::draw(IRenderWindow* renderWindow) 
@@ -164,6 +167,7 @@ void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow)
         return;
 
     vec2i topLeft = calculateCutRectangleTopLeft(fullSize_, scroll_);
+    //std::cerr << "TOP LEFT: " << topLeft.x << ", " << topLeft.y << std::endl;
     std::vector<Color> pixels = cutRectangle(layer.pixels_, fullSize_, topLeft, size_);
     texture->update(pixels.data(), size_.x, size_.y, 0, 0);
 
@@ -361,6 +365,7 @@ void Canvas::setScroll(vec2f scroll)
 {
     vec2f newScroll = scroll;
 
+    std::cerr << "NEW SCROLL: " << newScroll.x << " " << newScroll.y << std::endl;
     newScroll.x = newScroll.x > 1 ? 1 : newScroll.x;
     newScroll.y = newScroll.y > 1 ? 1 : newScroll.y;
     newScroll.x = newScroll.x < 0 ? 0 : newScroll.x;

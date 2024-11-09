@@ -60,13 +60,15 @@ public:
     void setScrollable(IScrollable* scrollable);
 
 protected:
-    void updatePos();
+    void updateZeroScrollPos();
     void updateSize();
 
 protected:
     IScrollable* scrollable_ = nullptr;
 
     float scroll_;
+
+    vec2i zeroScrollPos_;
 };
 
 class ArrowButton : public PressButton

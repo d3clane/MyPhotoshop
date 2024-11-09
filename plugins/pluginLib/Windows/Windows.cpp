@@ -1,6 +1,7 @@
 #include "windows.hpp"
 
 #include <iostream>
+#include <cassert>
 
 namespace ps
 {
@@ -121,5 +122,22 @@ void AWindowContainer::forceActivate()                  { AWindow::forceActivate
 void AWindowContainer::forceDeactivate()                { AWindow::forceDeactivate(); }
 bool AWindowContainer::isActive() const                 { return AWindow::isActive(); }
 void AWindowContainer::setParent(const IWindow* parent) { AWindow::setParent(parent); }
+
+// other functions implementation
+
+vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize, 
+                          const vec2i& boundaryPos, const vec2u& boundarySize)
+{
+    assert(objectSize.x <= boundarySize.x);
+    assert(objectSize.y <= boundarySize.y);
+
+    vec2i result = objectPos;
+    result.x = std::max(result.x, boundaryPos.x);
+    result.x = std::min(result.x, static_cast<int>(boundaryPos.x + boundarySize.x - objectSize.x));
+    result.y = std::max(result.y, boundaryPos.y);
+    result.y = std::min(result.y, static_cast<int>(boundaryPos.y + boundarySize.y - objectSize.y));
+
+    return result;
+}
 
 } // namespace ps

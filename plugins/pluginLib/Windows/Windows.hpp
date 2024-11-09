@@ -78,6 +78,9 @@ public:
     bool isActive() const override;
 };
 
+vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize, 
+                          const vec2i& boundaryPos, const vec2u& boundarySize);
+
 } // namespace ps
 
 #endif // PLUGINS_PLUGINLIB_WINDOWS_WINDOWS_HPP

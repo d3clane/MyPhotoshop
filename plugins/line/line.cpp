@@ -9,6 +9,7 @@
 #include "canvas/canvas.hpp"
 
 #include "bars/ps_bar.hpp"
+#include "windows/windows.hpp"
 
 #include <iostream>
 
@@ -45,6 +46,26 @@ void copyLineToLayer(ILayer* layer, const IRectangleShape* line, vec2i canvasPos
         return;
 
     copyImageToLayer(layer, image, canvasPos, image->getSize());
+}
+
+std::unique_ptr<IRectangleShape> createLine(vec2i beginPos, const ICanvas* canvas)
+{
+    vec2i mousePos = canvas->getMousePosition() + canvas->getPos();
+    mousePos = shrinkPosToBoundary(mousePos, vec2u{0, 0}, canvas->getPos(), canvas->getSize());
+
+    const float lineLength = len(beginPos, mousePos);
+    const float angle = std::atan2(mousePos.y - beginPos.y, mousePos.x - beginPos.x);
+
+    static const size_t thickness = 10;
+    std::unique_ptr<IRectangleShape> line = IRectangleShape::create(lineLength, thickness);
+
+    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
+    line->setFillColor(redColor);
+    line->setOutlineThickness(0);
+    line->setRotation(angle * 180 / M_PI);
+    line->setPosition(beginPos);
+
+    return line;
 }
 
 
@@ -92,21 +113,10 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
         canvasIsAlreadyPressed_ = true;
     }
 
-    vec2i mousePos = canvas->getMousePosition() + canvasPos;
+    line_ = createLine(lineBeginPos_, canvas);
 
-    const float lineLength = len(mousePos, lineBeginPos_);
-    const float angle = std::atan2(mousePos.y - lineBeginPos_.y, mousePos.x - lineBeginPos_.x);
-
-    static const size_t thickness = 10;
-    line_ = IRectangleShape::create(lineLength, thickness);
-
-    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    line_->setFillColor(redColor);
-    line_->setOutlineThickness(0);
-    line_->setRotation(angle * 180 / M_PI);
-    line_->setPosition(lineBeginPos_);
-
-    const_cast<IRenderWindow*>(renderWindow)->draw(line_.get()); // crutch
+    if (line_)
+        const_cast<IRenderWindow*>(renderWindow)->draw(line_.get()); // crutch
     
     return true;
 }

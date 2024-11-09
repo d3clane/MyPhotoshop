@@ -231,7 +231,6 @@ void ScrollBarButton::setScrollable(IScrollable* scrollable)
     scrollable_ = scrollable;
 }
 
-// TODO: need to have fields like beginPos for scrolling. On updating pos need to actually change INIT POS, not pos, error will be fixed
 void ScrollBarButton::updateZeroScrollPos()
 {
     assert(parent_);

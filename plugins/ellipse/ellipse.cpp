@@ -163,8 +163,8 @@ void EllipseButton::draw(IRenderWindow *window)
 
 bool loadPlugin() // onLoadPlugin
 {
-    auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
-    auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
+    auto buttonSprite  = ISprite::create();
+    auto buttonTexture = ITexture::create();
 
     buttonTexture.get()->loadFromFile("media/textures/paintbrush.png");
 
@@ -176,13 +176,13 @@ bool loadPlugin() // onLoadPlugin
     assert(toolBar);
 
     auto info = toolBar->getNextChildInfo();
-    auto pos = info.pos;
+    vec2i pos = info.pos;
     vec2u size = { static_cast<unsigned int>(info.size.x),  
                    static_cast<unsigned int>(info.size.y) };
 
     buttonSprite->setPosition(pos.x, pos.y);
     
-    auto spriteSize = buttonSprite->getSize();
+    vec2u spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
     std::unique_ptr<ps::ABarButton> button{ new EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
 

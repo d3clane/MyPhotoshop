@@ -10,16 +10,15 @@
 #include "canvas/canvas.hpp"
 
 #include "bars/ps_bar.hpp"
+#include "windows/windows.hpp"
 
 #include <iostream>
 
-namespace ps
-{
-
+using namespace ps;
 using namespace psapi;
 using namespace psapi::sfm;
 
-namespace 
+namespace
 {
 
 struct EllipseBounds
@@ -28,7 +27,7 @@ struct EllipseBounds
     vec2i bottomRight;
 };
 
-EllipseBounds getEllipseBounds(vec2i& topLeftNow, const vec2i& bottomRightNow)
+EllipseBounds getEllipseBounds(const vec2i& topLeftNow, const vec2i& bottomRightNow)
 {
     vec2i topLeft = topLeftNow;
     vec2i bottomRight = bottomRightNow;
@@ -48,21 +47,57 @@ EllipseBounds getEllipseBounds(vec2i& topLeftNow, const vec2i& bottomRightNow)
     return {topLeft, bottomRight};
 }
 
-} // namespace anonymous
-
 class EllipseButton : public ABarButton 
 {
 public:
     EllipseButton() = default;
     EllipseButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    void draw(IRenderWindow *window) override;
 
 private:
     bool canvasIsAlreadyPressed_ = false;
 
     vec2i beginEllipsePos_;
+
+    std::unique_ptr<IEllipseShape> ellipse_; // the same crutch
 };
+
+void copyEllipseToLayer(ILayer* layer, const IEllipseShape* ellipse, const vec2i& canvasPos)
+{
+    const IImage* image = ellipse->getImage();
+    if (!image)
+        return;
+    
+    copyImageToLayer(layer, image, canvasPos, image->getSize());
+}
+
+std::unique_ptr<IEllipseShape> createEllipse(const vec2i& beginEllipsePos, const ICanvas* canvas)
+{
+    vec2i canvasPos  = canvas->getPos();
+    vec2u canvasSize = canvas->getSize();
+
+    vec2i mousePos = canvas->getMousePosition() + canvasPos;
+
+    EllipseBounds bounds = getEllipseBounds(beginEllipsePos, mousePos);
+
+    vec2i topLeft     = shrinkPosToBoundary(bounds.topLeft    , {0, 0}, canvasPos, canvasSize);
+    vec2i bottomRight = shrinkPosToBoundary(bounds.bottomRight, {0, 0}, canvasPos, canvasSize);
+    
+    const unsigned ellipseYSize = bottomRight.y - topLeft.y;
+    const unsigned ellipseXSize = bottomRight.x - topLeft.x;
+
+    std::unique_ptr<IEllipseShape> ellipse = IEllipseShape::create(ellipseXSize, ellipseYSize);
+    assert(ellipse);
+
+    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
+    ellipse->setFillColor(redColor);
+    ellipse->setOutlineThickness(0);
+    ellipse->setPosition(topLeft);
+
+    return ellipse;
+}
 
 EllipseButton::EllipseButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
 {
@@ -88,18 +123,19 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
     ILayer* tempLayer   = canvas->getTempLayer();
 
-    if (!canvas->isPressed() && canvasIsAlreadyPressed_)
-        copyLayerToLayer(activeLayer, tempLayer, canvas->getSize());
-    
-    canvas->cleanTempLayer();
+    vec2i canvasPos = canvas->getPos();
 
+    if (!canvas->isPressed() && canvasIsAlreadyPressed_)
+    {
+        copyEllipseToLayer(activeLayer, ellipse_.get(), canvasPos);
+        ellipse_.reset();
+    }
+    
     if (!canvas->isPressed())
     {
         canvasIsAlreadyPressed_ = false;
         return updateStateRes;
     }
-
-    vec2i canvasPos = canvas->getPos();
 
     if (!canvasIsAlreadyPressed_)
     {
@@ -107,35 +143,23 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
         canvasIsAlreadyPressed_ = true;
     }
 
-    vec2i mousePos = canvas->getMousePosition() + canvasPos;
+    ellipse_ = createEllipse(beginEllipsePos_, canvas);
 
-    EllipseBounds bounds = getEllipseBounds(beginEllipsePos_, mousePos);
-
-    vec2i topLeft     = bounds.topLeft;
-    vec2i bottomRight = bounds.bottomRight;
-    
-    const unsigned ellipseYSize = bottomRight.y - topLeft.y;
-    const unsigned ellipseXSize = bottomRight.x - topLeft.x;
-
-    std::unique_ptr<IEllipseShape> ellipse = IEllipseShape::create(ellipseXSize, ellipseYSize);
-    if (!ellipse)
-        return updateStateRes;
-
-    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    ellipse->setFillColor(redColor);
-    ellipse->setOutlineThickness(0);
-    ellipse->setPosition(topLeft);
-
-    const IImage* image = ellipse->getImage();
-    if (!image)
-        return updateStateRes;
-
-    copyImageToLayer(tempLayer, image, canvasPos, image->getSize());
+    if (ellipse_)
+        const_cast<IRenderWindow*>(renderWindow)->draw(ellipse_.get()); // crutch
 
     return true;
 }
 
-} // namespace ps
+void EllipseButton::draw(IRenderWindow *window)
+{
+    ABarButton::draw(window);
+
+    if (ellipse_)
+        window->draw(ellipse_.get());
+}
+
+} // namespace anonymous
 
 bool loadPlugin() // onLoadPlugin
 {
@@ -160,7 +184,7 @@ bool loadPlugin() // onLoadPlugin
     
     auto spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
-    std::unique_ptr<ps::ABarButton> button{ new ps::EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
+    std::unique_ptr<ps::ABarButton> button{ new EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);
     button->setSize(size);

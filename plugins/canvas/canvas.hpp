@@ -4,7 +4,7 @@
 #include "api/api_canvas.hpp"
 #include "api/api_sfm.hpp"
 #include "windows/windows.hpp"
-#include "scrollbar.hpp"
+#include "scrollbar/scrollbar.hpp"
 
 #include <iostream>
 

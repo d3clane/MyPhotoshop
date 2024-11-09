@@ -1,6 +1,6 @@
 #include "canvas.hpp"
 #include "api/api_sfm.hpp"
-#include "scrollbar.hpp"
+#include "scrollbar/scrollbar.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -412,27 +412,21 @@ vec2u Canvas::getFullSize()
 namespace
 {
 
-std::unique_ptr<ScrollBar> createScrollBar(const Canvas* canvas)
+template<typename T>
+std::unique_ptr<AScrollBar> createScrollBar(const Canvas* canvas)
 {
-    std::unique_ptr<ScrollBar> scrollBar{new ScrollBar{vec2i{0, 0}, vec2u{0, 0}, kInvalidWindowId}};
+    std::unique_ptr<AScrollBar> scrollBar{new T{vec2i{0, 0}, vec2u{0, 0}, kInvalidWindowId}};
     scrollBar->setShape(createColorRectShape({240, 240, 240, 255}));
     scrollBar->setParent(static_cast<const ICanvas*>(canvas));
 
     return scrollBar;
 }
 
-std::unique_ptr<Canvas> createCanvas()
+template<typename T>
+std::unique_ptr<AScrollBarButton> createMoveButton(const AScrollBar* scrollBar, Canvas* canvas)
 {
-    const vec2i canvasPos  = {0, 0};
-    const vec2u canvasSize = {0, 0};
-    
-    return std::make_unique<Canvas>(canvasPos, canvasSize);
-}
-
-std::unique_ptr<ScrollBarButton> createMoveButton(const ScrollBar* scrollBar, Canvas* canvas)
-{
-    std::unique_ptr<ScrollBarButton> moveButton{
-        new ScrollBarButton{vec2i{0, 0}, vec2u{0, 0}, kInvalidWindowId}
+    std::unique_ptr<AScrollBarButton> moveButton{
+        new T{vec2i{0, 0}, vec2u{0, 0}, kInvalidWindowId}
     };
 
     moveButton->setShape(createColorRectShape({211, 211, 211, 255}), PressButton::State::Normal );
@@ -445,6 +439,13 @@ std::unique_ptr<ScrollBarButton> createMoveButton(const ScrollBar* scrollBar, Ca
     return moveButton;
 }
 
+std::unique_ptr<Canvas> createCanvas()
+{
+    const vec2i canvasPos  = {0, 0};
+    const vec2u canvasSize = {0, 0};
+    
+    return std::make_unique<Canvas>(canvasPos, canvasSize);
+}
 
 } // namespace anonymous
 
@@ -453,13 +454,20 @@ bool loadPlugin()
     auto rootWindow = getRootWindow();
 
     std::unique_ptr<Canvas> canvas = createCanvas();
-    std::unique_ptr<ScrollBar> scrollBar = createScrollBar(canvas.get());
-    std::unique_ptr<ScrollBarButton> moveButton = createMoveButton(scrollBar.get(), canvas.get());
+    std::unique_ptr<AScrollBar> scrollBarX = createScrollBar<ScrollBarX>(canvas.get());
+    std::unique_ptr<AScrollBarButton> moveButtonX = 
+        createMoveButton<ScrollBarButtonX>(scrollBarX.get(), canvas.get());
 
-    scrollBar->setMoveButton(std::move(moveButton));
+    std::unique_ptr<AScrollBar> scrollBarY = createScrollBar<ScrollBarY>(canvas.get());
+    std::unique_ptr<AScrollBarButton> moveButtonY = 
+        createMoveButton<ScrollBarButtonY>(scrollBarY.get(), canvas.get());
+
+    scrollBarX->setMoveButton(std::move(moveButtonX));
+    scrollBarY->setMoveButton(std::move(moveButtonY));
     rootWindow->addWindow(std::unique_ptr<ICanvas>(canvas.release()));
-    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBar.release()));
-
+    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarX.release()));
+    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarY.release()));
+    
     return true;
 }
 

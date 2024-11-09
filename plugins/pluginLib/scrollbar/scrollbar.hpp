@@ -44,10 +44,10 @@ protected:
 };
 
 
-class ScrollBarButton : public PressButton
+class AScrollBarButton : public PressButton
 {
 public:
-    ScrollBarButton(vec2i pos, vec2u size, wid_t id);
+    AScrollBarButton(vec2i pos, vec2u size, wid_t id);
 
     void setSize(vec2u size);
 
@@ -60,27 +60,21 @@ public:
     void setScrollable(IScrollable* scrollable);
 
 protected:
-    void updateZeroScrollPos();
-    void updateSize();
+    virtual void updateZeroScrollPos() = 0;
+    virtual void updateSize() = 0;
 
 protected:
     IScrollable* scrollable_ = nullptr;
 
-    float scroll_;
+    vec2f scroll_;
 
     vec2i zeroScrollPos_;
 };
 
-class ArrowButton : public PressButton
+class AScrollBar : public AWindowContainer
 {
 public:
-    // TODO: implement
-};
-
-class ScrollBar : public AWindowContainer
-{
-public:
-    ScrollBar(vec2i pos, vec2u size, wid_t id);
+    AScrollBar(vec2i pos, vec2u size, wid_t id);
 
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
@@ -94,11 +88,11 @@ public:
     vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const;
 
     void setShape(std::unique_ptr<IRectangleShape> shape);
-    void setMoveButton(std::unique_ptr<ScrollBarButton> moveButton);
+    void setMoveButton(std::unique_ptr<AScrollBarButton> moveButton);
 
 protected:
-    void updatePos();
-    void updateSize();
+    virtual void updatePos () = 0;
+    virtual void updateSize() = 0;
 
     void setPos (vec2i pos );
     void setSize(vec2u size);
@@ -106,7 +100,43 @@ protected:
 protected:
     std::unique_ptr<IRectangleShape> shape_;
 
-    std::unique_ptr<ScrollBarButton> moveButton_;
+    std::unique_ptr<AScrollBarButton> moveButton_;
+};
+
+class ScrollBarX : public AScrollBar
+{
+public:
+    ScrollBarX(vec2i pos, vec2u size, wid_t id);
+protected:
+    void updatePos () override;
+    void updateSize() override;
+};
+
+class ScrollBarY : public AScrollBar
+{
+public:
+    ScrollBarY(vec2i pos, vec2u size, wid_t id);
+protected:
+    void updatePos () override;
+    void updateSize() override;
+};
+
+class ScrollBarButtonX : public AScrollBarButton
+{
+public:
+    ScrollBarButtonX(vec2i pos, vec2u size, wid_t id);
+protected:
+    void updateZeroScrollPos() override;
+    void updateSize()          override;
+};
+
+class ScrollBarButtonY : public AScrollBarButton
+{
+public:
+    ScrollBarButtonY(vec2i pos, vec2u size, wid_t id);
+protected:
+    void updateZeroScrollPos() override;
+    void updateSize()          override;
 };
 
 } // namespace ps

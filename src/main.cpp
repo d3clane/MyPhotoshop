@@ -5,6 +5,8 @@
 
 #include "api/api_sfm.hpp"
 
+#include <SFML/Graphics.hpp>
+
 #include <dlfcn.h>
 
 void loadPlugin(const char* libName)
@@ -63,28 +65,35 @@ int main()
 }
 
 #if 0
-int getTime();
-
-
-void sayThanks()
+int main()
 {
-    int time = getTime();
+    sf::Window window(sf::VideoMode(800, 600), "Touch Input Example");
 
-    if (time == 0)
-        printf("спасибо!!!");
-    else if (time == 1)
-        printf("спасибо!!!");
-    else if (time == 2)
-        printf("спасибо!!!");
-    else if (time == 3)
-        printf("спасибо!!!");
-    else if (time == 4)
-        printf("спасибо!!!");
-    else if (time == 5)
-        printf("спасибо!!!");
-    else if (time == 6)
-        printf("спасибо!!!");
-    else if (time == 7)
-        printf("спасибо!!!");
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            switch (event.type) {
+                case sf::Event::MouseWheelScrolled:
+                    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) 
+                    {
+                        std::cerr << "VERTICAL SCROLL: " << event.mouseWheelScroll.delta << std::endl;
+                    }
+                    else
+                    {
+                        std::cerr << "HORIZONTAL SCROLL: " << event.mouseWheelScroll.delta << std::endl;
+                    }
+                    // You can use event.touch.x and event.touch.y to track the movement
+                    break;
+
+                case sf::Event::Closed:
+                    window.close();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
 }
 #endif

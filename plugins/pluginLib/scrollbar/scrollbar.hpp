@@ -19,6 +19,12 @@ public:
     virtual vec2u getFullSize() = 0;
 };
 
+class AScrollableWindow : public IScrollable, public AWindow
+{
+public:
+    AScrollableWindow(vec2i pos, vec2u size, wid_t id) : AWindow(pos, size, id) {}
+};
+
 class PressButton : public AWindow
 {
 public:
@@ -57,7 +63,9 @@ public:
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
 
-    void setScrollable(IScrollable* scrollable);
+    void setScrollable(AScrollableWindow* scrollable);
+    const AScrollableWindow* getScrollable() const;
+
 
 protected:
     void setStateFromOutside(const IRenderWindow* renderWindow);
@@ -66,7 +74,8 @@ protected:
     virtual void updateSize() = 0;
 
 protected:
-    IScrollable* scrollable_ = nullptr;
+    AScrollableWindow* scrollable_ = nullptr;
+
     vec2f scroll_;
     vec2i zeroScrollPos_;
 
@@ -97,6 +106,7 @@ public:
 
     void setShape(std::unique_ptr<IRectangleShape> shape);
     void setMoveButton(std::unique_ptr<AScrollBarButton> moveButton);
+    AScrollBarButton* getMoveButton();
 
 protected:
     virtual void updatePos () = 0;
@@ -142,11 +152,36 @@ class ScrollBarButtonY : public AScrollBarButton
 {
 public:
     ScrollBarButtonY(vec2i pos, vec2u size, wid_t id);
+
 protected:
     void updateZeroScrollPos() override;
     void updateSize()          override;
 };
 
+class ScrollBarsXYManager : public AWindowContainer
+{
+public:
+    ScrollBarsXYManager(std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY);
+
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    void draw(IRenderWindow* renderWindow) override;
+
+    void addWindow(std::unique_ptr<IWindow> window) override;
+    void removeWindow(wid_t id) override;
+
+    IWindow* getWindowById(wid_t id) override;
+    const IWindow* getWindowById(wid_t id) const override;
+
+private:
+    void updatePromisedScroll (const Event& event);
+    void proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, ScrollBarButtonY* scrollBarButtonY);
+    
+private:
+    std::unique_ptr<ScrollBarX> scrollBarX_;
+    std::unique_ptr<ScrollBarY> scrollBarY_;
+
+    vec2f promisedScroll_ = {0.0, 0.0};
+};
 } // namespace ps
 
 #endif // PLUGINS_CANVAS_SCROLLBAR_HPP

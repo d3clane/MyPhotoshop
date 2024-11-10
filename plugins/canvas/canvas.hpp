@@ -47,7 +47,7 @@ protected:
     void changeArea(const CutRect& area);
 };
 
-class Canvas : public AWindow, public ICanvas, public IScrollable
+class Canvas : public ICanvas, public AScrollableWindow
 {
 public:
     Canvas(vec2i pos, vec2u size);

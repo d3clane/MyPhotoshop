@@ -58,7 +58,7 @@ protected:
 class AWindowContainer : public IWindowContainer, public AWindow
 {
 public:
-    AWindowContainer(vec2i pos, vec2u size, wid_t id);
+    AWindowContainer(vec2i pos = {0, 0}, vec2u size = {0, 0}, wid_t id = kInvalidWindowId);
 
     IWindow* getWindowById(wid_t id) override = 0;
     const IWindow* getWindowById(wid_t id) const override = 0;

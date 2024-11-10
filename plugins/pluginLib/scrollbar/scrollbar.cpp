@@ -125,6 +125,11 @@ void AScrollBar::setMoveButton(std::unique_ptr<AScrollBarButton> moveButton)
     moveButton_->setParent(static_cast<IWindowContainer*>(this));
 }
 
+AScrollBarButton* AScrollBar::getMoveButton()
+{
+    return moveButton_.get();
+}
+
 void AScrollBar::setPos(vec2i pos)
 {
     pos_ = pos;
@@ -243,9 +248,14 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
     return true;
 }
 
-void AScrollBarButton::setScrollable(IScrollable* scrollable)
+void AScrollBarButton::setScrollable(AScrollableWindow* scrollable)
 {
     scrollable_ = scrollable;
+}
+
+const AScrollableWindow* AScrollBarButton::getScrollable() const 
+{
+    return scrollable_;
 }
 
 // ScrollbarX implementation
@@ -385,6 +395,125 @@ void ScrollBarButtonY::updateSize()
     double yRatio = calculateScrollButtonRatio(scrollable_->getVisibleSize().y, scrollable_->getFullSize().y);
 
     setSize(vec2u{parentSize.x, static_cast<unsigned>(parentSize.y * yRatio)});
+}
+
+// scroll bar xy manager implementation
+
+ScrollBarsXYManager::ScrollBarsXYManager(
+    std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY
+) : scrollBarX_(std::move(scrollBarX)), scrollBarY_(std::move(scrollBarY))
+{
+}
+
+bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event& event)
+{
+    scrollBarX_->update(renderWindow, event);
+    scrollBarY_->update(renderWindow, event);
+
+    ScrollBarButtonX* scrollBarButtonX = static_cast<ScrollBarButtonX*>(scrollBarX_->getMoveButton());
+    ScrollBarButtonY* scrollBarButtonY = static_cast<ScrollBarButtonY*>(scrollBarY_->getMoveButton());
+    assert(scrollBarButtonX);
+    assert(scrollBarButtonY);
+
+    const AScrollableWindow* scrollable = scrollBarButtonX->getScrollable();
+    assert(scrollable);
+
+    if (!ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 
+                            scrollable->getPos(), scrollable->getSize()))
+    {
+        promisedScroll_ = {0, 0};
+        return false;
+    }
+
+    updatePromisedScroll(event);
+    proceedPromisedScroll(scrollBarButtonX, scrollBarButtonY);
+
+    return true;
+}
+
+void ScrollBarsXYManager::draw(IRenderWindow* renderWindow)
+{
+    scrollBarX_->draw(renderWindow);
+    scrollBarY_->draw(renderWindow);
+}
+
+void ScrollBarsXYManager::addWindow(std::unique_ptr<IWindow> window)
+{
+    assert(false);
+}
+
+void ScrollBarsXYManager::removeWindow(wid_t id)
+{
+    assert(false);
+}
+
+IWindow* ScrollBarsXYManager::getWindowById(wid_t id)
+{
+    if (id == id_)
+        return static_cast<IWindowContainer*>(this);
+
+    if (scrollBarX_->getWindowById(id))
+        return scrollBarX_->getWindowById(id);
+    
+    if (scrollBarY_->getWindowById(id))
+        return scrollBarY_->getWindowById(id);
+
+    return nullptr;
+}
+
+const IWindow* ScrollBarsXYManager::getWindowById(wid_t id) const
+{
+    if (id == id_)
+        return static_cast<const IWindowContainer*>(this);
+    
+    if (scrollBarX_->getWindowById(id))
+        return scrollBarX_->getWindowById(id);
+    
+    if (scrollBarY_->getWindowById(id))
+        return scrollBarY_->getWindowById(id);
+
+    return nullptr;
+}
+
+void ScrollBarsXYManager::updatePromisedScroll(const Event& event)
+{
+    if (event.type != Event::MouseWheelScrolled)
+        return;
+
+    static const double scrollSpeed = -1;
+
+    if (event.mouseWheel.wheel == Mouse::Wheel::Vertical)
+        promisedScroll_.y += event.mouseWheel.delta * scrollSpeed;
+    else
+        promisedScroll_.x += event.mouseWheel.delta * scrollSpeed;
+
+    if (std::abs(promisedScroll_.x) > std::abs(promisedScroll_.y))
+        promisedScroll_.y = 0;
+    if (std::abs(promisedScroll_.y) > std::abs(promisedScroll_.x))
+        promisedScroll_.x = 0;
+}
+
+void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, 
+                                                ScrollBarButtonY* scrollBarButtonY)
+{
+    if (promisedScroll_.x == 0.0 && promisedScroll_.y == 0.0)
+        return;
+
+    static const double kScrollSmoothness = 0.2;
+
+    double scrollSmoothness = kScrollSmoothness;
+    static const double minScrollDeltaInPixels = 2;
+    if (std::abs(promisedScroll_.x) < minScrollDeltaInPixels)
+        scrollSmoothness = 1;
+
+    vec2f scrollInPixels_float = promisedScroll_ * scrollSmoothness;
+    vec2i scrollInPixels = vec2i{static_cast<int>(scrollInPixels_float.x), 
+                                 static_cast<int>(scrollInPixels_float.y)};
+    
+    scrollBarButtonX->move(scrollInPixels);
+    scrollBarButtonY->move(scrollInPixels);
+
+    promisedScroll_ -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
 }
 
 } // namespace ps

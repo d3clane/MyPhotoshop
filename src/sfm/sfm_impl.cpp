@@ -100,6 +100,10 @@ bool RenderWindow::pollEvent(Event& event)
 
         case sf::Event::MouseWheelScrolled:
             event.type = Event::MouseWheelScrolled;
+
+            event.mouseWheel.wheel = sfEvent.mouseWheelScroll.wheel == sf::Mouse::HorizontalWheel ? 
+                                     Mouse::Wheel::Horizontal : Mouse::Wheel::Vertical;
+
             event.mouseWheel.delta = sfEvent.mouseWheelScroll.delta;
             event.mouseWheel.x     = sfEvent.mouseWheelScroll.x;
             event.mouseWheel.y     = sfEvent.mouseWheelScroll.y;

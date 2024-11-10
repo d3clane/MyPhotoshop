@@ -111,7 +111,7 @@ void Layer::changeArea(const CutRect& area)
 
 // Canvas implementation
 
-Canvas::Canvas(vec2i pos, vec2u size) : AWindow(pos, size, kCanvasWindowId)
+Canvas::Canvas(vec2i pos, vec2u size) : AScrollableWindow(pos, size, kCanvasWindowId)
 {
     fullSize_ = calculateFullSize(size);
 
@@ -464,10 +464,19 @@ bool loadPlugin()
 
     scrollBarX->setMoveButton(std::move(moveButtonX));
     scrollBarY->setMoveButton(std::move(moveButtonY));
+    
+    std::unique_ptr<ScrollBarsXYManager> scrollBarsXYManager = std::make_unique<ScrollBarsXYManager>(
+        std::unique_ptr<ScrollBarX>(static_cast<ScrollBarX*>(scrollBarX.release())), 
+        std::unique_ptr<ScrollBarY>(static_cast<ScrollBarY*>(scrollBarY.release())));
+
     rootWindow->addWindow(std::unique_ptr<ICanvas>(canvas.release()));
+    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarsXYManager.release()));
+
+#if 0
     rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarX.release()));
     rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarY.release()));
-    
+#endif
+
     return true;
 }
 

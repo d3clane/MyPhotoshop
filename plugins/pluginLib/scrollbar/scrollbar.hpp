@@ -33,7 +33,6 @@ public:
     PressButton(vec2i pos, vec2u size, wid_t id);
 
     State getState() const;
-    void setState(State state);
 
     void setShape(std::unique_ptr<IRectangleShape> shape, State state);
     
@@ -42,7 +41,6 @@ protected:
     
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(State::Count)];
 };
-
 
 class AScrollBarButton : public PressButton
 {
@@ -53,6 +51,8 @@ public:
 
     void move  (vec2i offset); // TODO: transformable 
     void setPos(vec2i pos);
+
+    void setState(State state);
     
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
@@ -60,15 +60,20 @@ public:
     void setScrollable(IScrollable* scrollable);
 
 protected:
+    void setStateFromOutside(const IRenderWindow* renderWindow);
+
     virtual void updateZeroScrollPos() = 0;
     virtual void updateSize() = 0;
 
 protected:
     IScrollable* scrollable_ = nullptr;
-
     vec2f scroll_;
-
     vec2i zeroScrollPos_;
+
+    vec2i pressPos_;
+
+    bool needToSetState_ = false;
+    State stateToSet_ = State::Normal;
 };
 
 class AScrollBar : public AWindowContainer

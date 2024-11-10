@@ -416,7 +416,7 @@ template<typename T>
 std::unique_ptr<AScrollBar> createScrollBar(const Canvas* canvas)
 {
     std::unique_ptr<AScrollBar> scrollBar{new T{vec2i{0, 0}, vec2u{0, 0}, kInvalidWindowId}};
-    scrollBar->setShape(createColorRectShape({240, 240, 240, 255}));
+    scrollBar->setShape(createColorRectShape({0, 0, 0, 255}));
     scrollBar->setParent(static_cast<const ICanvas*>(canvas));
 
     return scrollBar;
@@ -429,9 +429,9 @@ std::unique_ptr<AScrollBarButton> createMoveButton(const AScrollBar* scrollBar, 
         new T{vec2i{0, 0}, vec2u{0, 0}, kInvalidWindowId}
     };
 
-    moveButton->setShape(createColorRectShape({211, 211, 211, 255}), PressButton::State::Normal );
-    moveButton->setShape(createColorRectShape({169, 169, 169, 255}), PressButton::State::Hovered);
-    moveButton->setShape(createColorRectShape({128, 128, 128, 255}), PressButton::State::Pressed);
+    moveButton->setShape(createColorRectShape({211, 211, 211, 120}), PressButton::State::Normal );
+    moveButton->setShape(createColorRectShape({169, 169, 169, 120}), PressButton::State::Hovered);
+    moveButton->setShape(createColorRectShape({128, 128, 128, 120}), PressButton::State::Pressed);
 
     moveButton->setScrollable(canvas);
     moveButton->setParent(static_cast<const IWindowContainer*>(scrollBar));

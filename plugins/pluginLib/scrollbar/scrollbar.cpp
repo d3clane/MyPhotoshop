@@ -27,11 +27,6 @@ PressButton::State PressButton::getState() const
     return state_;
 }
 
-void PressButton::setState(State state)
-{
-    state_ = state;
-}
-
 void PressButton::setShape(std::unique_ptr<IRectangleShape> shape, State state)
 {
     auto& myShape = shapes_[static_cast<size_t>(state)];
@@ -67,7 +62,7 @@ bool AScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
     if (!isHovered || !isPressed)
         return false;
 
-    moveButton_->setPos(shrinkPosToBoundaries(mousePos, moveButton_->getSize()));
+    moveButton_->setPos(mousePos);
     moveButton_->setState(PressButton::State::Pressed);
 
     return true;
@@ -188,9 +183,32 @@ void AScrollBarButton::setPos(vec2i pos)
     move(delta);
 }
 
+void AScrollBarButton::setState(State state)
+{
+    stateToSet_ = state;
+    needToSetState_ = true;
+}
+
 void AScrollBarButton::draw(IRenderWindow* renderWindow)
 {
     shapes_[static_cast<size_t>(state_)]->draw(renderWindow);
+}
+
+void AScrollBarButton::setStateFromOutside(const IRenderWindow* renderWindow)
+{
+    if (!needToSetState_)
+        return;
+    
+    if (stateToSet_ != State::Pressed)
+        return;
+
+    if (state_ == State::Pressed)
+        return;
+    
+    state_ = State::Pressed;
+    pressPos_ = sfm::Mouse::getPosition(renderWindow);
+
+    needToSetState_ = false;
 }
 
 bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Event& event)
@@ -198,9 +216,12 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
     updateZeroScrollPos();
     updateSize();
 
+    setStateFromOutside(renderWindow);
+
     vec2i mousePos = sfm::Mouse::getPosition(renderWindow);
 
-    bool isPressed = updateIsPressed(event, state_ == State::Pressed, mousePos);
+    bool wasPressed = state_ == State::Pressed;
+    bool isPressed = updateIsPressed(event, wasPressed, mousePos);
     bool isHovered = checkIsHovered(mousePos);
 
     state_ = State::Normal;
@@ -210,7 +231,10 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
     if (!isPressed)
         return false;
 
-    setPos(mousePos);
+    if (wasPressed)
+        move(mousePos - pressPos_);
+
+    pressPos_ = mousePos;
 
     return true;
 }

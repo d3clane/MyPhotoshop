@@ -140,4 +140,23 @@ vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize,
     return result;
 }
 
+bool checkIsHovered(vec2i mousePos, const vec2i& pos, const vec2u& size)
+{
+    return mousePos.x >= pos.x && mousePos.x < static_cast<int>(pos.x + size.x)
+        && mousePos.y >= pos.y && mousePos.y < static_cast<int>(pos.y + size.y);
+}
+
+bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered, vec2i mousePos)
+{
+    bool pressedRightNow  = isHovered && event.type == Event::MouseButtonPressed;
+    bool releasedRightNow = isHovered && event.type == Event::MouseButtonReleased;
+
+    bool isPressed = prevPressedState;
+    if (pressedRightNow)  isPressed = true;
+    if (releasedRightNow) isPressed = false;
+    if (isPressed && !isHovered && event.type == Event::MouseButtonReleased) isPressed = false;
+
+    return isPressed;
+}
+
 } // namespace ps

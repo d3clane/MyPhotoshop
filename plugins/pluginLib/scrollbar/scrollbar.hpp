@@ -74,6 +74,9 @@ protected:
 
     bool needToSetState_ = false;
     State stateToSet_ = State::Normal;
+
+    bool canScrollX_ = false;
+    bool canScrollY_ = false;
 };
 
 class AScrollBar : public AWindowContainer

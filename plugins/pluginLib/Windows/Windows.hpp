@@ -81,6 +81,9 @@ public:
 vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize, 
                           const vec2i& boundaryPos, const vec2u& boundarySize);
 
+bool checkIsHovered(vec2i mousePos, const vec2i& pos, const vec2u& size);
+bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered, vec2i mousePos);
+
 } // namespace ps
 
 #endif // PLUGINS_PLUGINLIB_WINDOWS_WINDOWS_HPP

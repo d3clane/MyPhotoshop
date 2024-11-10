@@ -166,11 +166,16 @@ void AScrollBarButton::move(vec2i delta)
         shape->setPosition(newPos);
 
     vec2u parentSize = parent->getSize();
+    
+    vec2f scrollNow = scrollable_->getScroll();
     if (parentSize.x != 0)
     {
         scroll_.x = static_cast<float>(newPos.x - zeroScrollPos_.x) / static_cast<float>(parentSize.x - size_.x);
         scroll_.y = static_cast<float>(newPos.y - zeroScrollPos_.y) / static_cast<float>(parentSize.y - size_.y);
     }
+
+    scroll_.x = canScrollX_ ? scroll_.x : scrollNow.x;
+    scroll_.y = canScrollY_ ? scroll_.y : scrollNow.y;    
 
     pos_ = newPos;
 
@@ -217,7 +222,6 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
     updateSize();
 
     setStateFromOutside(renderWindow);
-
     vec2i mousePos = sfm::Mouse::getPosition(renderWindow);
 
     bool wasPressed = state_ == State::Pressed;
@@ -306,6 +310,7 @@ void ScrollBarY::updateSize()
 
 ScrollBarButtonX::ScrollBarButtonX(vec2i pos, vec2u size, wid_t id) : AScrollBarButton(pos, size, id) 
 {
+    canScrollX_ = true;
 }
 
 // TODO: copy paste
@@ -346,8 +351,8 @@ void ScrollBarButtonX::updateSize()
 
 ScrollBarButtonY::ScrollBarButtonY(vec2i pos, vec2u size, wid_t id) : AScrollBarButton(pos, size, id) 
 {
+    canScrollY_ = true;
 }
-
 
 void ScrollBarButtonY::updateZeroScrollPos()
 {

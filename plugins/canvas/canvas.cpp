@@ -464,7 +464,7 @@ bool loadPlugin()
 
     scrollBarX->setMoveButton(std::move(moveButtonX));
     scrollBarY->setMoveButton(std::move(moveButtonY));
-    
+
     std::unique_ptr<ScrollBarsXYManager> scrollBarsXYManager = std::make_unique<ScrollBarsXYManager>(
         std::unique_ptr<ScrollBarX>(static_cast<ScrollBarX*>(scrollBarX.release())), 
         std::unique_ptr<ScrollBarY>(static_cast<ScrollBarY*>(scrollBarY.release())));

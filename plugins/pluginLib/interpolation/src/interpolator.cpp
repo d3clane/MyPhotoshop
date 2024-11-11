@@ -5,20 +5,26 @@
 namespace ps
 {
 
-void Interpolator::push(const vec2d& point)
+void Interpolator::updateInterpolation()
 {
-    points_.push_back(point);
-    if (points_.size() > kCatmullRomPoints)
-    {
-        points_.pop_front();
-    }
-
     if (isPossibleToDraw())
     {
         interpolation_ = CatmullRomInterpolation(
             points_[0], points_[1], points_[2], points_[3]
         );
     }
+}
+
+void Interpolator::pushBack(const vec2d& point)
+{
+    points_.push_back(point);
+    updateInterpolation();
+}
+
+void Interpolator::popFront()
+{
+    points_.pop_front();
+    updateInterpolation();
 }
 
 void Interpolator::clear()
@@ -34,7 +40,7 @@ vec2d Interpolator::operator[](double pos) const
 
 bool Interpolator::isPossibleToDraw() const
 {
-    return points_.size() == kCatmullRomPoints;
+    return points_.size() >= kCatmullRomPoints;
 }
 
 

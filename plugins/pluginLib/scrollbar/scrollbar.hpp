@@ -3,6 +3,7 @@
 
 #include "api/api_photoshop.hpp"
 #include "windows/windows.hpp"
+#include "interpolation/include/interpolator.hpp"
 
 namespace ps
 {
@@ -175,12 +176,13 @@ public:
 private:
     void updatePromisedScroll (const Event& event);
     void proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, ScrollBarButtonY* scrollBarButtonY);
-    
+
 private:
     std::unique_ptr<ScrollBarX> scrollBarX_;
     std::unique_ptr<ScrollBarY> scrollBarY_;
 
-    vec2f promisedScroll_ = {0.0, 0.0};
+    Interpolator interpolatorX_;
+    Interpolator interpolatorY_;
 };
 } // namespace ps
 

@@ -11,13 +11,18 @@ namespace ps
 class Interpolator
 {
 public:
-    void push(const vec2d& point);
+    void pushBack(const vec2d& point);
+    void popFront();
+
     void clear();
 
     bool isPossibleToDraw() const;
 
     vec2d operator[](double pos) const;
 
+private:
+    void updateInterpolation();
+    
 private:
     std::deque<vec2d> points_;
 

@@ -14,6 +14,16 @@ double calculateScrollButtonRatio(int visibleSize, int fullSize)
     return static_cast<double>(visibleSize) / static_cast<double>(fullSize);
 }
 
+bool isVerticalScroll(const vec2f scroll)
+{
+    return scroll.y != 0;
+}
+
+bool isHorizontalScroll(const vec2f scroll)
+{
+    return scroll.x != 0;
+}
+
 } // namespace anonymous
 
 // PressButton implementation
@@ -421,7 +431,6 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
     if (!ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 
                             scrollable->getPos(), scrollable->getSize()))
     {
-        promisedScroll_ = {0, 0};
         return false;
     }
 
@@ -483,37 +492,65 @@ void ScrollBarsXYManager::updatePromisedScroll(const Event& event)
     static const double scrollSpeed = -1;
 
     if (event.mouseWheel.wheel == Mouse::Wheel::Vertical)
-        promisedScroll_.y += event.mouseWheel.delta * scrollSpeed;
+    {
+        #if 0
+        if (event.mouseWheel.delta >= 0)
+            return;
+        promisedScrolls_.push_back(vec2f{0, event.mouseWheel.delta * scrollSpeed});
+        #endif
+    }
     else
-        promisedScroll_.x += event.mouseWheel.delta * scrollSpeed;
+    {
+        #if 0
+        interpolatorX_
+        promisedScrolls_.push_back(vec2f(event.mouseWheel.delta * scrollSpeed, 0));
+        #endif
+    //std::cerr << "DELTA - " << event.mouseWheel.delta << std::endl;
+    }
 
-    if (std::abs(promisedScroll_.x) > std::abs(promisedScroll_.y))
-        promisedScroll_.y = 0;
-    if (std::abs(promisedScroll_.y) > std::abs(promisedScroll_.x))
-        promisedScroll_.x = 0;
 }
 
 void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, 
                                                 ScrollBarButtonY* scrollBarButtonY)
 {
-    if (promisedScroll_.x == 0.0 && promisedScroll_.y == 0.0)
+    #if 0
+    //std::cerr << "PROCEEDING SCROLL\n";
+    if (promisedScrolls_.empty())
         return;
 
-    static const double kScrollSmoothness = 0.2;
+    while (!promisedScrolls_.empty() && std::abs(promisedScrolls_.front().x) < 1 && std::abs(promisedScrolls_.front().y) < 1)
+        promisedScrolls_.pop_front();
+    
+    if (promisedScrolls_.empty())
+        return;
 
-    double scrollSmoothness = kScrollSmoothness;
-    static const double minScrollDeltaInPixels = 2;
-    if (std::abs(promisedScroll_.x) < minScrollDeltaInPixels)
+    double scrollSmoothness = 0.05;
+
+    vec2f& scroll = promisedScrolls_.front();
+    if (std::abs(scroll.x * scrollSmoothness) < 1 || std::abs(scroll.y * scrollSmoothness) < 1)
+    {
         scrollSmoothness = 1;
+        scrollsCount += 20;
+    }
 
-    vec2f scrollInPixels_float = promisedScroll_ * scrollSmoothness;
+    vec2f scrollInPixels_float = promisedScrolls_.front() * scrollSmoothness;
+
     vec2i scrollInPixels = vec2i{static_cast<int>(scrollInPixels_float.x), 
                                  static_cast<int>(scrollInPixels_float.y)};
     
     scrollBarButtonX->move(scrollInPixels);
     scrollBarButtonY->move(scrollInPixels);
 
-    promisedScroll_ -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
+    promisedScrolls_.front() -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
+
+    scrollsCount++;
+
+    if (scrollsCount >= 20)
+    {
+        promisedScrolls_.pop_front();
+        scrollsCount = 0;
+    }
+    #endif
 }
 
 } // namespace ps

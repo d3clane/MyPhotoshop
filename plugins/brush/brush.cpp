@@ -70,10 +70,12 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 
         for (double interpolatedPos = 1; interpolatedPos < 2; interpolatedPos += 0.01)
             drawPoint(activeLayer, interpolator_[interpolatedPos], redColor);
+        
+        interpolator_.popFront();
     }
 
     vec2i mousePos = canvas->getMousePosition();
-    interpolator_.push({mousePos.x, mousePos.y});
+    interpolator_.pushBack({mousePos.x, mousePos.y});
 
     return updatedState;
 }

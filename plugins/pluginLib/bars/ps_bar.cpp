@@ -205,39 +205,23 @@ ABar::~ABar() = default;
 
 void ABar::draw(IRenderWindow* renderWindow)
 {
-    renderWindow->draw(sprite_.get());
+    renderWindow->draw(shape_.get());
     
     drawChildren(renderWindow);
-}
-
-bool ABar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
-{
-    auto renderWindowSize = renderWindow->getSize();
-    setSize({renderWindowSize.x * ToolbarSize.x,
-             renderWindowSize.y * ToolbarSize.y});
-
-    setPos ({ToolbarTopLeftPos.x * renderWindowSize.x, ToolbarTopLeftPos.y * renderWindowSize.y});
-
-    bool updatedSomeone = updateChildren(renderWindow, event);
-
-    return updatedSomeone;
 }
 
 void ABar::setPos (vec2i pos)
 {
     pos_ = pos;
 
-    sprite_->setPosition(pos.x, pos.y);
+    shape_->setPosition(pos);
 }
 
 void ABar::setSize(vec2u size)
 {
     size_ = size;
 
-    sprite_->setScale(1.f, 1.f);
-    auto spriteSize = sprite_->getSize();
-
-    sprite_->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
+    shape_->setSize(size);
 }
 
 IWindow* ABar::getWindowById(wid_t id) 
@@ -257,7 +241,7 @@ vec2u ABar::getSize() const
 
 wid_t ABar::getId() const 
 {
-    return kToolBarWindowId;
+    return id_;
 }
 
 void ABar::setParent(const IWindow* parent) 

@@ -27,44 +27,49 @@ void unloadPlugin()
 
 }
 
+namespace
+{
+
+std::unique_ptr<IRectangleShape> createShape(const Color& color, const Color& outlineColor, vec2i size)
+{
+    auto shape = IRectangleShape::create(size.x, size.y);
+
+    shape->setFillColor(color);
+    shape->setOutlineThickness(1);
+    shape->setOutlineColor(outlineColor);
+
+    return shape;
+}
+
+} // namespace anonymous
+
 Toolbar::Toolbar(vec2i pos, vec2u size) 
 {
+    id_ = kToolBarWindowId;
+    
     pos_ = pos;
     size_ = size;
 
-    texture_ = std::move(ITexture::create());
-    texture_->loadFromFile("media/textures/toolbar.png");
+    shape_ = IRectangleShape::create(size.x, size.y);
+    shape_->setPosition(pos_);
+    shape_->setOutlineThickness(0);
+    shape_->setFillColor(Color{120, 120, 120, 255});
 
-    sprite_ = std::move(ISprite::create());
-    sprite_->setTexture(texture_.get());
+    static const uint8_t shapesCommonAlpha = 100;
 
-    vec2u spriteSize = sprite_->getSize();
+    commonOutlineShape_ = createShape(Color{0, 0, 0, 0}, 
+                                      Color{51, 51, 51, 255},
+                                      vec2i{childSize_.x, childSize_.y});
 
-    sprite_->setScale(static_cast<double>(size_.x) / spriteSize.x, static_cast<double>(size_.y) / spriteSize.y);
-    sprite_->setPosition(pos_.x, pos_.y);
-
-    loadSprite(SpriteType::Hover,   "media/textures/toolbar_button_hover.png");
-    loadSprite(SpriteType::Press,   "media/textures/toolbar_button_press.png");
-    loadSprite(SpriteType::Release, "media/textures/toolbar_button_release.png");
-}
-
-void Toolbar::loadSprite(SpriteType type, const std::string& path)
-{
-    auto& spriteInfo = sprites_[static_cast<size_t>(type)];
-    spriteInfo.texture = std::move(ITexture::create());
-    spriteInfo.texture->loadFromFile(path);
-
-    spriteInfo.sprite = std::move(ISprite::create());
-    spriteInfo.sprite->setTexture(spriteInfo.texture.get());
-
-    // TODO: дикий костыль 1.2
-    
-    spriteInfo.sprite->setScale(1.2 * static_cast<double>(childSize_.x) / spriteInfo.sprite->getSize().x, 
-                                1.2 * static_cast<double>(childSize_.y) / spriteInfo.sprite->getSize().y);
-
-    auto color = spriteInfo.sprite->getColor();
-    static const uint8_t goodAlpha = 100;
-    spriteInfo.sprite->setColor(Color(color.r, color.g, color.b, goodAlpha));
+    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(Color{70, 70, 70, shapesCommonAlpha}, 
+                                                                    Color{100, 100, 100, 255}, 
+                                                                    childSize_);
+    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(Color{128, 128, 128, shapesCommonAlpha}, 
+                                                                    Color{100, 100, 100, 255}, 
+                                                                    childSize_);
+    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(Color{94 , 125, 147, shapesCommonAlpha}, 
+                                                                    Color{112, 140, 160, 255}, 
+                                                                    childSize_);
 }
 
 ChildInfo Toolbar::getNextChildInfo() const 
@@ -78,23 +83,25 @@ ChildInfo Toolbar::getNextChildInfo() const
 
 void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {
-    //TODO: дикий костыль -6
-    sprites_[static_cast<size_t>(SpriteType::Hover)]  .sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
-    sprites_[static_cast<size_t>(SpriteType::Release)].sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
-    sprites_[static_cast<size_t>(SpriteType::Press)]  .sprite->setPosition(button->getPos().x - 6, button->getPos().y - 6);
+    commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
+    for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
+        shapes_[i]->setPosition(vec2i{button->getPos().x, button->getPos().y});
 
     switch (button->getState()) 
     {
         case IBarButton::State::Normal:
             break;
         case IBarButton::State::Hover:
-            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Hover)].sprite.get());
+            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Hover)].get());
+            renderWindow->draw(commonOutlineShape_.get());
             break;
         case IBarButton::State::Press:
-            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Press)].sprite.get());
+            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Press)].get());
+            renderWindow->draw(commonOutlineShape_.get());
             break;
         case IBarButton::State::Released:
-            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Release)].sprite.get());
+            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Release)].get());
+            renderWindow->draw(commonOutlineShape_.get());
             break;
 
         default:
@@ -134,4 +141,17 @@ void Toolbar::removeWindow(wid_t id)
             return;
         }
     }
+}
+
+bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
+{
+    auto renderWindowSize = renderWindow->getSize();
+    setSize({renderWindowSize.x * ToolbarSize.x,
+             renderWindowSize.y * ToolbarSize.y});
+
+    setPos ({ToolbarTopLeftPos.x * renderWindowSize.x, ToolbarTopLeftPos.y * renderWindowSize.y});
+
+    bool updatedSomeone = updateChildren(renderWindow, event);
+
+    return updatedSomeone;
 }

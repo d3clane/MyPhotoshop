@@ -18,11 +18,6 @@ using namespace psapi::sfm;
 class Toolbar : public ABar 
 {
 private:
-    struct SpriteInfo
-    {
-        std::unique_ptr<ISprite> sprite;
-        std::unique_ptr<ITexture> texture;
-    };
     enum class SpriteType
     {
         Hover = 0,
@@ -40,20 +35,21 @@ public:
 
     ChildInfo getNextChildInfo() const override;
 
+    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
+
 protected:
     void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override; 
-    
-    void loadSprite(SpriteType type, const std::string& path);
 
 private:
-    int gapSize_ = 16;
+    size_t gapSize_ = 16;
 
     mutable int nextChildIndex_ = 0;
     mutable int numChildren_ = 0;
 
     vec2i childSize_ = {64, 64};
 
-    SpriteInfo sprites_[static_cast<size_t>(SpriteType::Count)];
+    std::unique_ptr<IRectangleShape> commonOutlineShape_;
+    std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
 };
 
 } // namespace

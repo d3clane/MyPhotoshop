@@ -64,7 +64,7 @@ public:
     ~ABar();
 
     void draw(IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
 
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
@@ -81,7 +81,7 @@ public:
     bool isWindowContainer() const override;
 
 protected:
-    wid_t id_ = kToolBarWindowId;
+    wid_t id_ = kInvalidWindowId;
 
     const IWindow* parent_ = nullptr;
     bool isActive_ = true;
@@ -89,9 +89,8 @@ protected:
     vec2i pos_;
     vec2u size_;
 
-    std::unique_ptr<ISprite> sprite_;
-    std::shared_ptr<ITexture> texture_;
-
+    std::unique_ptr<IRectangleShape> shape_;
+    
     std::vector<std::unique_ptr<ABarButton> > windows_;
 
 protected:

@@ -14,16 +14,6 @@ double calculateScrollButtonRatio(int visibleSize, int fullSize)
     return static_cast<double>(visibleSize) / static_cast<double>(fullSize);
 }
 
-bool isVerticalScroll(const vec2f scroll)
-{
-    return scroll.y != 0;
-}
-
-bool isHorizontalScroll(const vec2f scroll)
-{
-    return scroll.x != 0;
-}
-
 } // namespace anonymous
 
 // PressButton implementation
@@ -431,6 +421,7 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
     if (!ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 
                             scrollable->getPos(), scrollable->getSize()))
     {
+        promisedScroll_ = {0, 0};
         return false;
     }
 
@@ -492,30 +483,20 @@ void ScrollBarsXYManager::updatePromisedScroll(const Event& event)
     static const double scrollSpeed = -1;
 
     if (event.mouseWheel.wheel == Mouse::Wheel::Vertical)
-    {
-        #if 0
-        if (event.mouseWheel.delta >= 0)
-            return;
-        promisedScrolls_.push_back(vec2f{0, event.mouseWheel.delta * scrollSpeed});
-        #endif
-    }
+        promisedScroll_.y += event.mouseWheel.delta * scrollSpeed;
     else
-    {
-        #if 0
-        interpolatorX_
-        promisedScrolls_.push_back(vec2f(event.mouseWheel.delta * scrollSpeed, 0));
-        #endif
-    //std::cerr << "DELTA - " << event.mouseWheel.delta << std::endl;
-    }
+        promisedScroll_.x += event.mouseWheel.delta * scrollSpeed;
 
+    if (std::abs(promisedScroll_.x) > std::abs(promisedScroll_.y))
+        promisedScroll_.y = 0;
+    if (std::abs(promisedScroll_.y) > std::abs(promisedScroll_.x))
+        promisedScroll_.x = 0;
 }
 
 void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, 
                                                 ScrollBarButtonY* scrollBarButtonY)
 {
-    #if 0
-    //std::cerr << "PROCEEDING SCROLL\n";
-    if (promisedScrolls_.empty())
+    if (promisedScroll_.x == 0.0 && promisedScroll_.y == 0.0)
         return;
 
     float evenScrollX = std::ceil(scrollBarX_->getSize().x / 150.f);
@@ -531,16 +512,7 @@ void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButto
     scrollBarButtonX->move(scrollInPixels);
     scrollBarButtonY->move(scrollInPixels);
 
-    promisedScrolls_.front() -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
-
-    scrollsCount++;
-
-    if (scrollsCount >= 20)
-    {
-        promisedScrolls_.pop_front();
-        scrollsCount = 0;
-    }
-    #endif
+    promisedScroll_ -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
 }
 
 } // namespace ps

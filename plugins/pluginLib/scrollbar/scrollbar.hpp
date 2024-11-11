@@ -181,8 +181,7 @@ private:
     std::unique_ptr<ScrollBarX> scrollBarX_;
     std::unique_ptr<ScrollBarY> scrollBarY_;
 
-    Interpolator interpolatorX_;
-    Interpolator interpolatorY_;
+    vec2f promisedScroll_ = {0, 0};
 };
 } // namespace ps
 

@@ -30,12 +30,14 @@ void unloadPlugin()
 namespace
 {
 
-std::unique_ptr<IRectangleShape> createShape(const Color& color, const Color& outlineColor, vec2i size)
+std::unique_ptr<IRectangleShape> createShape(const vec2i& size, 
+                                             const Color& color = {}, const Color& outlineColor = {}, 
+                                             const float outlineThickness = 1)
 {
     auto shape = IRectangleShape::create(size.x, size.y);
 
     shape->setFillColor(color);
-    shape->setOutlineThickness(1);
+    shape->setOutlineThickness(outlineThickness);
     shape->setOutlineColor(outlineColor);
 
     return shape;
@@ -50,26 +52,22 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
     pos_ = pos;
     size_ = size;
 
-    shape_ = IRectangleShape::create(size.x, size.y);
+    shape_ = createShape(vec2i{size_.x, size_.y}, Color{120, 120, 120, 255}, Color{}, 0);
     shape_->setPosition(pos_);
-    shape_->setOutlineThickness(0);
-    shape_->setFillColor(Color{120, 120, 120, 255});
 
     static const uint8_t shapesCommonAlpha = 100;
 
-    commonOutlineShape_ = createShape(Color{0, 0, 0, 0}, 
-                                      Color{51, 51, 51, 255},
-                                      vec2i{childSize_.x, childSize_.y});
+    commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
 
-    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(Color{70, 70, 70, shapesCommonAlpha}, 
-                                                                    Color{100, 100, 100, 255}, 
-                                                                    childSize_);
-    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(Color{128, 128, 128, shapesCommonAlpha}, 
-                                                                    Color{100, 100, 100, 255}, 
-                                                                    childSize_);
-    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(Color{94 , 125, 147, shapesCommonAlpha}, 
-                                                                    Color{112, 140, 160, 255}, 
-                                                                    childSize_);
+    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
+                                                                    Color{70, 70, 70, shapesCommonAlpha}, 
+                                                                    Color{100, 100, 100, 255});
+    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(childSize_,
+                                                                    Color{128, 128, 128, shapesCommonAlpha}, 
+                                                                    Color{100, 100, 100, 255});
+    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(childSize_,
+                                                                    Color{94 , 125, 147, shapesCommonAlpha}, 
+                                                                    Color{112, 140, 160, 255});
 }
 
 ChildInfo Toolbar::getNextChildInfo() const 

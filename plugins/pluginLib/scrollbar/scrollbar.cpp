@@ -499,11 +499,14 @@ void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButto
     if (promisedScroll_.x == 0.0 && promisedScroll_.y == 0.0)
         return;
 
-    float evenScrollX = std::ceil(scrollBarX_->getSize().x / 150.f);
+    float evenScrollX = std::ceil(scrollBarX_->getSize().x / 300.f);
     float evenScrollY = std::ceil(scrollBarY_->getSize().y / 150.f);
 
-    evenScrollX = std::min(promisedScroll_.x, evenScrollX);
-    evenScrollY = std::min(promisedScroll_.y, evenScrollY);
+    float directionX = std::signbit(promisedScroll_.x) ? -1.f : 1.f;
+    float directionY = std::signbit(promisedScroll_.y) ? -1.f : 1.f;
+
+    evenScrollX = directionX * std::min(std::abs(promisedScroll_.x), evenScrollX);
+    evenScrollY = directionY * std::min(std::abs(promisedScroll_.y), evenScrollY);
 
     vec2f scrollInPixels_float = vec2f{evenScrollX, evenScrollY};
     vec2i scrollInPixels = vec2i{static_cast<int>(scrollInPixels_float.x), 

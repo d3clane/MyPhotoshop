@@ -30,6 +30,9 @@ public:
     Toolbar(vec2i pos, vec2u size);
     ~Toolbar() = default;
 
+    IWindow* getWindowById(wid_t id) override;
+    const IWindow* getWindowById(wid_t id) const override;
+
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
 
@@ -39,6 +42,7 @@ public:
 
 protected:
     void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override; 
+    void drawChildren(IRenderWindow* renderWindow) override;
 
 private:
     size_t gapSize_ = 16;
@@ -47,6 +51,8 @@ private:
     mutable int numChildren_ = 0;
 
     vec2i childSize_ = {64, 64};
+
+    std::vector<std::unique_ptr<ASpritedBarButton>> windows_;
 
     std::unique_ptr<IRectangleShape> commonOutlineShape_;
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];

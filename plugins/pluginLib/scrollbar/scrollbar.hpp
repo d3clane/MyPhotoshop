@@ -20,10 +20,8 @@ public:
     virtual vec2u getFullSize() = 0;
 };
 
-class AScrollableWindow : public IScrollable, public AWindow
+class IScrollableWindow : public IScrollable, public IWindow
 {
-public:
-    AScrollableWindow(vec2i pos, vec2u size, wid_t id) : AWindow(pos, size, id) {}
 };
 
 class PressButton : public AWindow
@@ -64,9 +62,8 @@ public:
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
 
-    void setScrollable(AScrollableWindow* scrollable);
-    const AScrollableWindow* getScrollable() const;
-
+    void setScrollable(IScrollableWindow* scrollable);
+    const IScrollableWindow* getScrollable() const;
 
 protected:
     void setStateFromOutside(const IRenderWindow* renderWindow);
@@ -75,7 +72,7 @@ protected:
     virtual void updateSize() = 0;
 
 protected:
-    AScrollableWindow* scrollable_ = nullptr;
+    IScrollableWindow* scrollable_ = nullptr;
 
     vec2f scroll_;
     vec2i zeroScrollPos_;

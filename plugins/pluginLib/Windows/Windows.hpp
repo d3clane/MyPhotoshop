@@ -9,7 +9,7 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class AWindow : IWindow
+class AWindow : public IWindow
 {
 public:
     explicit AWindow(vec2i pos = {0, 0}, vec2u size = {0, 0}, wid_t id = kInvalidWindowId);
@@ -83,7 +83,8 @@ vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize,
                           const vec2i& boundaryPos, const vec2u& boundarySize);
 
 bool checkIsHovered(vec2i mousePos, const vec2i& pos, const vec2u& size);
-bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered, vec2i mousePos);
+bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered);
+bool checkIsClicked(const Event& event, bool isHovered);
 
 } // namespace ps
 

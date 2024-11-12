@@ -47,7 +47,7 @@ protected:
     void changeArea(const CutRect& area);
 };
 
-class Canvas : public ICanvas, public AScrollableWindow
+class Canvas : public ICanvas, public IScrollableWindow
 {
 public:
     Canvas(vec2i pos, vec2u size);
@@ -106,6 +106,13 @@ public:
     vec2u getFullSize() override;
 
 private:
+    wid_t id_ = kCanvasWindowId;
+
+    vec2u size_;
+    vec2i pos_;
+
+    bool isActive_ = true;
+
     size_t activeLayer_ = 0;
 
     std::unique_ptr<Layer> tempLayer_;

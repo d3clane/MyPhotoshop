@@ -13,7 +13,7 @@ namespace ps
 
 class ABar;
 
-class ABarButton : public IBarButton, public AWindow
+class ABarButton : public IBarButton
 {
 public:
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
@@ -39,6 +39,15 @@ public:
     virtual void setSize(vec2u size);
 
 protected:
+    wid_t id_ = kInvalidWindowId;
+
+    vec2i pos_;
+    vec2u size_;
+
+    bool isActive_ = true;
+
+    const ABar* parent_ = nullptr;
+
     State state_ = State::Normal;
     
     bool updateState(const IRenderWindow* renderWindow, const Event& event);
@@ -51,21 +60,19 @@ public:
 
     void setPos (vec2i pos) override;
     void setSize(vec2u size) override;
+
 protected:
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
 };
 
-class ABar : public IBar 
+class ABar : public IBar
 {
 public:
     ~ABar();
 
     void draw(IRenderWindow* renderWindow) override;
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
-
-    IWindow* getWindowById(wid_t id) override;
-    const IWindow* getWindowById(wid_t id) const override;
 
     vec2i getPos()  const override;
     vec2u getSize() const override;
@@ -89,15 +96,49 @@ protected:
 
     std::unique_ptr<IRectangleShape> shape_;
     
-    std::vector<std::unique_ptr<ASpritedBarButton> > windows_;
-
 protected:
-    void   drawChildren(IRenderWindow* renderWindow);
-    bool updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event);
-
+    virtual void drawChildren(IRenderWindow* renderWindow) = 0;
+    
     void setPos (vec2i pos);
     void setSize(vec2u size);
 };
+
+// BarChildrenHandler implementation
+
+namespace bar_children_handler_funcs
+{
+
+template<typename T>
+bool updateChildren(const IRenderWindow* renderWindow, const Event& event, std::vector<T>& windowVector)
+{
+    bool updatedSomeone = false;
+
+    static const size_t invalidPos = static_cast<size_t>(-1);
+    size_t lastReleasedButtonPos = invalidPos;
+    size_t windowsSize = windowVector.size();
+    for (size_t i = 0; i < windowsSize; ++i)
+    {
+        IBarButton::State state = windowVector[i]->getState();
+        updatedSomeone |= windowVector[i]->update(renderWindow, event);
+
+        if (windowVector[i]->getState() == IBarButton::State::Released && state != IBarButton::State::Released)
+            lastReleasedButtonPos = i;
+    }
+
+    if (lastReleasedButtonPos != invalidPos)
+    {
+        for (size_t i = 0; i < windowsSize; ++i)
+        {
+            if (i == lastReleasedButtonPos)
+                continue;
+            windowVector[i]->setState(IBarButton::State::Normal);
+        }
+    }
+
+    return updatedSomeone;
+}
+
+} // namespace bar_children_handler_funcs
 
 } // namespace ps
 

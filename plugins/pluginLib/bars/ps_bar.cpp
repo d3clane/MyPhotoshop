@@ -8,12 +8,12 @@ namespace ps
 
 IWindow* ABarButton::getWindowById(wid_t id) 
 {
-    return AWindow::getWindowById(id);
+    return id == id_ ? this : nullptr;
 }
 
 const IWindow* ABarButton::getWindowById(wid_t id) const 
 {
-    return AWindow::getWindowById(id);
+    return id == id_ ? this : nullptr;
 }
 
 vec2i ABarButton::getPos() const 
@@ -33,19 +33,10 @@ wid_t ABarButton::getId() const
 
 void ABarButton::setParent(const IWindow* parent) 
 {
-    try
-    {
-        const ABar* parentBar = dynamic_cast<const ABar*>(parent);
+    const ABar* parentBar = static_cast<const ABar*>(parent);
 
-        assert(parentBar);
-        parent_ = parentBar;
-    }
-    catch(...)
-    {
-        std::cerr << "Can't cast parent to ABar\n";
-        assert(false);
-        std::terminate();
-    }
+    assert(parentBar);
+    parent_ = parentBar;
 }
 
 void ABarButton::forceDeactivate() 
@@ -81,9 +72,9 @@ ABarButton::State ABarButton::getState() const
 bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
 {
     vec2i mousePos = Mouse::getPosition(renderWindow);
-    bool hovered = checkIsHovered(mousePos);
-    bool pressed = updateIsPressed(event, state_ == State::Press, mousePos);
-    bool clicked = checkIsClicked(event, mousePos);
+    bool hovered = checkIsHovered(mousePos, pos_, size_);
+    bool pressed = updateIsPressed(event, state_ == State::Press, hovered);
+    bool clicked = checkIsClicked(event, hovered);
 
     if (clicked)
     {
@@ -120,7 +111,7 @@ void ASpritedBarButton::draw(IRenderWindow* renderWindow)
     renderWindow->draw(mainSprite_.get());
 
     assert(parent_);
-    static_cast<const ABar*>(parent_)->finishButtonDraw(renderWindow, this);
+    static_cast<const IBar*>(parent_)->finishButtonDraw(renderWindow, this);
 }
 
 void ASpritedBarButton::setPos(vec2i pos)
@@ -141,64 +132,13 @@ void ASpritedBarButton::setSize(vec2u size)
 
 // ABar implementation
 
-void ABar::drawChildren(IRenderWindow* renderWindow) 
-{
-    for (const auto& window : windows_)
-    {
-        assert(window.get());
-        window->draw(renderWindow);
-    }
-}
-
-bool ABar::updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event) 
-{
-    bool updatedSomeone = false;
-
-    size_t lastReleasedButtonPos = static_cast<size_t>(-1); 
-    size_t windowsSize = windows_.size();
-    for (size_t i = 0; i < windowsSize; ++i)
-    {
-        ABarButton::State state = windows_[i]->getState();
-        updatedSomeone |= windows_[i]->update(renderWindow, event);
-
-        if (windows_[i]->getState() == ABarButton::State::Released && state != ABarButton::State::Released)
-            lastReleasedButtonPos = i;
-    }
-
-    if (lastReleasedButtonPos != static_cast<size_t>(-1))
-    {
-        for (size_t i = 0; i < windowsSize; ++i)
-        {
-            if (i == lastReleasedButtonPos)
-                continue;
-            windows_[i]->setState(ABarButton::State::Normal);
-        }
-    }
-
-    return updatedSomeone;
-}
-
-const IWindow* ABar::getWindowById(wid_t id) const 
-{
-    if (id_ == id)
-        return this;
-        
-    for (auto& window : windows_) 
-    {
-        const IWindow* result = window->getWindowById(id);
-        if (result)
-            return result;
-    }
-
-    return nullptr;
-}
-
 ABar::~ABar() = default;
 
 void ABar::draw(IRenderWindow* renderWindow)
 {
-    renderWindow->draw(shape_.get());
-    
+    if (shape_)
+        shape_->draw(renderWindow);
+
     drawChildren(renderWindow);
 }
 
@@ -214,11 +154,6 @@ void ABar::setSize(vec2u size)
     size_ = size;
 
     shape_->setSize(size);
-}
-
-IWindow* ABar::getWindowById(wid_t id) 
-{
-    return const_cast<IWindow*>(static_cast<const ABar*>(this)->getWindowById(id));
 }
 
 vec2i ABar::getPos()  const 

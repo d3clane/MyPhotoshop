@@ -79,6 +79,29 @@ ChildInfo Toolbar::getNextChildInfo() const
     return {pos, childSize_};
 }
 
+IWindow* Toolbar::getWindowById(wid_t id)
+{
+    for (auto& window : windows_)
+        if (window->getId() == id)
+            return window.get();
+        
+    if (id == id_)
+        return this;
+    
+    return nullptr;
+}
+
+const IWindow* Toolbar::getWindowById(wid_t id) const
+{
+    return const_cast<Toolbar*>(this)->getWindowById(id);
+}
+
+void Toolbar::drawChildren(IRenderWindow* renderWindow)
+{
+    for (auto& window : windows_)
+        window->draw(renderWindow);
+}
+
 void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {
     commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
@@ -149,7 +172,7 @@ bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event)
 
     setPos ({ToolbarTopLeftPos.x * renderWindowSize.x, ToolbarTopLeftPos.y * renderWindowSize.y});
 
-    bool updatedSomeone = updateChildren(renderWindow, event);
+    bool updatedSomeone = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
 
     return updatedSomeone;
 }

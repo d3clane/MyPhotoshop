@@ -151,7 +151,7 @@ bool checkIsHovered(vec2i mousePos, const vec2i& pos, const vec2u& size)
         && mousePos.y >= pos.y && mousePos.y < static_cast<int>(pos.y + size.y);
 }
 
-bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered, vec2i mousePos)
+bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered)
 {
     bool pressedRightNow  = isHovered && event.type == Event::MouseButtonPressed;
     bool releasedRightNow = isHovered && event.type == Event::MouseButtonReleased;
@@ -162,6 +162,11 @@ bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered, 
     if (isPressed && !isHovered && event.type == Event::MouseButtonReleased) isPressed = false;
 
     return isPressed;
+}
+
+bool checkIsClicked(const Event& event, bool isHovered)
+{
+    return isHovered && event.type == Event::MouseButtonReleased;
 }
 
 } // namespace ps

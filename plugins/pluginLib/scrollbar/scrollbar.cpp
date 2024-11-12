@@ -248,12 +248,12 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
     return true;
 }
 
-void AScrollBarButton::setScrollable(AScrollableWindow* scrollable)
+void AScrollBarButton::setScrollable(IScrollableWindow* scrollable)
 {
     scrollable_ = scrollable;
 }
 
-const AScrollableWindow* AScrollBarButton::getScrollable() const 
+const IScrollableWindow* AScrollBarButton::getScrollable() const 
 {
     return scrollable_;
 }
@@ -415,7 +415,7 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
     assert(scrollBarButtonX);
     assert(scrollBarButtonY);
 
-    const AScrollableWindow* scrollable = scrollBarButtonX->getScrollable();
+    const IScrollableWindow* scrollable = scrollBarButtonX->getScrollable();
     assert(scrollable);
 
     if (!ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 

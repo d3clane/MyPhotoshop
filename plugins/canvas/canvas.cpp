@@ -111,7 +111,7 @@ void Layer::changeArea(const CutRect& area)
 
 // Canvas implementation
 
-Canvas::Canvas(vec2i pos, vec2u size) : AScrollableWindow(pos, size, kCanvasWindowId)
+Canvas::Canvas(vec2i pos, vec2u size) : pos_(pos), size_(size)
 {
     fullSize_ = calculateFullSize(size);
 
@@ -154,7 +154,8 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
-    isPressed_ = updateIsPressed(event, isPressed_, lastMousePosRelatively_ + pos_);
+    isPressed_ = updateIsPressed(event, isPressed_, 
+                                 checkIsHovered(lastMousePosRelatively_ + pos_, pos_, size_));
 
     return true;
 }

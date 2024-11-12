@@ -11,35 +11,22 @@ static const wid_t kInstrumentsBarId = 10001;
 
 class InstrumentsBar;
 
-class ColorButton : public ASpritedBarButton
+class ColorButton : public ABarButton
 {
 public:
-    void draw()
+    void draw(IRenderWindow* renderWindow) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+
 protected:
     std::unique_ptr<ABar> colorChoiceBar_;
 
     std::unique_ptr<IText> text_;
 };
 
-class InstrumentsBar : public IBar
+class InstrumentsBar : public ABar
 {
 public:
-    void draw(IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
-
-    IWindow* getWindowById(wid_t id) override;
-    const IWindow* getWindowById(wid_t id) const override;
-
-    vec2i getPos()  const override;
-    vec2u getSize() const override;
-    wid_t getId()   const override;
-
-    void setParent(const IWindow* parent) override;
-    void forceDeactivate()                override;
-    void forceActivate()                  override; 
-
-    bool isActive() const override;
-    bool isWindowContainer() const override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
 
 protected:
     wid_t id_ = kInvalidWindowId;

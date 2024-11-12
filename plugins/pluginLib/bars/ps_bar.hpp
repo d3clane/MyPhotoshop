@@ -56,7 +56,8 @@ protected:
     std::unique_ptr<ITexture> mainTexture_;
 };
 
-class ABar : public IBar {
+class ABar : public IBar 
+{
 public:
     ~ABar();
 

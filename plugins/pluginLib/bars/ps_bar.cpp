@@ -132,7 +132,6 @@ void ASpritedBarButton::setPos(vec2i pos)
 void ASpritedBarButton::setSize(vec2u size)
 {
     size_ = size;
-    
     mainSprite_->setScale(1.f, 1.f);
     auto spriteSize = mainSprite_->getSize();
 

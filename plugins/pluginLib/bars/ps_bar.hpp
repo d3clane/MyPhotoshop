@@ -45,8 +45,6 @@ protected:
 
     State state_ = State::Normal;
 
-    virtual bool checkIsClicked(const Event& event);
-
     bool updateState(const IRenderWindow* renderWindow, const Event& event);
 };
 

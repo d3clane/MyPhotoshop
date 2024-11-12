@@ -88,17 +88,12 @@ ABarButton::State ABarButton::getState() const
     return state_;
 }
 
-bool ABarButton::checkIsClicked(const Event& event)
-{
-    return (event.type == event.MouseButtonReleased && checkIsHovered({event.mouseButton.x, event.mouseButton.y}));
-}
-
 bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
 {
     vec2i mousePos = Mouse::getPosition(renderWindow);
     bool hovered = checkIsHovered(mousePos);
     bool pressed = updateIsPressed(event, state_ == State::Press, mousePos);
-    bool clicked = checkIsClicked(event);
+    bool clicked = checkIsClicked(event, mousePos);
 
     if (clicked)
     {

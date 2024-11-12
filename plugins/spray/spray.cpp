@@ -19,7 +19,7 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class SprayButton : public ABarButton 
+class SprayButton : public ASpritedBarButton 
 {
 public:
     SprayButton() = default;
@@ -87,7 +87,7 @@ bool loadPlugin()
     
     auto spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
-    std::unique_ptr<ps::ABarButton> button{ new ps::SprayButton(std::move(buttonSprite), std::move(buttonTexture)) };
+    std::unique_ptr<ps::ASpritedBarButton> button{ new ps::SprayButton(std::move(buttonSprite), std::move(buttonTexture)) };
     
     button->setPos(pos);
     button->setSize(size);

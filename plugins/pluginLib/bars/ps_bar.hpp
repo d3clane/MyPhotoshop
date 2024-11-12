@@ -16,9 +16,8 @@ class ABar;
 class ABarButton : public IBarButton, public AWindow
 {
 public:
-    void draw(IRenderWindow* renderWindow)         override;
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
-
+    
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
 
@@ -36,16 +35,25 @@ public:
     void setState(State state) override;
     State getState() const override;
 
-    void setPos (vec2i pos);
-    void setSize(vec2u size);
+    virtual void setPos (vec2i pos);
+    virtual void setSize(vec2u size);
 
+protected:
+    State state_ = State::Normal;
+    
+    bool updateState(const IRenderWindow* renderWindow, const Event& event);
+};
+
+class ASpritedBarButton : public ABarButton
+{
+public:
+    void draw(IRenderWindow* renderWindow) override;
+
+    void setPos (vec2i pos) override;
+    void setSize(vec2u size) override;
 protected:
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
-
-    State state_ = State::Normal;
-
-    bool updateState(const IRenderWindow* renderWindow, const Event& event);
 };
 
 class ABar : public IBar {
@@ -80,7 +88,7 @@ protected:
 
     std::unique_ptr<IRectangleShape> shape_;
     
-    std::vector<std::unique_ptr<ABarButton> > windows_;
+    std::vector<std::unique_ptr<ASpritedBarButton> > windows_;
 
 protected:
     void   drawChildren(IRenderWindow* renderWindow);

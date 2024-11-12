@@ -20,7 +20,7 @@ using namespace ps;
 using namespace psapi;
 using namespace psapi::sfm;
 
-class LineButton : public ABarButton 
+class LineButton : public ASpritedBarButton 
 {
 public:
     LineButton() = default;
@@ -118,7 +118,7 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 
 void LineButton::draw(IRenderWindow* renderWindow)
 {
-    ABarButton::draw(renderWindow);
+    ASpritedBarButton::draw(renderWindow);
 
     if (line_)
         renderWindow->draw(line_.get());
@@ -149,7 +149,7 @@ bool loadPlugin() // onLoadPlugin
     
     vec2u spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
-    std::unique_ptr<ps::ABarButton> button{ new LineButton(std::move(buttonSprite), std::move(buttonTexture)) };
+    std::unique_ptr<ps::ASpritedBarButton> button{ new LineButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);
     button->setSize(size);

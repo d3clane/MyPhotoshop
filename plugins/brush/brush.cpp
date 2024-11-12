@@ -24,7 +24,7 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class BrushButton : public ABarButton 
+class BrushButton : public ASpritedBarButton 
 {
 public:
     BrushButton() = default;
@@ -114,7 +114,7 @@ void BrushButton::drawPoint(ILayer* layer, const vec2d& point)
 namespace 
 {
 
-std::unique_ptr<ABarButton> createButton(IBar* toolbar, std::shared_ptr<AFillPropertiesMediator> mediator)
+std::unique_ptr<ASpritedBarButton> createButton(IBar* toolbar, std::shared_ptr<AFillPropertiesMediator> mediator)
 {
     auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
     auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
@@ -142,7 +142,7 @@ std::unique_ptr<ABarButton> createButton(IBar* toolbar, std::shared_ptr<AFillPro
     button->setPos(pos);
     button->setSize(size);
 
-    return std::unique_ptr<ABarButton>(button.release());
+    return std::unique_ptr<ASpritedBarButton>(button.release());
 }
 
 } // namespace anonymous
@@ -189,7 +189,7 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class BrushButton : public ABarButton 
+class BrushButton : public ASpritedBarButton 
 {
 public:
     BrushButton() = default;
@@ -287,7 +287,7 @@ bool loadPlugin() // onLoadPlugin
     
     auto spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
-    std::unique_ptr<ps::ABarButton> button{ new ps::BrushButton(std::move(buttonSprite), std::move(buttonTexture)) };
+    std::unique_ptr<ps::ASpritedBarButton> button{ new ps::BrushButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);
     button->setSize(size);

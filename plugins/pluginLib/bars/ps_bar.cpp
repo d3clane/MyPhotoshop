@@ -6,24 +6,14 @@
 namespace ps
 {
 
-void ABarButton::draw(IRenderWindow* renderWindow) 
-{
-    renderWindow->draw(mainSprite_.get());
-
-    assert(parent_);
-    static_cast<const ABar*>(parent_)->finishButtonDraw(renderWindow, this);
-}
-
 IWindow* ABarButton::getWindowById(wid_t id) 
 {
-    return const_cast<IWindow*>(const_cast<const ABarButton*>(this)->getWindowById(id));
+    return AWindow::getWindowById(id);
 }
 
-const IWindow* ABarButton::getWindowById(wid_t id) const {
-    if (id == id_)
-        return static_cast<const IBarButton*>(this);
-
-    return nullptr;
+const IWindow* ABarButton::getWindowById(wid_t id) const 
+{
+    return AWindow::getWindowById(id);
 }
 
 vec2i ABarButton::getPos() const 
@@ -116,14 +106,33 @@ bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& eve
 void ABarButton::setPos (vec2i pos)
 {
     pos_ = pos;
-
-    mainSprite_->setPosition(pos.x, pos.y);
 }
 
 void ABarButton::setSize(vec2u size)
 {
     size_ = size;
+}
 
+// ASpritedBarButton
+
+void ASpritedBarButton::draw(IRenderWindow* renderWindow) 
+{
+    renderWindow->draw(mainSprite_.get());
+
+    assert(parent_);
+    static_cast<const ABar*>(parent_)->finishButtonDraw(renderWindow, this);
+}
+
+void ASpritedBarButton::setPos(vec2i pos)
+{
+    pos_ = pos;
+    mainSprite_->setPosition(pos.x, pos.y);
+}
+
+void ASpritedBarButton::setSize(vec2u size)
+{
+    size_ = size;
+    
     mainSprite_->setScale(1.f, 1.f);
     auto spriteSize = mainSprite_->getSize();
 

@@ -111,10 +111,10 @@ void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* bu
 
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
 {
-    ABarButton* button = nullptr;
+    ASpritedBarButton* button = nullptr;
     try
     {
-        button = dynamic_cast<ABarButton*>(window.get());
+        button = dynamic_cast<ASpritedBarButton*>(window.get());
         assert(button);
         button->setParent(this);
     }
@@ -125,7 +125,7 @@ void Toolbar::addWindow(std::unique_ptr<IWindow> window)
         std::terminate();
     }
 
-    windows_.push_back(std::unique_ptr<ABarButton>(button));
+    windows_.push_back(std::unique_ptr<ASpritedBarButton>(button));
     window.release();
 }
 

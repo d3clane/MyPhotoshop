@@ -11,48 +11,14 @@ static const wid_t kInstrumentsBarId = 10001;
 
 class InstrumentsBar;
 
-class AInstrumentButton : public IBarButton, public AWindow
+class ColorButton : public ASpritedBarButton
 {
-public: 
-    void draw(IRenderWindow* renderWindow)         override;
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
-
-    IWindow* getWindowById(wid_t id) override;
-    const IWindow* getWindowById(wid_t id) const override;
-
-    vec2i getPos()  const override;
-    vec2u getSize() const override;
-    wid_t getId()   const override;
-
-    void setParent(const IWindow* parent) override;
-    void forceDeactivate()                override;
-    void forceActivate()                  override; 
-
-    bool isActive() const override;
-    bool isWindowContainer() const override;
-
-    void setState(State state) override;
-    State getState() const override;
-
-    void setPos (vec2i pos);
-    void setSize(vec2u size);
-
+public:
+    void draw()
 protected:
-    wid_t id_ = kInvalidWindowId;
+    std::unique_ptr<ABar> colorChoiceBar_;
 
-    const InstrumentsBar* parent_ = nullptr;
-    bool isActive_ = true;
-
-    vec2i pos_;
-    vec2u size_;
-
-    std::unique_ptr<ISprite>  mainSprite_;
-    std::unique_ptr<ITexture> mainTexture_;
-
-    State state_ = State::Normal;
-
-protected:
-    bool updateState(const IRenderWindow* renderWindow, const Event& event);
+    std::unique_ptr<IText> text_;
 };
 
 class InstrumentsBar : public IBar

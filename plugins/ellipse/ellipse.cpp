@@ -47,7 +47,7 @@ EllipseBounds getEllipseBounds(const vec2i& topLeftNow, const vec2i& bottomRight
     return {topLeft, bottomRight};
 }
 
-class EllipseButton : public ABarButton 
+class EllipseButton : public ASpritedBarButton 
 {
 public:
     EllipseButton() = default;
@@ -153,7 +153,7 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
 
 void EllipseButton::draw(IRenderWindow *window)
 {
-    ABarButton::draw(window);
+    ASpritedBarButton::draw(window);
 
     if (ellipse_)
         window->draw(ellipse_.get());
@@ -184,7 +184,7 @@ bool loadPlugin() // onLoadPlugin
     
     vec2u spriteSize = buttonSprite->getSize();
     buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
-    std::unique_ptr<ps::ABarButton> button{ new EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
+    std::unique_ptr<ps::ASpritedBarButton> button{ new EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);
     button->setSize(size);

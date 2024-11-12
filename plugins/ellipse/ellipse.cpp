@@ -191,7 +191,8 @@ bool loadPlugin() // onLoadPlugin
 
     assert(rootWindow->getWindowById(kToolBarWindowId));
     
-    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->addWindow(std::move(button));
+    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->
+        addWindow(std::unique_ptr<ps::IBarButton>(button.release()));
 
     return true;
 }

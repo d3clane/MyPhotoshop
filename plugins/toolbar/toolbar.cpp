@@ -60,10 +60,10 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
     commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
 
     shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
-                                                                    Color{70, 70, 70, shapesCommonAlpha}, 
+                                                                    Color{120, 120, 120, shapesCommonAlpha}, 
                                                                     Color{100, 100, 100, 255});
     shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(childSize_,
-                                                                    Color{128, 128, 128, shapesCommonAlpha}, 
+                                                                    Color{70, 70, 70, shapesCommonAlpha}, 
                                                                     Color{100, 100, 100, 255});
     shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(childSize_,
                                                                     Color{94 , 125, 147, shapesCommonAlpha}, 

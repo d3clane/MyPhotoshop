@@ -12,7 +12,7 @@ using namespace psapi::sfm;
 class AWindow : IWindow
 {
 public:
-    AWindow(vec2i pos, vec2u size, wid_t id);
+    explicit AWindow(vec2i pos = {0, 0}, vec2u size = {0, 0}, wid_t id = kInvalidWindowId);
 
     wid_t getId() const override;
 
@@ -41,8 +41,9 @@ protected:
     const IWindow* parent_ = nullptr;
 
 protected:
-    bool checkIsHovered(vec2i mousePos);
-    bool updateIsPressed(const Event& event, bool prevPressedState, vec2i mousePos);
+    virtual bool checkIsHovered(vec2i mousePos);
+    virtual bool checkIsClicked(const Event& event, vec2i mousePos);
+    virtual bool updateIsPressed(const Event& event, bool prevPressedState, vec2i mousePos);
 };
 
 class AWindowVector : public IWindowVector, public AWindow

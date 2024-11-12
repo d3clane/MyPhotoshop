@@ -64,6 +64,11 @@ bool AWindow::checkIsHovered(vec2i mousePos)
         && mousePos.y >= pos_.y && mousePos.y < static_cast<int>(pos_.y + size_.y);
 }
 
+bool AWindow::checkIsClicked(const Event& event, vec2i mousePos)
+{
+    return checkIsHovered(mousePos) && event.type == Event::MouseButtonReleased;
+}
+
 bool AWindow::updateIsPressed(const Event& event, bool prevPressedState, vec2i mousePos)
 {
     bool hoveredRightNow  = checkIsHovered(mousePos);

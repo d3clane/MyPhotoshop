@@ -92,7 +92,8 @@ bool loadPlugin()
     button->setPos(pos);
     button->setSize(size);
 
-    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->addWindow(std::move(button));
+    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->
+        addWindow(std::unique_ptr<IBarButton>(button.release()));
 
     return true;
 }

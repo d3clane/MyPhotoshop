@@ -1,21 +1,19 @@
-#ifndef API_IMPLEMENTATION_PS_BAR_H_
-#define API_IMPLEMENTATION_PS_BAR_H_
+#ifndef PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_HPP
+#define PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_HPP
 
-#include "api/api_bar.hpp"
-#include "api/api_sfm.hpp"
-#include "plugins/pluginLib/windows/windows.hpp"
-
-using namespace psapi;
-using namespace sfm;
+#include "bars/ps_bar.hpp"
+#include "windows/windows.hpp"
 
 namespace ps
 {
 
-class ABar;
+static const wid_t kInstrumentsBarId = 10001;
 
-class ABarButton : public IBarButton, public AWindow
+class InstrumentsBar;
+
+class AInstrumentButton : public IBarButton, public AWindow
 {
-public:
+public: 
     void draw(IRenderWindow* renderWindow)         override;
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
 
@@ -40,20 +38,26 @@ public:
     void setSize(vec2u size);
 
 protected:
+    wid_t id_ = kInvalidWindowId;
+
+    const InstrumentsBar* parent_ = nullptr;
+    bool isActive_ = true;
+
+    vec2i pos_;
+    vec2u size_;
+
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
 
     State state_ = State::Normal;
 
-    virtual bool checkIsClicked(const Event& event);
-
+protected:
     bool updateState(const IRenderWindow* renderWindow, const Event& event);
 };
 
-class ABar : public IBar {
+class InstrumentsBar : public IBar
+{
 public:
-    ~ABar();
-
     void draw(IRenderWindow* renderWindow) override;
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
 
@@ -82,7 +86,7 @@ protected:
 
     std::unique_ptr<IRectangleShape> shape_;
     
-    std::vector<std::unique_ptr<ABarButton> > windows_;
+    std::vector<std::unique_ptr<AWindow>> windows_;
 
 protected:
     void   drawChildren(IRenderWindow* renderWindow);
@@ -90,8 +94,36 @@ protected:
 
     void setPos (vec2i pos);
     void setSize(vec2u size);
-};
+
+private:
+    enum class SpriteType
+    {
+        Hover = 0,
+        Press,
+        Release,
+        Count, // count of elements
+    };
+
+public:
+    InstrumentsBar(vec2i pos, vec2u size);
+
+    void addWindow(std::unique_ptr<IWindow> window) override;
+    void removeWindow(wid_t id) override;
+
+    ChildInfo getNextChildInfo() const override;
+
+    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
+
+protected:
+    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
+
+private:
+    size_t gapSize_ = 16;
+
+    std::unique_ptr<IRectangleShape> commonOutlineShape_;
+    std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
+}; 
 
 } // namespace ps
 
-#endif // API_IMPLEMENTATION_PS_BAR_H_
+#endif // PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_HPP

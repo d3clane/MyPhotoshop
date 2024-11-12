@@ -11,7 +11,7 @@ void ABarButton::draw(IRenderWindow* renderWindow)
     renderWindow->draw(mainSprite_.get());
 
     assert(parent_);
-    parent_->finishButtonDraw(renderWindow, this);
+    static_cast<const ABar*>(parent_)->finishButtonDraw(renderWindow, this);
 }
 
 IWindow* ABarButton::getWindowById(wid_t id) 
@@ -21,7 +21,7 @@ IWindow* ABarButton::getWindowById(wid_t id)
 
 const IWindow* ABarButton::getWindowById(wid_t id) const {
     if (id == id_)
-        return this;
+        return static_cast<const IBarButton*>(this);
 
     return nullptr;
 }
@@ -88,28 +88,17 @@ ABarButton::State ABarButton::getState() const
     return state_;
 }
 
-bool ABarButton::isHovered(vec2i mousePos)
+bool ABarButton::checkIsClicked(const Event& event)
 {
-    return mousePos.x >= pos_.x && mousePos.x < pos_.x + size_.x &&
-           mousePos.y >= pos_.y && mousePos.y < pos_.y + size_.y;
-}
-
-bool ABarButton::isPressed (const Event& event)
-{
-    return (event.type == event.MouseButtonPressed && isHovered({event.mouseButton.x, event.mouseButton.y}));
-}
-
-bool ABarButton::isClicked(const Event& event)
-{
-    return (event.type == event.MouseButtonReleased && isHovered({event.mouseButton.x, event.mouseButton.y}));
+    return (event.type == event.MouseButtonReleased && checkIsHovered({event.mouseButton.x, event.mouseButton.y}));
 }
 
 bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
 {
-    bool hovered = isHovered(Mouse::getPosition(renderWindow));
-    bool pressed = isPressed(event);
-
-    bool clicked = isClicked(event);
+    vec2i mousePos = Mouse::getPosition(renderWindow);
+    bool hovered = checkIsHovered(mousePos);
+    bool pressed = updateIsPressed(event, state_ == State::Press, mousePos);
+    bool clicked = checkIsClicked(event);
 
     if (clicked)
     {
@@ -121,9 +110,9 @@ bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& eve
     
     if (state_ != State::Released)
     {
-        if (hovered)      state_ = State::Hover;
-        else if (pressed) state_ = State::Press;
-        else              state_ = State::Normal;
+        state_ = State::Normal;
+        if (hovered) state_ = State::Hover;
+        if (pressed) state_ = State::Press;
     }
 
     return clicked || hovered || pressed;

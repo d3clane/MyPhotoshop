@@ -61,7 +61,7 @@ bool AScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
     if (!isHovered || !isPressed)
         return false;
 
-    moveButton_->setPos(mousePos);
+    moveButton_->setPos(mousePos - vec2i{size_.x / 2, size_.y / 2});
     moveButton_->setState(PressButton::State::Pressed);
 
     return true;
@@ -229,7 +229,7 @@ void AScrollBarButton::move(vec2d delta)
 
 void AScrollBarButton::setPos(vec2i pos)
 {
-    vec2d delta = vec2d{pos.x - pos_.x - size_.x / 2, pos.y - pos_.y - size_.y / 2};
+    vec2d delta = vec2d{pos.x - pos_.x, pos.y - pos_.y};
     move(delta);
 }
 
@@ -311,14 +311,13 @@ void ScrollBarX::updatePos()
 
     vec2i parentPos  = parent_->getPos();
     vec2u parentSize = parent_->getSize();
-    
-    setPos(vec2i{ parentPos.x, parentPos.y + parentSize.y });
+
+    setPos(vec2i{ parentPos.x, parentPos.y + parentSize.y});
 }
 
 void ScrollBarX::updateSize()
 {
     assert(parent_);
-
     vec2u parentSize = parent_->getSize();
 
     static const size_t prettyCoeff = 40;

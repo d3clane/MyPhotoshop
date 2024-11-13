@@ -6,7 +6,8 @@
 namespace psapi
 {
 
-class RootWindow : public IWindowVector {
+class RootWindow : public IWindowVector 
+{
 public:
     void draw  (      IRenderWindow* renderWindow) override;
     bool update(const IRenderWindow* renderWindow,
@@ -31,7 +32,6 @@ void RootWindow::draw(IRenderWindow* renderWindow)
     for (auto& window : windows_)
     {
         assert(window.get());
-        // std::cerr <<"DRAWING " << window.get() << std::endl;
         window->draw(renderWindow);
     }
 }

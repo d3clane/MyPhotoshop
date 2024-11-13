@@ -165,9 +165,9 @@ void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow)
     auto texture = ITexture::create();
     texture->create(size_.x, size_.y);
 
-    if (!layer.pixels_.data()) 
+    if (!layer.pixels_.data())
         return;
-    
+
     vec2i topLeft = calculateCutRectangleTopLeft(fullSize_, size_, scroll_);
     std::vector<Color> pixels = cutRectangle(layer.pixels_, fullSize_, topLeft, size_);
     texture->update(pixels.data(), size_.x, size_.y, 0, 0);

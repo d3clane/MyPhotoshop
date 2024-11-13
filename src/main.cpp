@@ -63,37 +63,3 @@ int main()
         renderWindow->display();
     }
 }
-
-#if 0
-int main()
-{
-    sf::Window window(sf::VideoMode(800, 600), "Touch Input Example");
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            switch (event.type) {
-                case sf::Event::MouseWheelScrolled:
-                    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) 
-                    {
-                        std::cerr << "VERTICAL SCROLL: " << event.mouseWheelScroll.delta << std::endl;
-                    }
-                    else
-                    {
-                        std::cerr << "HORIZONTAL SCROLL: " << event.mouseWheelScroll.delta << std::endl;
-                    }
-                    // You can use event.touch.x and event.touch.y to track the movement
-                    break;
-
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
-
-}
-#endif

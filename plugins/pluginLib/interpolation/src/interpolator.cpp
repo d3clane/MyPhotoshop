@@ -5,6 +5,15 @@
 namespace ps
 {
 
+namespace 
+{
+
+bool isEqual(const vec2d& point1, const vec2d& point2)
+{
+    return point1.x == point2.x && point1.y == point2.y;
+}
+
+}
 void Interpolator::updateInterpolation()
 {
     if (isPossibleToDraw())
@@ -17,7 +26,14 @@ void Interpolator::updateInterpolation()
 
 void Interpolator::pushBack(const vec2d& point)
 {
-    points_.push_back(point);
+    bool ignoring = 
+        (points_.size() >= 1 && isEqual(points_[points_.size() - 1], point)) || 
+        (points_.size() >= 2 && isEqual(points_[points_.size() - 2], point)) || 
+        (points_.size() >= 3 && isEqual(points_[points_.size() - 3], point));
+
+    if (!ignoring)
+        points_.push_back(point);
+    
     updateInterpolation();
 }
 

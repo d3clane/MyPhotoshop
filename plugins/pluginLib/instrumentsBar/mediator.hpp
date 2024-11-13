@@ -23,7 +23,7 @@ public:
 
     virtual ~AFillPropertiesMediator() = default;
 private:
-    DrawingProperties fillProperties_;
+    DrawingProperties fillProperties_ = { Color{255, 0, 0, 255}, 4 }; // TODO: temp solution
 };
 
 class AOutlinePropertiesMediator

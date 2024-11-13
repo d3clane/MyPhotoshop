@@ -39,6 +39,9 @@ public:
     virtual void setSize(vec2u size);
 
 protected:
+    bool updateState(const IRenderWindow* renderWindow, const Event& event);
+
+protected:
     wid_t id_ = kInvalidWindowId;
 
     vec2i pos_;
@@ -49,8 +52,6 @@ protected:
     const ABar* parent_ = nullptr;
 
     State state_ = State::Normal;
-    
-    bool updateState(const IRenderWindow* renderWindow, const Event& event);
 };
 
 class ASpritedBarButton : public ABarButton
@@ -72,7 +73,7 @@ public:
     ~ABar();
 
     void draw(IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override = 0;
 
     vec2i getPos()  const override;
     vec2u getSize() const override;
@@ -86,6 +87,12 @@ public:
     bool isWindowContainer() const override;
 
 protected:
+    virtual void drawChildren(IRenderWindow* renderWindow) = 0;
+    
+    void setPos (vec2i pos);
+    void setSize(vec2u size);
+
+protected:
     wid_t id_ = kInvalidWindowId;
 
     const IWindow* parent_ = nullptr;
@@ -95,15 +102,29 @@ protected:
     vec2u size_;
 
     std::unique_ptr<IRectangleShape> shape_;
-    
-protected:
-    virtual void drawChildren(IRenderWindow* renderWindow) = 0;
-    
-    void setPos (vec2i pos);
-    void setSize(vec2u size);
 };
 
-// BarChildrenHandler implementation
+class AShapedBar : public ABar
+{
+protected:
+    enum class SpriteType
+    {
+        Hover = 0,
+        Press,
+        Release,
+        Count, // count of elements
+    };
+
+protected:
+    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
+    void setShape(std::unique_ptr<IRectangleShape> shape, SpriteType pos);
+    
+protected:    
+
+    std::unique_ptr<IRectangleShape> commonOutlineShape_;
+    std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
+};
+
 
 namespace bar_children_handler_funcs
 {

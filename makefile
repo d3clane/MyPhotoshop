@@ -33,7 +33,9 @@ override CFLAGS += $(COMMONINC)
 override CFLAGS += $(LIB_INC)
 
 CPPSRC = src/main.cpp
-PLUGIN_LIB_NAMES := bars/ps_bar.cpp canvas/canvas.cpp interpolation/src/catmullRom.cpp interpolation/src/interpolator.cpp windows/windows.cpp #scrollbar/scrollbar.cpp
+PLUGIN_LIB_NAMES := bars/ps_bar.cpp canvas/canvas.cpp interpolation/src/catmullRom.cpp \
+					interpolation/src/interpolator.cpp windows/windows.cpp scrollbar/scrollbar.cpp \
+					instrumentsBar/actions.cpp instrumentsBar/instrumentsBar.cpp
 PLUGIN_LIB = $(addprefix plugins/pluginLib/, $(PLUGIN_LIB_NAMES))
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
@@ -67,7 +69,7 @@ $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.
 $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp plugins/pluginLib/scrollbar/scrollbar.cpp $(PLUGIN_LIB) $(PS_API_LIB)
+$(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp $(PLUGIN_LIB) $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_toolbar.dylib: plugins/toolbar/toolbar.cpp $(PLUGIN_LIB) $(PS_API_LIB)

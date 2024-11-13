@@ -102,36 +102,6 @@ void Toolbar::drawChildren(IRenderWindow* renderWindow)
         window->draw(renderWindow);
 }
 
-void Toolbar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
-{
-    commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
-    for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
-        shapes_[i]->setPosition(vec2i{button->getPos().x, button->getPos().y});
-
-    switch (button->getState()) 
-    {
-        case IBarButton::State::Normal:
-            break;
-        case IBarButton::State::Hover:
-            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Hover)].get());
-            renderWindow->draw(commonOutlineShape_.get());
-            break;
-        case IBarButton::State::Press:
-            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Press)].get());
-            renderWindow->draw(commonOutlineShape_.get());
-            break;
-        case IBarButton::State::Released:
-            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Release)].get());
-            renderWindow->draw(commonOutlineShape_.get());
-            break;
-
-        default:
-            assert(false);
-            std::terminate();
-            break;
-    }
-}
-
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
 {
     ASpritedBarButton* button = nullptr;
@@ -166,7 +136,7 @@ void Toolbar::removeWindow(wid_t id)
 
 bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
 {
-    auto renderWindowSize = renderWindow->getSize();
+    vec2u renderWindowSize = renderWindow->getSize();
     setSize({renderWindowSize.x * ToolbarSize.x,
              renderWindowSize.y * ToolbarSize.y});
 

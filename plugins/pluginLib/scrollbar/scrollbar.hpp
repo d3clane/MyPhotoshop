@@ -18,6 +18,8 @@ public:
 
     virtual vec2u getVisibleSize() = 0;
     virtual vec2u getFullSize() = 0;
+
+    virtual ~IScrollable() = default;
 };
 
 class IScrollableWindow : public IScrollable, public IWindow

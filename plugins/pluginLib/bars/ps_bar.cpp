@@ -196,4 +196,43 @@ bool ABar::isWindowContainer() const
     return true;
 }
 
+// AShapedBar implementation
+
+void AShapedBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
+{
+    commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
+    for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
+        shapes_[i]->setPosition(vec2i{button->getPos().x, button->getPos().y});
+
+    switch (button->getState()) 
+    {
+        case IBarButton::State::Normal:
+            break;
+        case IBarButton::State::Hover:
+            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Hover)].get());
+            renderWindow->draw(commonOutlineShape_.get());
+            break;
+        case IBarButton::State::Press:
+            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Press)].get());
+            renderWindow->draw(commonOutlineShape_.get());
+            break;
+        case IBarButton::State::Released:
+            renderWindow->draw(shapes_[static_cast<size_t>(SpriteType::Release)].get());
+            renderWindow->draw(commonOutlineShape_.get());
+            break;
+
+        default:
+            assert(false);
+            std::terminate();
+            break;
+    }
+}
+
+void AShapedBar::setShape(std::unique_ptr<IRectangleShape> shape, SpriteType pos)
+{
+    assert(static_cast<size_t>(pos) < static_cast<size_t>(SpriteType::Count));
+    
+    shapes_[static_cast<size_t>(pos)] = std::move(shape);
+}
+
 } // namespace ps

@@ -3,62 +3,21 @@
 
 #include "bars/ps_bar.hpp"
 #include "windows/windows.hpp"
+#include "mediator.hpp"
+#include "actions.hpp"
 
 namespace ps
 {
 
 static const wid_t kInstrumentsBarId = 10001;
 
-class InstrumentsBar;
-
-class ColorButton : public ABarButton
+class InstrumentsBar : public AShapedBar
 {
 public:
-    void draw(IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    InstrumentsBar();
 
-protected:
-    std::unique_ptr<ABar> colorChoiceBar_;
-
-    std::unique_ptr<IText> text_;
-};
-
-class InstrumentsBar : public ABar
-{
-public:
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
-
-protected:
-    wid_t id_ = kInvalidWindowId;
-
-    const IWindow* parent_ = nullptr;
-    bool isActive_ = true;
-
-    vec2i pos_;
-    vec2u size_;
-
-    std::unique_ptr<IRectangleShape> shape_;
-    
-    std::vector<std::unique_ptr<AWindow>> windows_;
-
-protected:
-    void   drawChildren(IRenderWindow* renderWindow);
-    bool updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event);
-
-    void setPos (vec2i pos);
-    void setSize(vec2u size);
-
-private:
-    enum class SpriteType
-    {
-        Hover = 0,
-        Press,
-        Release,
-        Count, // count of elements
-    };
-
-public:
-    InstrumentsBar(vec2i pos, vec2u size);
+    IWindow* getWindowById(wid_t id) override;
+    const IWindow* getWindowById(wid_t id) const override;
 
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
@@ -68,14 +27,60 @@ public:
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
 
 protected:
-    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
+    void drawChildren(IRenderWindow* renderWindow) override;
+
+private:    
+    std::vector<std::unique_ptr<ABarButton>> windows_;
+
+    size_t gapSize_ = 2;
+
+    mutable vec2i maxChildPosNow_;
+}; 
+
+class ColorButton : public ABarButton
+{
+public:
+    ColorButton(std::shared_ptr<AChangeColorAction> action);
+
+    void draw(IRenderWindow* renderWindow) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+
+    void setPos (vec2i pos ) override;
+    void setSize(vec2u size) override;
+
+protected:
+    std::unique_ptr<IRectangleShape> shape_;
+
+    std::shared_ptr<AChangeColorAction> action_;
+};
+
+class ColorBar : public AShapedBar
+{
+public:
+    ColorBar(vec2i pos, vec2u size); // TODO: connects to his parent in the future
+    IWindow* getWindowById(wid_t id) override;
+    const IWindow* getWindowById(wid_t id) const override;
+
+    void addWindow(std::unique_ptr<IWindow> window) override;
+    void removeWindow(wid_t id) override;
+
+    ChildInfo getNextChildInfo() const override;
+
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+
+protected:
+    void drawChildren(IRenderWindow* renderWindow) override;
 
 private:
     size_t gapSize_ = 16;
+    vec2u childSize_ = {16, 16};
 
-    std::unique_ptr<IRectangleShape> commonOutlineShape_;
-    std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
-}; 
+    std::vector<std::unique_ptr<ColorButton>> windows_;
+
+    mutable vec2i nextChildPos_ = {gapSize_, 0};
+};
+
+std::unique_ptr<InstrumentsBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMediator> mediator);
 
 } // namespace ps
 

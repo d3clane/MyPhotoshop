@@ -15,17 +15,8 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class Toolbar : public ABar 
+class Toolbar : public AShapedBar 
 {
-private:
-    enum class SpriteType
-    {
-        Hover = 0,
-        Press,
-        Release,
-        Count, // count of elements
-    };
-
 public:
     Toolbar(vec2i pos, vec2u size);
     ~Toolbar() = default;
@@ -41,7 +32,6 @@ public:
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
 
 protected:
-    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override; 
     void drawChildren(IRenderWindow* renderWindow) override;
 
 private:
@@ -53,9 +43,6 @@ private:
     vec2i childSize_ = {64, 64};
 
     std::vector<std::unique_ptr<ASpritedBarButton>> windows_;
-
-    std::unique_ptr<IRectangleShape> commonOutlineShape_;
-    std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
 };
 
 } // namespace

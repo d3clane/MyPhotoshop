@@ -56,7 +56,8 @@ protected:
     void drawChildren(IRenderWindow* renderWindow);
 };
 
-class AWindowContainer : public IWindowContainer, public AWindow
+#if 0
+class AWindowContainer : public IWindowContainer
 {
 public:
     AWindowContainer(vec2i pos = {0, 0}, vec2u size = {0, 0}, wid_t id = kInvalidWindowId);
@@ -78,6 +79,7 @@ public:
 
     bool isActive() const override;
 };
+#endif
 
 vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize, 
                           const vec2i& boundaryPos, const vec2u& boundarySize);

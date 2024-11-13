@@ -38,8 +38,7 @@ void PressButton::setShape(std::unique_ptr<IRectangleShape> shape, State state)
 
 // Scrollbar implementation
 
-AScrollBar::AScrollBar(vec2i pos, vec2u size, wid_t id) 
-    : AWindowContainer(pos, size, id)
+AScrollBar::AScrollBar(vec2i pos, vec2u size, wid_t id) : pos_(pos), size_(size), id_(id)
 {
 }
 
@@ -56,7 +55,7 @@ bool AScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
         return true;
 
     vec2i mousePos = sfm::Mouse::getPosition(renderWindow);
-    bool isHovered = checkIsHovered(mousePos);
+    bool isHovered = checkIsHovered(mousePos, pos_, size_);
     bool isPressed = (event.type == Event::MouseButtonPressed);
 
     if (!isHovered || !isPressed)
@@ -84,6 +83,46 @@ IWindow* AScrollBar::getWindowById(wid_t id)
 const IWindow* AScrollBar::getWindowById(wid_t id) const
 {
     return (id_ == id ? static_cast<const IWindowContainer*>(this) : nullptr);
+}
+
+bool AScrollBar::isWindowContainer() const
+{
+    return true;
+}
+
+wid_t AScrollBar::getId() const
+{
+    return id_;
+}
+
+vec2i AScrollBar::getPos() const
+{
+    return pos_;
+}
+
+vec2u AScrollBar::getSize() const
+{
+    return size_;
+}
+
+void AScrollBar::setParent(const IWindow* parent)
+{
+    parent_ = parent;
+}
+
+void AScrollBar::forceActivate()
+{
+    isActive_ = true;
+}
+
+void AScrollBar::forceDeactivate()
+{
+    isActive_ = false;
+}
+
+bool AScrollBar::isActive() const
+{
+    return isActive_;
 }
 
 void AScrollBar::addWindow(std::unique_ptr<IWindow> window)
@@ -158,29 +197,30 @@ void AScrollBarButton::setSize(vec2u size)
     size_ = size;
 }
 
-void AScrollBarButton::move(vec2i delta)
+void AScrollBarButton::move(vec2d delta)
 {
     assert(scrollable_);
 
     assert(parent_);
-    const AScrollBar* parent = dynamic_cast<const AScrollBar*>(parent_); // TODO: change
+    const AScrollBar* parent = static_cast<const AScrollBar*>(parent_); // TODO: change
     assert(parent);
-
-    vec2i newPos = parent->shrinkPosToBoundaries(pos_ + delta, size_);
-    for (auto& shape : shapes_)
-        shape->setPosition(newPos);
 
     vec2u parentSize = parent->getSize();
     
-    vec2f scrollNow = scrollable_->getScroll();
+    vec2f scrollNow = scrollable_->getScroll(); 
+
     if (parentSize.x != 0)
     {
-        scroll_.x = static_cast<float>(newPos.x - zeroScrollPos_.x) / static_cast<float>(parentSize.x - size_.x);
-        scroll_.y = static_cast<float>(newPos.y - zeroScrollPos_.y) / static_cast<float>(parentSize.y - size_.y);
+        scroll_.x += delta.x / static_cast<float>(parentSize.x - size_.x);
+        scroll_.y += delta.y / static_cast<float>(parentSize.y - size_.y);
     }
 
     scroll_.x = canScrollX_ ? scroll_.x : scrollNow.x;
-    scroll_.y = canScrollY_ ? scroll_.y : scrollNow.y;    
+    scroll_.y = canScrollY_ ? scroll_.y : scrollNow.y;
+
+    vec2i newPos = parent->shrinkPosToBoundaries(zeroScrollPos_ + vec2i{scroll_.x * (parentSize.x - size_.x), scroll_.y * (parentSize.y - size_.y)}, size_);
+    for (auto& shape : shapes_)
+        shape->setPosition(newPos);
 
     pos_ = newPos;
 
@@ -189,7 +229,7 @@ void AScrollBarButton::move(vec2i delta)
 
 void AScrollBarButton::setPos(vec2i pos)
 {
-    vec2i delta = vec2i{pos.x - pos_.x - size_.x / 2, pos.y - pos_.y - size_.y / 2};
+    vec2d delta = vec2d{pos.x - pos_.x - size_.x / 2, pos.y - pos_.y - size_.y / 2};
     move(delta);
 }
 
@@ -241,7 +281,7 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
         return false;
 
     if (wasPressed)
-        move(mousePos - pressPos_);
+        move(vec2d{mousePos.x - pressPos_.x, mousePos.y - pressPos_.y});
 
     pressPos_ = mousePos;
 
@@ -333,7 +373,7 @@ void ScrollBarButtonX::updateZeroScrollPos()
         return;
 
     assert(parent_);
-    const AScrollBar* parent = dynamic_cast<const AScrollBar*>(parent_);
+    const AScrollBar* parent = static_cast<const AScrollBar*>(parent_);
     assert(parent);
 
     vec2i newPos = parent->shrinkPosToBoundaries(parent_->getPos() , size_);
@@ -373,7 +413,7 @@ void ScrollBarButtonY::updateZeroScrollPos()
         return;
 
     assert(parent_);
-    const AScrollBar* parent = dynamic_cast<const AScrollBar*>(parent_);
+    const AScrollBar* parent = static_cast<const AScrollBar*>(parent_);
     assert(parent);
 
     vec2i newPos = parent->shrinkPosToBoundaries(parent_->getPos() , size_);
@@ -425,8 +465,24 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
         return false;
     }
 
+    if (event.type != Event::MouseWheelScrolled)
+        return false;
+
+    static const double scrollSpeed = -1;
+
+    vec2d myScroll;
+    if (event.mouseWheel.wheel == Mouse::Wheel::Vertical)
+        myScroll = {0, event.mouseWheel.delta * scrollSpeed};
+    else
+        myScroll = {event.mouseWheel.delta * scrollSpeed, 0};
+
+    scrollBarButtonX->move(myScroll);
+    scrollBarButtonY->move(myScroll);
+    
+#if 0
     updatePromisedScroll(event);
     proceedPromisedScroll(scrollBarButtonX, scrollBarButtonY);
+#endif
 
     return true;
 }
@@ -475,6 +531,20 @@ const IWindow* ScrollBarsXYManager::getWindowById(wid_t id) const
     return nullptr;
 }
 
+bool ScrollBarsXYManager::isWindowContainer() const { return true; }
+
+wid_t ScrollBarsXYManager::getId() const { return id_; }
+
+vec2i ScrollBarsXYManager::getPos() const { return pos_; }
+vec2u ScrollBarsXYManager::getSize() const { return size_; }
+
+void ScrollBarsXYManager::setParent(const IWindow* parent) { parent_ = parent; }
+
+void ScrollBarsXYManager::forceActivate() { isActive_ = true; }
+void ScrollBarsXYManager::forceDeactivate() { isActive_ = false; }
+
+bool ScrollBarsXYManager::isActive() const { return isActive_; }
+
 void ScrollBarsXYManager::updatePromisedScroll(const Event& event)
 {
     if (event.type != Event::MouseWheelScrolled)
@@ -512,8 +582,8 @@ void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButto
     vec2i scrollInPixels = vec2i{static_cast<int>(scrollInPixels_float.x), 
                                  static_cast<int>(scrollInPixels_float.y)};
     
-    scrollBarButtonX->move(scrollInPixels);
-    scrollBarButtonY->move(scrollInPixels);
+    //scrollBarButtonX->move(scrollInPixels);
+    //scrollBarButtonY->move(scrollInPixels);
 
     promisedScroll_ -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
 }

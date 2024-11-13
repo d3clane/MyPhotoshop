@@ -56,7 +56,7 @@ public:
 
     void setSize(vec2u size);
 
-    void move  (vec2i offset); // TODO: transformable 
+    void move  (vec2d offset); // TODO: transformable 
     void setPos(vec2i pos);
 
     void setState(State state);
@@ -88,7 +88,7 @@ protected:
     bool canScrollY_ = false;
 };
 
-class AScrollBar : public AWindowContainer
+class AScrollBar : public IWindowContainer
 {
 public:
     AScrollBar(vec2i pos, vec2u size, wid_t id);
@@ -99,13 +99,28 @@ public:
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
 
-    void addWindow(std::unique_ptr<IWindow> window) override;
-    void removeWindow(wid_t id) override;
+    bool isWindowContainer() const override;
+
+    wid_t getId() const override;
+
+    vec2i getPos() const override;
+    vec2u getSize() const override;
+
+    void setParent(const IWindow* parent) override;
+
+    void forceActivate() override;
+    void forceDeactivate() override;
+
+    bool isActive() const override;
 
     vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const;
 
+    void addWindow(std::unique_ptr<IWindow> window) override;
+    void removeWindow(wid_t id);
+
     void setShape(std::unique_ptr<IRectangleShape> shape);
     void setMoveButton(std::unique_ptr<AScrollBarButton> moveButton);
+
     AScrollBarButton* getMoveButton();
 
 protected:
@@ -116,6 +131,15 @@ protected:
     void setSize(vec2u size);
 
 protected:
+    wid_t id_ = kInvalidWindowId;
+
+    vec2i pos_;
+    vec2u size_;
+
+    bool isActive_ = true;
+
+    const IWindow* parent_ = nullptr;
+
     std::unique_ptr<IRectangleShape> shape_;
 
     std::unique_ptr<AScrollBarButton> moveButton_;
@@ -158,7 +182,7 @@ protected:
     void updateSize()          override;
 };
 
-class ScrollBarsXYManager : public AWindowContainer
+class ScrollBarsXYManager : public IWindowContainer
 {
 public:
     ScrollBarsXYManager(std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY);
@@ -166,17 +190,40 @@ public:
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
 
-    void addWindow(std::unique_ptr<IWindow> window) override;
-    void removeWindow(wid_t id) override;
-
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
+
+    bool isWindowContainer() const override;
+
+    wid_t getId() const override;
+
+    vec2i getPos() const override;
+    vec2u getSize() const override;
+
+    void setParent(const IWindow* parent) override;
+
+    void forceActivate() override;
+    void forceDeactivate() override;
+
+    bool isActive() const override;
+
+    void addWindow(std::unique_ptr<IWindow> window) override;
+    void removeWindow(wid_t id);
 
 private:
     void updatePromisedScroll (const Event& event);
     void proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, ScrollBarButtonY* scrollBarButtonY);
 
 private:
+    wid_t id_ = kInvalidWindowId;
+
+    vec2i pos_;
+    vec2u size_;
+
+    bool isActive_ = true;
+
+    const IWindow* parent_ = nullptr;
+
     std::unique_ptr<ScrollBarX> scrollBarX_;
     std::unique_ptr<ScrollBarY> scrollBarY_;
 

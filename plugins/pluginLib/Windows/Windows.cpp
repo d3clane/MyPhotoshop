@@ -113,6 +113,7 @@ void AWindowVector::drawChildren(IRenderWindow* renderWindow)
 
 // AWindowContainer implementation
 
+#if 0
 AWindowContainer::AWindowContainer(vec2i pos, vec2u size, wid_t id) : AWindow(pos, size, id)
 {
 }
@@ -127,6 +128,8 @@ void AWindowContainer::forceActivate()                  { AWindow::forceActivate
 void AWindowContainer::forceDeactivate()                { AWindow::forceDeactivate(); }
 bool AWindowContainer::isActive() const                 { return AWindow::isActive(); }
 void AWindowContainer::setParent(const IWindow* parent) { AWindow::setParent(parent); }
+
+#endif
 
 // other functions implementation
 

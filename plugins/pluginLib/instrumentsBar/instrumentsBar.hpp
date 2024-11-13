@@ -80,7 +80,7 @@ private:
     mutable vec2i nextChildPos_ = {gapSize_, 0};
 };
 
-std::unique_ptr<InstrumentsBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMediator> mediator);
+std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMediator> mediator);
 
 } // namespace ps
 

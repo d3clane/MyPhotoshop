@@ -107,7 +107,7 @@ void Toolbar::addWindow(std::unique_ptr<IWindow> window)
     ASpritedBarButton* button = nullptr;
     try
     {
-        button = dynamic_cast<ASpritedBarButton*>(window.get());
+        button = static_cast<ASpritedBarButton*>(window.get());
         assert(button);
         button->setParent(this);
     }

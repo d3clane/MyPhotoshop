@@ -25,7 +25,7 @@ std::unique_ptr<IRectangleShape> createColorRectShape(Color color)
 
 vec2u calculateFullSize(vec2u size)
 {
-    static const size_t prettyCoeff = 10;
+    static const size_t prettyCoeff = 2;
 
     return size * prettyCoeff;
 }

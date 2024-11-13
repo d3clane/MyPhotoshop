@@ -167,10 +167,11 @@ bool loadPlugin() // onLoadPlugin
     assert(toolbar);
 
     auto mediator = std::make_shared<APropertiesMediator>();
-    //auto instrumentBar = createCommonInstrumentBar(mediator);
+    auto instrumentBar = createCommonInstrumentBar(mediator);
     auto button = createButton(toolbar, mediator);
 
     toolbar->addWindow(std::move(button));
+    rootWindow->addWindow(std::move(instrumentBar));
 
     return true;
 }

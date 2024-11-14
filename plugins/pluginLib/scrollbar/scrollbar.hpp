@@ -210,9 +210,11 @@ public:
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id);
 
+#if 0
 private:
     void updatePromisedScroll (const Event& event);
     void proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, ScrollBarButtonY* scrollBarButtonY);
+#endif
 
 private:
     wid_t id_ = kInvalidWindowId;
@@ -227,7 +229,9 @@ private:
     std::unique_ptr<ScrollBarX> scrollBarX_;
     std::unique_ptr<ScrollBarY> scrollBarY_;
 
+#if 0
     vec2f promisedScroll_ = {0, 0};
+#endif
 };
 } // namespace ps
 

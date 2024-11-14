@@ -81,6 +81,8 @@ bool InstrumentsBar::update(const IRenderWindow* renderWindow, const Event& even
     // Turn off all buttons if pressed outside 
     for (auto& window : windows_)
         window->setState(ABarButton::State::Normal);
+    
+    return true;
 }
 
 void InstrumentsBar::drawChildren(IRenderWindow* renderWindow)
@@ -204,6 +206,8 @@ bool ColorBar::update(const IRenderWindow* renderWindow, const Event& event)
 
     if (updatedChildren)
         return true;
+    
+    return false;
 }
 
 void ColorBar::drawChildren(IRenderWindow* renderWindow)

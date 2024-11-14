@@ -449,6 +449,9 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
     scrollBarX_->update(renderWindow, event);
     scrollBarY_->update(renderWindow, event);
 
+    if (event.type != Event::MouseWheelScrolled)
+        return false;
+
     ScrollBarButtonX* scrollBarButtonX = static_cast<ScrollBarButtonX*>(scrollBarX_->getMoveButton());
     ScrollBarButtonY* scrollBarButtonY = static_cast<ScrollBarButtonY*>(scrollBarY_->getMoveButton());
     assert(scrollBarButtonX);
@@ -460,12 +463,12 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
     if (!ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 
                             scrollable->getPos(), scrollable->getSize()))
     {
+    #if 0
         promisedScroll_ = {0, 0};
+    #endif
+
         return false;
     }
-
-    if (event.type != Event::MouseWheelScrolled)
-        return false;
 
     static const double scrollSpeed = -1;
 
@@ -544,6 +547,7 @@ void ScrollBarsXYManager::forceDeactivate() { isActive_ = false; }
 
 bool ScrollBarsXYManager::isActive() const { return isActive_; }
 
+#if 0
 void ScrollBarsXYManager::updatePromisedScroll(const Event& event)
 {
     if (event.type != Event::MouseWheelScrolled)
@@ -586,5 +590,6 @@ void ScrollBarsXYManager::proceedPromisedScroll(ScrollBarButtonX* scrollBarButto
 
     promisedScroll_ -= vec2f{static_cast<float>(scrollInPixels.x), static_cast<float>(scrollInPixels.y)};
 }
+#endif
 
 } // namespace ps

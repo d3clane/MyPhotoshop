@@ -1,6 +1,6 @@
 CC := g++
 
-CFLAGS = -D NDEBUG -ggdb3 -std=c++17 -O3 -Wall -Wextra -Weffc++ \
+CFLAGS = -D NDEBUG -std=c++17 -O3 -Wno-narrowing #-Wall -Wextra -Weffc++ \
 		   -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts 		  \
 		   -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal      \
 		   -Wformat-nonliteral -Wformat-security -Wformat=2 \

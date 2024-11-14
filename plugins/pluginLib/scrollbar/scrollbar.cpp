@@ -472,14 +472,14 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
 
     static const double scrollSpeed = -1;
 
-    vec2d myScroll;
+    vec2d deltaMove;
     if (event.mouseWheel.wheel == Mouse::Wheel::Vertical)
-        myScroll = {0, event.mouseWheel.delta * scrollSpeed};
+        deltaMove = {0, event.mouseWheel.delta * scrollSpeed};
     else
-        myScroll = {event.mouseWheel.delta * scrollSpeed, 0};
+        deltaMove = {event.mouseWheel.delta * scrollSpeed, 0};
 
-    scrollBarButtonX->move(myScroll);
-    scrollBarButtonY->move(myScroll);
+    scrollBarButtonX->move(deltaMove);
+    scrollBarButtonY->move(deltaMove);
     
 #if 0
     updatePromisedScroll(event);

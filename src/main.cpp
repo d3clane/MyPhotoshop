@@ -35,7 +35,7 @@ void loadPlugin(const char* libName)
 int main()
 {
     auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "photoshop");
-    renderWindow->setFps(180);
+    renderWindow->setFps(60);
     
     loadPlugin("libs/lib_canvas.dylib");
     loadPlugin("libs/lib_toolbar.dylib");
@@ -49,17 +49,16 @@ int main()
     while (renderWindow->isOpen())
     {
         psapi::sfm::Event event;
-        if (renderWindow->pollEvent(event))
+        while (renderWindow->pollEvent(event))
         {
             if (event.type == psapi::sfm::Event::Closed)
                 renderWindow->close();
 
+            rootWindow->update(renderWindow.get(), event);
         }
+
         renderWindow->clear();
-
         rootWindow->draw(renderWindow.get());
-        rootWindow->update(renderWindow.get(), event);
-
         renderWindow->display();
     }
 }

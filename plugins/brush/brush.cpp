@@ -90,6 +90,7 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
     if (state_ != State::Released)
         return updatedState;
     
+    // TODO: may be really slow
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
 
     if (!canvas)
@@ -142,7 +143,7 @@ void BrushButton::drawPoint(ILayer* layer, const vec2d& point)
         for (int j = -drawingRange; j <= drawingRange; ++j)
         {
             vec2d pos = point + vec2d{i, j};
-            layer->setPixelOnScreen(vec2i{pos.x, pos.y}, color);
+            layer->setPixel(vec2i{pos.x, pos.y}, color);
         }
     }
 }

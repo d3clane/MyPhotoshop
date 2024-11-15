@@ -43,6 +43,7 @@ int main()
     loadPlugin("libs/lib_brush.dylib");
     loadPlugin("libs/lib_line.dylib");
     loadPlugin("libs/lib_ellipse.dylib");
+    loadPlugin("libs/lib_negative_filter.dylib");
 
     auto rootWindow = psapi::getRootWindow();
 

@@ -68,7 +68,7 @@ Layer::Layer(vec2u size) : fullSize_(size), pixels_(fullSize_.x * fullSize_.y)
 {
 }
 
-Color Layer::getPixelOnScreen(vec2i pos) const 
+Color Layer::getPixel(vec2i pos) const 
 {
     if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
         return {0, 0, 0, 0};
@@ -76,7 +76,7 @@ Color Layer::getPixelOnScreen(vec2i pos) const
     return pixels_.at(getCutRectPosInFullPixelsArray(area_, pos, fullSize_));
 }
 
-void Layer::setPixelOnScreen(vec2i pos, Color pixel) 
+void Layer::setPixel(vec2i pos, Color pixel) 
 {
     if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
         return;
@@ -148,6 +148,22 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
     if (!isActive_)
         return false;
 
+#if 0
+    auto tmp = IImage::create();
+
+    assert(tmp);
+    tmp->loadFromFile("forest.jpg");
+    assert(tmp);
+
+    for (size_t x = 0; x < size_.x; ++x)
+    {
+        for (size_t y = 0; y < size_.y; ++y)
+        {
+            layers_[activeLayer_]->setPixel(vec2i{x, y}, tmp->getPixel(vec2u{x, y}));
+        }
+    }
+
+#endif
     vec2u renderWindowSize = renderWindow->getSize();
     setSize({renderWindowSize.x * CanvasSize.x , renderWindowSize.y * CanvasSize.y});
     setPos ({CanvasTopLeftPos.x * renderWindowSize.x, CanvasTopLeftPos.y * renderWindowSize.y});
@@ -216,7 +232,7 @@ void Canvas::cleanTempLayer()
     for (int x = 0; x < fullSize_.x; x++) 
     {
         for (int y = 0; y < fullSize_.y; y++) 
-            tempLayer_->setPixelOnScreen({x, y}, pixel);
+            tempLayer_->setPixel({x, y}, pixel);
     }
 }
 
@@ -246,7 +262,7 @@ bool Canvas::insertLayer(size_t index, std::unique_ptr<ILayer> layer)
         for (int y = 0; y < fullSize_.y; y++) 
         {
             vec2i pos = {x, y};
-            newLayer->setPixelOnScreen(pos, layer->getPixelOnScreen(pos));
+            newLayer->setPixel(pos, layer->getPixel(pos));
         }
     }
 
@@ -472,11 +488,6 @@ bool loadPlugin()
 
     rootWindow->addWindow(std::unique_ptr<ICanvas>(canvas.release()));
     rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarsXYManager.release()));
-
-#if 0
-    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarX.release()));
-    rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarY.release()));
-#endif
 
     return true;
 }

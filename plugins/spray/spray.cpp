@@ -58,7 +58,7 @@ bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
     auto mousePos = canvas->getMousePosition();
     for (int i = -5; i < 5; ++i)
         for (int j = -5; j < 5; ++j)
-            activeLayer->setPixelOnScreen({mousePos.x + i, mousePos.y + j}, {0xFF, 0x00, 0x00, 0xFF});
+            activeLayer->setPixel({mousePos.x + i, mousePos.y + j}, {0xFF, 0x00, 0x00, 0xFF});
     
     return updatedState;
 }

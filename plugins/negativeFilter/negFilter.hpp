@@ -1,0 +1,12 @@
+#ifndef PLUGINS_NEGATIVE_FILTER_NEG_FILTER_HPP
+#define PLUGINS_NEGATIVE_FILTER_NEG_FILTER_HPP
+
+extern "C"
+{
+
+bool loadPlugin();
+void unloadPlugin();
+
+}
+
+#endif // PLUGINS_NEGATIVE_FILTER_NEG_FILTER_HPP

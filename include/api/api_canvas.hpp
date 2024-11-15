@@ -14,8 +14,8 @@ const wid_t kCanvasWindowId = 100;
 class ILayer {
 public:
     virtual ~ILayer() = default;
-    virtual sfm::Color getPixelOnScreen(sfm::vec2i pos) const = 0;
-    virtual void       setPixelOnScreen(sfm::vec2i pos, sfm::Color pixel) = 0;
+    virtual sfm::Color getPixel(sfm::vec2i pos) const = 0;
+    virtual void       setPixel(sfm::vec2i pos, sfm::Color pixel) = 0;
 };
 
 class ICanvas : public IWindow {

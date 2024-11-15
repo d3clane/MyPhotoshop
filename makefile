@@ -1,6 +1,6 @@
 CC := g++
 
-CFLAGS = -D NDEBUG -std=c++17 -O3 -Wno-narrowing #-Wall -Wextra -Weffc++ \
+CFLAGS = -D _DEBUG -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts 		  \
 		   -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal      \
 		   -Wformat-nonliteral -Wformat-security -Wformat=2 \
@@ -35,7 +35,7 @@ override CFLAGS += $(LIB_INC)
 CPPSRC = src/main.cpp
 PLUGIN_LIB_NAMES := bars/ps_bar.cpp canvas/canvas.cpp interpolation/src/catmullRom.cpp \
 					interpolation/src/interpolator.cpp windows/windows.cpp scrollbar/scrollbar.cpp \
-					instrumentsBar/actions.cpp instrumentsBar/instrumentsBar.cpp
+					instrumentBar/actions.cpp instrumentBar/instrumentBar.cpp
 PLUGIN_LIB = $(addprefix plugins/pluginLib/, $(PLUGIN_LIB_NAMES))
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))

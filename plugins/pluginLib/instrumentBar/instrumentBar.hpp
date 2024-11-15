@@ -9,12 +9,12 @@
 namespace ps
 {
 
-static const wid_t kInstrumentsBarId = 10001;
+static const wid_t kInstrumentBarId = 10001;
 
-class InstrumentsBar : public AShapedBar
+class InstrumentBar : public AShapedButtonsBar
 {
 public:
-    InstrumentsBar();
+    InstrumentBar();
 
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
@@ -54,10 +54,11 @@ protected:
     std::shared_ptr<AChangeColorAction> action_;
 };
 
-class ColorBar : public AShapedBar
+class ColorBar : public AShapedButtonsBar
 {
 public:
     ColorBar(vec2i pos, vec2u size); // TODO: connects to his parent in the future
+
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
 
@@ -72,8 +73,8 @@ protected:
     void drawChildren(IRenderWindow* renderWindow) override;
 
 private:
-    size_t gapSize_ = 16;
-    vec2u childSize_ = {16, 16};
+    size_t gapSize_ = 64;
+    vec2u childSize_ = {64, 64};
 
     std::vector<std::unique_ptr<ColorButton>> windows_;
 

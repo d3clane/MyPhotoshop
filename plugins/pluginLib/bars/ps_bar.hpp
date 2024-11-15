@@ -3,7 +3,7 @@
 
 #include "api/api_bar.hpp"
 #include "api/api_sfm.hpp"
-#include "plugins/pluginLib/windows/windows.hpp"
+#include "windows/windows.hpp"
 
 using namespace psapi;
 using namespace sfm;
@@ -104,7 +104,7 @@ protected:
     std::unique_ptr<IRectangleShape> shape_;
 };
 
-class AShapedBar : public ABar
+class AShapedButtonsBar : public ABar
 {
 protected:
     enum class SpriteType
@@ -118,9 +118,8 @@ protected:
 protected:
     void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
     void setShape(std::unique_ptr<IRectangleShape> shape, SpriteType pos);
-    
-protected:    
 
+protected:
     std::unique_ptr<IRectangleShape> commonOutlineShape_;
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
 };

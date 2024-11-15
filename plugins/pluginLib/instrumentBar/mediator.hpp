@@ -22,6 +22,7 @@ public:
     const DrawingProperties& getFillProperties() const { return fillProperties_; }
 
     virtual ~AFillPropertiesMediator() = default;
+
 private:
     DrawingProperties fillProperties_ = { Color{255, 0, 0, 255}, 4 }; // TODO: temp solution
 };

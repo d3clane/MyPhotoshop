@@ -1,19 +1,19 @@
-#include "instrumentsBar.hpp" 
+#include "instrumentBar.hpp" 
 
 #include <cassert>
 #include <iostream>
 
-// instruments bar implementation
+// instrument bar implementation
 
 namespace ps
 {
 
-InstrumentsBar::InstrumentsBar()
+InstrumentBar::InstrumentBar()
 {
-    id_ = kInstrumentsBarId;
+    id_ = kInstrumentBarId;
 }
 
-IWindow* InstrumentsBar::getWindowById(wid_t id)
+IWindow* InstrumentBar::getWindowById(wid_t id)
 {
     if (id == id_)
         return this;
@@ -25,12 +25,12 @@ IWindow* InstrumentsBar::getWindowById(wid_t id)
     return nullptr;
 }
 
-const IWindow* InstrumentsBar::getWindowById(wid_t id) const
+const IWindow* InstrumentBar::getWindowById(wid_t id) const
 {
-    return const_cast<InstrumentsBar*>(this)->getWindowById(id);
+    return const_cast<InstrumentBar*>(this)->getWindowById(id);
 }
 
-void InstrumentsBar::addWindow(std::unique_ptr<IWindow> window)
+void InstrumentBar::addWindow(std::unique_ptr<IWindow> window)
 {
     ABarButton* button = static_cast<ABarButton*>(window.get());
     assert(button);
@@ -43,7 +43,7 @@ void InstrumentsBar::addWindow(std::unique_ptr<IWindow> window)
     maxChildPosNow_ = button->getPos() + vec2i{button->getSize().x + gapSize_, 0};
 }
 
-void InstrumentsBar::removeWindow(wid_t id)
+void InstrumentBar::removeWindow(wid_t id)
 {
     for (auto& window : windows_)
     {
@@ -55,12 +55,12 @@ void InstrumentsBar::removeWindow(wid_t id)
     }
 }
 
-ChildInfo InstrumentsBar::getNextChildInfo() const
+ChildInfo InstrumentBar::getNextChildInfo() const
 {
     return ChildInfo{maxChildPosNow_ + vec2i{gapSize_, 0}, {0, 0}};
 }
 
-bool InstrumentsBar::update(const IRenderWindow* renderWindow, const Event& event)
+bool InstrumentBar::update(const IRenderWindow* renderWindow, const Event& event)
 {
     vec2u renderWindowSize = renderWindow->getSize();
 
@@ -85,7 +85,7 @@ bool InstrumentsBar::update(const IRenderWindow* renderWindow, const Event& even
     return true;
 }
 
-void InstrumentsBar::drawChildren(IRenderWindow* renderWindow)
+void InstrumentBar::drawChildren(IRenderWindow* renderWindow)
 {
     for (auto& window : windows_)
         window->draw(renderWindow);
@@ -95,8 +95,6 @@ void InstrumentsBar::drawChildren(IRenderWindow* renderWindow)
 
 ColorButton::ColorButton(std::shared_ptr<AChangeColorAction> action) : action_(action)
 {
-    isActive_ = false;
-
     shape_ = IRectangleShape::create(0, 0);
     shape_->setFillColor(action_->getColor());
 }
@@ -109,7 +107,9 @@ void ColorButton::draw(IRenderWindow* renderWindow)
 bool ColorButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     if (!isActive_)
+    {
         return false;
+    }
 
     assert(parent_);
 
@@ -202,6 +202,12 @@ ChildInfo ColorBar::getNextChildInfo() const
 
 bool ColorBar::update(const IRenderWindow* renderWindow, const Event& event)
 {
+    if (!isActive_)
+        return false;
+    
+    setPos(vec2i{InstrumentOptionsTopLeftPos.x * renderWindow->getSize().x, InstrumentOptionsTopLeftPos.y * renderWindow->getSize().y});
+    setSize(vec2u{InstrumentOptionsSize.x * renderWindow->getSize().x, InstrumentOptionsSize.y * renderWindow->getSize().y});
+
     bool updatedChildren = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
 
     if (updatedChildren)
@@ -220,7 +226,7 @@ void ColorBar::drawChildren(IRenderWindow* renderWindow)
 
 std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMediator> mediator)
 {
-    auto instrumentsBar = std::make_unique<InstrumentsBar>();
+    auto instrumentBar = std::make_unique<InstrumentBar>();
 
     Color colors[] = {
         {255, 0, 0, 255},
@@ -234,33 +240,23 @@ std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMedia
     const size_t nButtons = sizeof(colors) / sizeof(colors[0]);
 
     vec2u size = {256, 16}; // TODO: CHANGE
-    std::cerr << "ME1\n";
-    auto colorBar = std::make_unique<ColorBar>(instrumentsBar->getNextChildInfo().pos, size);
+    auto colorBar = std::make_unique<ColorBar>(instrumentBar->getNextChildInfo().pos, size);
 
     for (size_t i = 0; i < nButtons; ++i)
     {
-        std::cerr << "CREATING INSTRUMENTS BAR IN CYCLE - " << i << "\n";
 
         auto action = std::make_shared<ChangeFillColorAction>(colors[i], mediator);
-        std::cerr << "CREATED ACTION\n";
         auto colorButton = std::make_unique<ColorButton>(action);
         colorButton->setParent(colorBar.get());
 
-        std::cerr << "SETTING COLOR BUTTON INFO\n";
         ChildInfo info = colorBar->getNextChildInfo();
-        std::cerr << "GOT COLOR BUTTON POS FROM BAR\n";
         colorButton->setPos(info.pos);
-        std::cerr << "SET COLOR BUTTON POS\n";
         colorButton->setSize(vec2u{info.size.x, info.size.y});
-        std::cerr << "SET COLOR BUTTON SIZE\n";
 
         colorBar->addWindow(std::move(colorButton));
-        std::cerr << "ADDED WINDOW TO COLOR BAR\n";
     }
     
-    std::cerr << "ADDING COLOR BAR TO INSTRUMENTS BAR\n";
-    //instrumentsBar->addWindow(std::move(colorBar));
-    std::cerr << "ADDED COLOR BAR TO INSTRUMENTS BAR\n";
+    //instrumentBar->addWindow(std::move(colorBar));
 
     return colorBar;
 }

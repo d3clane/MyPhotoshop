@@ -116,7 +116,7 @@ public:
     vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const;
 
     void addWindow(std::unique_ptr<IWindow> window) override;
-    void removeWindow(wid_t id);
+    void removeWindow(wid_t id) override;
 
     void setShape(std::unique_ptr<IRectangleShape> shape);
     void setMoveButton(std::unique_ptr<AScrollBarButton> moveButton);
@@ -208,7 +208,7 @@ public:
     bool isActive() const override;
 
     void addWindow(std::unique_ptr<IWindow> window) override;
-    void removeWindow(wid_t id);
+    void removeWindow(wid_t id) override;
 
 #if 0
 private:

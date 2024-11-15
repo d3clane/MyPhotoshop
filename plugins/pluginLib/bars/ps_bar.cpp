@@ -136,6 +136,14 @@ ABar::~ABar() = default;
 
 void ABar::draw(IRenderWindow* renderWindow)
 {
+    if (!isActive_)
+    {
+        //std::cerr << "NOT ACTIVE\n";
+        return;
+    }
+
+    //std::cerr << "ACTIVE\n";
+
     if (shape_)
         shape_->draw(renderWindow);
 
@@ -196,9 +204,9 @@ bool ABar::isWindowContainer() const
     return true;
 }
 
-// AShapedBar implementation
+// AShapedButtonsBar implementation
 
-void AShapedBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
+void AShapedButtonsBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {
     commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
     for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
@@ -228,10 +236,10 @@ void AShapedBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton*
     }
 }
 
-void AShapedBar::setShape(std::unique_ptr<IRectangleShape> shape, SpriteType pos)
+void AShapedButtonsBar::setShape(std::unique_ptr<IRectangleShape> shape, SpriteType pos)
 {
     assert(static_cast<size_t>(pos) < static_cast<size_t>(SpriteType::Count));
-    
+
     shapes_[static_cast<size_t>(pos)] = std::move(shape);
 }
 

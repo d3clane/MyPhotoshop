@@ -10,8 +10,8 @@
 #include "bars/ps_bar.hpp"
 
 #include "interpolation/include/interpolator.hpp"
-#include "instrumentsBar/mediator.hpp"
-#include "instrumentsBar/instrumentsBar.hpp"
+#include "instrumentBar/mediator.hpp"
+#include "instrumentBar/instrumentBar.hpp"
 
 #include <iostream>
 #include <memory>
@@ -31,19 +31,35 @@ public:
     BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
     virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    virtual void draw(IRenderWindow* renderWindow) override;
 
     void setMediator(std::shared_ptr<AFillPropertiesMediator> mediator);
-    void setInstrumentsBar(std::unique_ptr<InstrumentsBar> instrumentsBar);
+    void setInstrumentBar(std::unique_ptr<IBar> instrumentBar);
 
 protected:
     Interpolator interpolator_;
     
     std::shared_ptr<AFillPropertiesMediator> mediator_;
-    std::unique_ptr<InstrumentsBar> instrumentsBar_;
+    std::unique_ptr<IBar> instrumentBar_;
 
 private:
     void drawPoint(ILayer* layer, const vec2d& point);
 };
+
+namespace 
+{
+
+void updateInstrumentBarState(IBar* instrumentBar, ABarButton::State stateNow)
+{
+    assert(instrumentBar);
+
+    if (stateNow != ABarButton::State::Released)
+        instrumentBar->forceDeactivate();
+    else /* (stateNow == ABarButton::State::Released) */
+        instrumentBar->forceActivate();
+}
+
+} // namespace anonymous
 
 BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
 {
@@ -56,14 +72,20 @@ void BrushButton::setMediator(std::shared_ptr<AFillPropertiesMediator> mediator)
     mediator_ = mediator;
 }
 
-void BrushButton::setInstrumentsBar(std::unique_ptr<InstrumentsBar> instrumentsBar)
+void BrushButton::setInstrumentBar(std::unique_ptr<IBar> instrumentBar)
 {
-    instrumentsBar_ = std::move(instrumentsBar_);
+    instrumentBar_ = std::move(instrumentBar);
+    instrumentBar_->forceDeactivate();
 }
 
 bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updatedState = updateState(renderWindow, event);
+
+    updateInstrumentBarState(instrumentBar_.get(), state_);
+
+    assert(instrumentBar_);
+    instrumentBar_->update(renderWindow, event);
 
     if (state_ != State::Released)
         return updatedState;
@@ -99,6 +121,15 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
     return updatedState;
 }
 
+void BrushButton::draw(IRenderWindow* renderWindow)
+{
+    if (!isActive_)
+        return;
+
+    ASpritedBarButton::draw(renderWindow);
+
+    instrumentBar_->draw(renderWindow);
+}
 void BrushButton::drawPoint(ILayer* layer, const vec2d& point)
 {
     DrawingProperties properties = mediator_->getFillProperties();
@@ -122,8 +153,8 @@ namespace
 {
 
 std::unique_ptr<ASpritedBarButton> createButton(IBar* toolbar, 
-                                                std::shared_ptr<APropertiesMediator> mediator)
-                                                //std::unique_ptr<InstrumentsBar> instrumentsBar)
+                                                std::shared_ptr<APropertiesMediator> mediator,
+                                                std::unique_ptr<IBar> instrumentBar)
 {
     auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
     auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
@@ -144,14 +175,15 @@ std::unique_ptr<ASpritedBarButton> createButton(IBar* toolbar,
                            static_cast<double>(size.y) / spriteSize.y);
 
     std::unique_ptr<BrushButton> button{ new ps::BrushButton(std::move(buttonSprite), 
-                                                                 std::move(buttonTexture)) };
-
+                                                             std::move(buttonTexture)) };
 
     button->setPos(pos);
     button->setSize(size);
 
     button->setMediator(mediator);
-    //button->setInstrumentsBar(std::move(instrumentsBar));
+    assert(instrumentBar.get());
+    button->setInstrumentBar(std::move(instrumentBar));
+    assert(instrumentBar.get() == nullptr);
 
     return std::unique_ptr<ASpritedBarButton>(button.release());
 }
@@ -160,7 +192,6 @@ std::unique_ptr<ASpritedBarButton> createButton(IBar* toolbar,
 
 bool loadPlugin() // onLoadPlugin
 {
-
     IWindowContainer* rootWindow = getRootWindow();
     assert(rootWindow);
     auto toolbar = static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId));
@@ -168,10 +199,10 @@ bool loadPlugin() // onLoadPlugin
 
     auto mediator = std::make_shared<APropertiesMediator>();
     auto instrumentBar = createCommonInstrumentBar(mediator);
-    auto button = createButton(toolbar, mediator);
+    auto button = createButton(toolbar, mediator, std::move(instrumentBar));
+    assert(instrumentBar.get() == nullptr);
 
     toolbar->addWindow(std::move(button));
-    rootWindow->addWindow(std::move(instrumentBar));
 
     return true;
 }

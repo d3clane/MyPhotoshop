@@ -57,6 +57,8 @@ int main()
             rootWindow->update(renderWindow.get(), event);
         }
 
+        rootWindow->update(renderWindow.get(), event);
+        
         renderWindow->clear();
         rootWindow->draw(renderWindow.get());
         renderWindow->display();

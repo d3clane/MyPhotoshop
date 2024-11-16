@@ -55,6 +55,11 @@ void InstrumentBar::removeWindow(wid_t id)
     }
 }
 
+void InstrumentBar::setParent(const IWindow* parent)
+{
+    parent_ = parent;
+}
+
 ChildInfo InstrumentBar::getNextChildInfo() const
 {
     return ChildInfo{maxChildPosNow_ + vec2i{static_cast<int>(gapSize_), 0}, {0, 0}};
@@ -100,9 +105,17 @@ ColorButton::ColorButton(std::shared_ptr<AChangeColorAction> action) : action_(a
     shape_->setFillColor(action_->getColor());
 }
 
+void ColorButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const ColorBar*>(parent);
+    assert(parent_);
+}
+
 void ColorButton::draw(IRenderWindow* renderWindow)
 {
     shape_->draw(renderWindow);
+
+    parent_->finishButtonDraw(renderWindow, this);
 }
 
 bool ColorButton::update(const IRenderWindow* renderWindow, const Event& event)
@@ -113,6 +126,12 @@ bool ColorButton::update(const IRenderWindow* renderWindow, const Event& event)
     }
 
     assert(parent_);
+    ChildInfo buttonInfo = parent_->getChildInfo(indexInColorBar_);
+
+    setSize(vec2u{static_cast<unsigned>(buttonInfo.size.x),
+                  static_cast<unsigned>(buttonInfo.size.y)});
+
+    setPos(buttonInfo.pos);
 
     State prevState = state_;
     bool stateIsUpdated = updateState(renderWindow, event);
@@ -149,8 +168,27 @@ ColorBar::ColorBar(vec2i pos, vec2u size)
 
     shape_->setFillColor({120, 120, 120, 255});
 
-    ColorBar::setPos(pos);
-    ColorBar::setSize(size);
+    setPos(pos);
+    setSize(size);
+}
+
+void ColorBar::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
+}
+
+void ColorBar::setSize(vec2u size)
+{
+    size_ = size;
+
+    unsigned childOneSideSize =     
+        static_cast<unsigned>(static_cast<float>(std::min(size.x, size.y)) * 2.f / 3.f);
+ 
+    childSize_ = vec2u{ childOneSideSize, childOneSideSize };
+    gapSize_ = static_cast<unsigned>(static_cast<float>(std::min(size.x, size.y)) / 6.f);
+
+    shape_->setSize(size);
 }
 
 IWindow* ColorBar::getWindowById(wid_t id)
@@ -200,6 +238,29 @@ ChildInfo ColorBar::getNextChildInfo() const
 
     return result;
 }
+
+ChildInfo ColorBar::getChildInfo(size_t childIndex) const
+{
+    ChildInfo info;
+
+    info.size = vec2i{ static_cast<int>(childSize_.x), static_cast<int>(childSize_.y) };
+    
+    int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize_.x + gapSize_) + gapSize_);
+
+    if (size_.x < size_.y)
+    {
+        info.pos.x = shift;
+        info.pos.y = pos_.y + static_cast<int>(gapSize_);
+    }
+    else
+    {
+        info.pos.y = shift;
+        info.pos.x = pos_.x + static_cast<int>(gapSize_);
+    }
+
+    return info;
+}
+
 
 bool ColorBar::update(const IRenderWindow* renderWindow, const Event& event)
 {

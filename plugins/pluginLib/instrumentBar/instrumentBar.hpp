@@ -22,6 +22,8 @@ public:
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
 
+    void setParent(const IWindow* parent) override;
+
     ChildInfo getNextChildInfo() const override;
 
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
@@ -29,13 +31,17 @@ public:
 protected:
     void drawChildren(IRenderWindow* renderWindow) override;
 
-private:    
+private:
+    const IWindow* parent_;
+
     std::vector<std::unique_ptr<ABarButton>> windows_;
 
-    size_t gapSize_ = 2;
+    unsigned gapSize_ = 2;
 
     mutable vec2i maxChildPosNow_;
-}; 
+};
+
+class ColorBar;
 
 class ColorButton : public ABarButton
 {
@@ -48,10 +54,16 @@ public:
     void setPos (vec2i pos ) override;
     void setSize(vec2u size) override;
 
+    void setParent(const IWindow* parent) override;
+
 protected:
+    const ColorBar* parent_;
+
     std::unique_ptr<IRectangleShape> shape_;
 
     std::shared_ptr<AChangeColorAction> action_;
+
+    size_t indexInColorBar_;
 };
 
 class ColorBar : public AShapedButtonsBar
@@ -65,16 +77,24 @@ public:
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
 
+    void setParent(const IWindow* parent) override;
+
     ChildInfo getNextChildInfo() const override;
+
+    // creating this function because getNextChildInfo is dumb.
+    ChildInfo getChildInfo(size_t childIndex) const;
 
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
 
 protected:
     void drawChildren(IRenderWindow* renderWindow) override;
-
+    void setSize(vec2u size);
+    
 private:
-    size_t gapSize_ = 64;
-    vec2u childSize_ = {64, 64};
+    const IBar* parent_;
+
+    unsigned gapSize_ = 64;
+    vec2u childSize_ = {32, 32};
 
     std::vector<std::unique_ptr<ColorButton>> windows_;
 

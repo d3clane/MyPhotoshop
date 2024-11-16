@@ -29,7 +29,11 @@ public:
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
 
+    void setParent(const IWindow* parent) override;
+
 private:
+    const IBar* parent_;
+
     bool canvasIsAlreadyPressed_ = false;
 
     vec2i lineBeginPos_;
@@ -118,10 +122,16 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 
 void LineButton::draw(IRenderWindow* renderWindow)
 {
-    ASpritedBarButton::draw(renderWindow);
+    ASpritedBarButton::draw(renderWindow, parent_);
 
     if (line_)
         renderWindow->draw(line_.get());
+}
+
+void LineButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
 }
 
 } // namespace anonymous

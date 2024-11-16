@@ -30,6 +30,12 @@ public:
     BlurFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    void draw(IRenderWindow* renderWindow) override;
+
+    void setParent(const IWindow* parent) override;
+
+private:
+    const IBar* parent_;
 };
 
 BlurFilterButton::BlurFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
@@ -104,6 +110,17 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
     state_ = State::Normal;
 
     return true;
+}
+
+void BlurFilterButton::draw(IRenderWindow* renderWindow)
+{
+    ASpritedBarButton::draw(renderWindow, parent_);
+}
+
+void BlurFilterButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
 }
 
 }

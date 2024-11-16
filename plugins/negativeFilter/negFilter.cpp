@@ -32,6 +32,11 @@ public:
 
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
     void draw(IRenderWindow *window) override;
+
+    void setParent(const IWindow* parent) override;
+
+private:
+    const IBar* parent_;
 };
 
 NegativeFilterButton::NegativeFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
@@ -96,9 +101,15 @@ bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event
     return true;
 }
 
-void NegativeFilterButton::draw(IRenderWindow *window)
+void NegativeFilterButton::draw(IRenderWindow *window) 
 {
-    ASpritedBarButton::draw(window);
+    ASpritedBarButton::draw(window, parent_);
+}
+
+void NegativeFilterButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
 }
 
 }

@@ -25,7 +25,6 @@ public:
     vec2u getSize() const override;
     wid_t getId()   const override;
 
-    void setParent(const IWindow* parent) override;
     void forceDeactivate()                override;
     void forceActivate()                  override; 
 
@@ -49,20 +48,19 @@ protected:
 
     bool isActive_ = true;
 
-    const ABar* parent_ = nullptr;
-
     State state_ = State::Normal;
 };
 
 class ASpritedBarButton : public ABarButton
 {
 public:
-    void draw(IRenderWindow* renderWindow) override;
-
     void setPos (vec2i pos) override;
     void setSize(vec2u size) override;
 
+    void draw(IRenderWindow* renderWindow) override = 0;
 protected:
+    void draw(IRenderWindow* renderWindow, const IBar* parent);
+
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
 };
@@ -79,7 +77,6 @@ public:
     vec2u getSize() const override;
     wid_t getId()   const override;
 
-    void setParent(const IWindow* parent) override;
     void forceDeactivate()                override;
     void forceActivate()                  override; 
 
@@ -95,7 +92,6 @@ protected:
 protected:
     wid_t id_ = kInvalidWindowId;
 
-    const IWindow* parent_ = nullptr;
     bool isActive_ = true;
 
     vec2i pos_;
@@ -106,6 +102,9 @@ protected:
 
 class AShapedButtonsBar : public ABar
 {
+public:
+    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
+
 protected:
     enum class SpriteType
     {
@@ -115,8 +114,6 @@ protected:
         Count, // count of elements
     };
 
-protected:
-    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
     void setShape(std::unique_ptr<IRectangleShape> shape, SpriteType pos);
 
 protected:

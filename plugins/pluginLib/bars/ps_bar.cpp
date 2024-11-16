@@ -31,14 +31,6 @@ wid_t ABarButton::getId() const
     return id_;
 }
 
-void ABarButton::setParent(const IWindow* parent) 
-{
-    const ABar* parentBar = static_cast<const ABar*>(parent);
-
-    assert(parentBar);
-    parent_ = parentBar;
-}
-
 void ABarButton::forceDeactivate() 
 {
     isActive_ = false;
@@ -106,12 +98,12 @@ void ABarButton::setSize(vec2u size)
 
 // ASpritedBarButton
 
-void ASpritedBarButton::draw(IRenderWindow* renderWindow) 
+void ASpritedBarButton::draw(IRenderWindow* renderWindow, const IBar* parent) 
 {
     renderWindow->draw(mainSprite_.get());
 
-    assert(parent_);
-    static_cast<const IBar*>(parent_)->finishButtonDraw(renderWindow, this);
+    assert(parent);
+    static_cast<const IBar*>(parent)->finishButtonDraw(renderWindow, this);
 }
 
 void ASpritedBarButton::setPos(vec2i pos)
@@ -177,11 +169,6 @@ vec2u ABar::getSize() const
 wid_t ABar::getId() const 
 {
     return id_;
-}
-
-void ABar::setParent(const IWindow* parent) 
-{
-    parent_ = parent;
 }
 
 void ABar::forceDeactivate() 

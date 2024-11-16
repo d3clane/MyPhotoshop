@@ -56,7 +56,11 @@ public:
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
     void draw(IRenderWindow *window) override;
 
+    void setParent(const IWindow* parent) override;
+
 private:
+    const IBar* parent_;
+    
     bool canvasIsAlreadyPressed_ = false;
 
     vec2i beginEllipsePos_;
@@ -153,11 +157,18 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
 
 void EllipseButton::draw(IRenderWindow *window)
 {
-    ASpritedBarButton::draw(window);
+    ASpritedBarButton::draw(window, parent_);
 
     if (ellipse_)
         window->draw(ellipse_.get());
 }
+
+void EllipseButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
+}
+
 
 } // namespace anonymous
 

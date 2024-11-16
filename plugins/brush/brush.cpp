@@ -30,13 +30,17 @@ public:
     BrushButton() = default;
     BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
-    virtual void draw(IRenderWindow* renderWindow) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    void draw(IRenderWindow* renderWindow) override;
+
+    void setParent(const IWindow* parent) override;
 
     void setMediator(std::shared_ptr<AFillPropertiesMediator> mediator);
     void setInstrumentBar(std::unique_ptr<IBar> instrumentBar);
 
 protected:
+    const IBar* parent_;
+
     Interpolator interpolator_;
     
     std::shared_ptr<AFillPropertiesMediator> mediator_;
@@ -76,6 +80,12 @@ void BrushButton::setInstrumentBar(std::unique_ptr<IBar> instrumentBar)
 {
     instrumentBar_ = std::move(instrumentBar);
     instrumentBar_->forceDeactivate();
+}
+
+void BrushButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
 }
 
 bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
@@ -127,10 +137,11 @@ void BrushButton::draw(IRenderWindow* renderWindow)
     if (!isActive_)
         return;
 
-    ASpritedBarButton::draw(renderWindow);
+    ASpritedBarButton::draw(renderWindow, parent_);
 
     instrumentBar_->draw(renderWindow);
 }
+
 void BrushButton::drawPoint(ILayer* layer, const vec2d& point)
 {
     DrawingProperties properties = mediator_->getFillProperties();

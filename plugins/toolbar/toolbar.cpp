@@ -152,3 +152,8 @@ bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event)
 
     return updatedSomeone;
 }
+
+void Toolbar::setParent(const IWindow* parent)
+{
+    parent_ = parent;
+}

@@ -31,10 +31,14 @@ public:
 
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
 
+    void setParent(const IWindow* parent) override;
+
 protected:
     void drawChildren(IRenderWindow* renderWindow) override;
 
 private:
+    const IWindow* parent_;
+
     size_t gapSize_ = 16;
 
     mutable size_t nextChildIndex_ = 0;

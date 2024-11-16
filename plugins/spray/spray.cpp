@@ -25,7 +25,13 @@ public:
     SprayButton() = default;
     SprayButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    virtual bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+
+    void draw(IRenderWindow* renderWindow) override;
+    void setParent(const IWindow* parent) override;
+
+private:
+    const IBar* parent_;
 };
 
 SprayButton::SprayButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
@@ -61,6 +67,14 @@ bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
             activeLayer->setPixel({mousePos.x + i, mousePos.y + j}, {0xFF, 0x00, 0x00, 0xFF});
     
     return updatedState;
+}
+
+void SprayButton::draw(IRenderWindow* renderWindow) { ASpritedBarButton::draw(renderWindow, parent_); }
+
+void SprayButton::setParent(const IWindow* parent)
+{
+    parent_ = dynamic_cast<const IBar*>(parent);
+    assert(parent_);
 }
 
 } // namespace ps

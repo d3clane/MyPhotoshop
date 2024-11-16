@@ -81,12 +81,13 @@ bool loadPlugin()
 
     auto info = toolBar->getNextChildInfo();
     auto pos = info.pos;
-    vec2u size = { info.size.x, info.size.y };
+    vec2u size = { static_cast<unsigned>(info.size.x), static_cast<unsigned>(info.size.y) };
 
     buttonSprite->setPosition(pos.x, pos.y);
     
     auto spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
+    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
+                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
     std::unique_ptr<ps::ASpritedBarButton> button{ new ps::SprayButton(std::move(buttonSprite), std::move(buttonTexture)) };
     
     button->setPos(pos);

@@ -78,7 +78,7 @@ private:
 
     std::vector<std::unique_ptr<ColorButton>> windows_;
 
-    mutable vec2i nextChildPos_ = {gapSize_, 0};
+    mutable vec2i nextChildPos_ = {static_cast<int>(gapSize_), 0};
 };
 
 std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMediator> mediator);

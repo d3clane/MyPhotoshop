@@ -40,7 +40,7 @@ void InstrumentBar::addWindow(std::unique_ptr<IWindow> window)
 
     assert(button->getPos().x >= maxChildPosNow_.x);
 
-    maxChildPosNow_ = button->getPos() + vec2i{button->getSize().x + gapSize_, 0};
+    maxChildPosNow_ = button->getPos() + vec2i{static_cast<int>(button->getSize().x + gapSize_), 0};
 }
 
 void InstrumentBar::removeWindow(wid_t id)
@@ -49,7 +49,7 @@ void InstrumentBar::removeWindow(wid_t id)
     {
         if (window->getId() == id)
         {
-            windows_.erase(windows_.begin() + windows_.size() - 1);
+            windows_.erase(windows_.begin() + static_cast<int>(windows_.size()) - 1);
             return;
         }
     }
@@ -57,18 +57,19 @@ void InstrumentBar::removeWindow(wid_t id)
 
 ChildInfo InstrumentBar::getNextChildInfo() const
 {
-    return ChildInfo{maxChildPosNow_ + vec2i{gapSize_, 0}, {0, 0}};
+    return ChildInfo{maxChildPosNow_ + vec2i{static_cast<int>(gapSize_), 0}, {0, 0}};
 }
 
 bool InstrumentBar::update(const IRenderWindow* renderWindow, const Event& event)
 {
     vec2u renderWindowSize = renderWindow->getSize();
 
-    setSize({renderWindowSize.x * InstrumentOptionsSize.x,
-             renderWindowSize.y * InstrumentOptionsSize.y});
-
-    setPos ({InstrumentOptionsTopLeftPos.x * renderWindowSize.x, 
-             InstrumentOptionsTopLeftPos.y * renderWindowSize.y});
+    setPos(vec2i{
+            static_cast<int>(InstrumentOptionsTopLeftPos.x * static_cast<float>(renderWindowSize.x)),
+            static_cast<int>(InstrumentOptionsTopLeftPos.y * static_cast<float>(renderWindowSize.y))});
+    setSize(vec2u{
+            static_cast<unsigned>(InstrumentOptionsSize.x * static_cast<float>(renderWindowSize.x)), 
+            static_cast<unsigned>(InstrumentOptionsSize.y * static_cast<float>(renderWindowSize.y))});
 
     bool updatedChildren = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
 
@@ -194,8 +195,8 @@ ChildInfo ColorBar::getNextChildInfo() const
 {
     nextChildPos_.y = pos_.y;
 
-    ChildInfo result{nextChildPos_, vec2i{childSize_.x, childSize_.y}};
-    nextChildPos_ += vec2i{childSize_.x + gapSize_, 0};
+    ChildInfo result{nextChildPos_, vec2i{static_cast<int>(childSize_.x), static_cast<int>(childSize_.y)}};
+    nextChildPos_ += vec2i{static_cast<int>(childSize_.x + gapSize_), 0};
 
     return result;
 }
@@ -205,8 +206,12 @@ bool ColorBar::update(const IRenderWindow* renderWindow, const Event& event)
     if (!isActive_)
         return false;
     
-    setPos(vec2i{InstrumentOptionsTopLeftPos.x * renderWindow->getSize().x, InstrumentOptionsTopLeftPos.y * renderWindow->getSize().y});
-    setSize(vec2u{InstrumentOptionsSize.x * renderWindow->getSize().x, InstrumentOptionsSize.y * renderWindow->getSize().y});
+    setPos(vec2i{
+            static_cast<int>(InstrumentOptionsTopLeftPos.x * static_cast<float>(renderWindow->getSize().x)),
+            static_cast<int>(InstrumentOptionsTopLeftPos.y * static_cast<float>(renderWindow->getSize().y))});
+    setSize(vec2u{
+            static_cast<unsigned>(InstrumentOptionsSize.x * static_cast<float>(renderWindow->getSize().x)), 
+            static_cast<unsigned>(InstrumentOptionsSize.y * static_cast<float>(renderWindow->getSize().y))});
 
     bool updatedChildren = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
 
@@ -251,7 +256,7 @@ std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMedia
 
         ChildInfo info = colorBar->getNextChildInfo();
         colorButton->setPos(info.pos);
-        colorButton->setSize(vec2u{info.size.x, info.size.y});
+        colorButton->setSize(vec2u{static_cast<unsigned>(info.size.x), static_cast<unsigned>(info.size.y)});
 
         colorBar->addWindow(std::move(colorButton));
     }

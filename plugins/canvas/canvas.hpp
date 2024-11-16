@@ -106,10 +106,10 @@ public:
     vec2u getFullSize() override;
 
 private:
-    wid_t id_ = kCanvasWindowId;
-
     vec2u size_;
     vec2i pos_;
+
+    const IWindow* parent_;
 
     bool isActive_ = true;
 

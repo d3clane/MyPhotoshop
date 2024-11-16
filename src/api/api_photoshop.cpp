@@ -23,7 +23,6 @@ public:
     bool isActive() const override;
 
 private:
-    wid_t id_;
     bool isActive_ = true;
 };
 
@@ -59,7 +58,7 @@ vec2u RootWindow::getSize() const {
     return {0, 0};
 }
 
-void RootWindow::setParent(const IWindow* parent) 
+void RootWindow::setParent(const IWindow* /* parent */) 
 {
     assert(false);
 }

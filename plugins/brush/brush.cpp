@@ -142,7 +142,7 @@ void BrushButton::drawPoint(ILayer* layer, const vec2d& point)
     {
         for (int j = -drawingRange; j <= drawingRange; ++j)
         {
-            vec2d pos = point + vec2d{i, j};
+            vec2i pos = vec2i{static_cast<int>(point.x), static_cast<int>(point.y)} + vec2i{i, j};
             layer->setPixel(vec2i{pos.x, pos.y}, color);
         }
     }
@@ -172,8 +172,8 @@ std::unique_ptr<ASpritedBarButton> createButton(IBar* toolbar,
     buttonSprite->setPosition(pos.x, pos.y);
     
     auto spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, 
-                           static_cast<double>(size.y) / spriteSize.y);
+    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
+                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
 
     std::unique_ptr<BrushButton> button{ new ps::BrushButton(std::move(buttonSprite), 
                                                              std::move(buttonTexture)) };

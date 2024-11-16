@@ -76,17 +76,18 @@ void copyEllipseToLayer(ILayer* layer, const IEllipseShape* ellipse, const vec2i
 std::unique_ptr<IEllipseShape> createEllipse(const vec2i& beginEllipsePos, const ICanvas* canvas)
 {
     vec2i canvasPos  = canvas->getPos();
-    vec2u canvasSize = canvas->getSize();
 
     vec2i mousePos = canvas->getMousePosition() + canvasPos;
 
     EllipseBounds bounds = getEllipseBounds(beginEllipsePos, mousePos);
 
-    vec2i topLeft     = shrinkPosToBoundary(bounds.topLeft    , {0, 0}, canvasPos, canvasSize);
-    vec2i bottomRight = shrinkPosToBoundary(bounds.bottomRight, {0, 0}, canvasPos, canvasSize);
+    vec2i topLeft     = bounds.topLeft;
+    vec2i bottomRight = bounds.bottomRight;
     
-    const unsigned ellipseYSize = bottomRight.y - topLeft.y;
-    const unsigned ellipseXSize = bottomRight.x - topLeft.x;
+    assert(bottomRight.y >= topLeft.y);
+    assert(bottomRight.x >= topLeft.x);
+    const unsigned ellipseYSize = static_cast<unsigned>(bottomRight.y - topLeft.y);
+    const unsigned ellipseXSize = static_cast<unsigned>(bottomRight.x - topLeft.x);
 
     std::unique_ptr<IEllipseShape> ellipse = IEllipseShape::create(ellipseXSize, ellipseYSize);
     assert(ellipse);
@@ -121,7 +122,6 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-    ILayer* tempLayer   = canvas->getTempLayer();
 
     vec2i canvasPos = canvas->getPos();
 
@@ -183,7 +183,9 @@ bool loadPlugin() // onLoadPlugin
     buttonSprite->setPosition(pos.x, pos.y);
     
     vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
+    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x),   
+                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
+
     std::unique_ptr<ps::ASpritedBarButton> button{ new EllipseButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);

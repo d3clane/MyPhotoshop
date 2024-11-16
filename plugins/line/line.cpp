@@ -49,18 +49,18 @@ void copyLineToLayer(ILayer* layer, const IRectangleShape* line, vec2i canvasPos
 std::unique_ptr<IRectangleShape> createLine(vec2i beginPos, const ICanvas* canvas)
 {
     vec2i mousePos = canvas->getMousePosition() + canvas->getPos();
-    mousePos = shrinkPosToBoundary(mousePos, vec2u{0, 0}, canvas->getPos(), canvas->getSize());
 
-    const float lineLength = len(beginPos, mousePos);
-    const float angle = std::atan2(mousePos.y - beginPos.y, mousePos.x - beginPos.x);
+    const float lineLength = static_cast<float>(len(beginPos, mousePos));
+    const float angle = static_cast<float>(std::atan2(mousePos.y - beginPos.y, mousePos.x - beginPos.x));
 
-    static const size_t thickness = 10;
-    std::unique_ptr<IRectangleShape> line = IRectangleShape::create(lineLength, thickness);
+    static const unsigned thickness = 10;
+    std::unique_ptr<IRectangleShape> line = IRectangleShape::create(static_cast<unsigned>(lineLength), 
+                                                                    thickness);
 
     static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
     line->setFillColor(redColor);
     line->setOutlineThickness(0);
-    line->setRotation(angle * 180 / M_PI);
+    line->setRotation(angle * 180.f / static_cast<float>(M_PI));
     line->setPosition(beginPos);
 
     return line;
@@ -148,7 +148,9 @@ bool loadPlugin() // onLoadPlugin
     buttonSprite->setPosition(pos.x, pos.y);
     
     vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
+    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
+                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
+
     std::unique_ptr<ps::ASpritedBarButton> button{ new LineButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);

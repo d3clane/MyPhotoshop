@@ -34,16 +34,6 @@ public:
     void draw(IRenderWindow *window) override;
 };
 
-void copyEllipseToLayer(ILayer* layer, const IEllipseShape* ellipse, const vec2i& canvasPos)
-{
-    const IImage* image = ellipse->getImage();
-    if (!image)
-        return;
-    
-    copyImageToLayer(layer, image, canvasPos, image->getSize());
-}
-
-
 NegativeFilterButton::NegativeFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
 {
     mainSprite_ = std::move(sprite);
@@ -73,7 +63,6 @@ bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
     ILayer* tempLayer   = canvas->getTempLayer();
 
-    vec2i canvasPos  = canvas->getPos();
     vec2u canvasSize = canvas->getSize();
 
     for (size_t x = 0; x < canvasSize.x; ++x)
@@ -136,7 +125,7 @@ bool loadPlugin() // onLoadPlugin
     buttonSprite->setPosition(pos.x, pos.y);
     
     vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
+    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
     std::unique_ptr<ps::ASpritedBarButton> button{ new NegativeFilterButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);

@@ -37,8 +37,8 @@ protected:
 private:
     size_t gapSize_ = 16;
 
-    mutable int nextChildIndex_ = 0;
-    mutable int numChildren_ = 0;
+    mutable size_t nextChildIndex_ = 0;
+    mutable size_t numChildren_ = 0;
 
     vec2i childSize_ = {64, 64};
 

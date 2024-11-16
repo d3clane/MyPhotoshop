@@ -9,7 +9,7 @@ namespace ps
 namespace
 {
     
-double calculateScrollButtonRatio(int visibleSize, int fullSize)
+double calculateScrollButtonRatio(unsigned visibleSize, unsigned fullSize)
 {
     return static_cast<double>(visibleSize) / static_cast<double>(fullSize);
 }
@@ -38,7 +38,7 @@ void PressButton::setShape(std::unique_ptr<IRectangleShape> shape, State state)
 
 // Scrollbar implementation
 
-AScrollBar::AScrollBar(vec2i pos, vec2u size, wid_t id) : pos_(pos), size_(size), id_(id)
+AScrollBar::AScrollBar(vec2i pos, vec2u size, wid_t id) : id_(id), pos_(pos), size_(size)
 {
 }
 
@@ -61,7 +61,7 @@ bool AScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
     if (!isHovered || !isPressed)
         return false;
 
-    moveButton_->setPos(mousePos - vec2i{size_.x / 2, size_.y / 2});
+    moveButton_->setPos(mousePos - vec2i{static_cast<int>(size_.x / 2), static_cast<int>(size_.y / 2)});
     moveButton_->setState(PressButton::State::Pressed);
 
     return true;
@@ -125,12 +125,12 @@ bool AScrollBar::isActive() const
     return isActive_;
 }
 
-void AScrollBar::addWindow(std::unique_ptr<IWindow> window)
+void AScrollBar::addWindow(std::unique_ptr<IWindow> /* window */)
 {
     assert(false);
 }
 
-void AScrollBar::removeWindow(wid_t id) 
+void AScrollBar::removeWindow(wid_t /* id */) 
 {
     assert(false);
 }
@@ -141,10 +141,13 @@ vec2i AScrollBar::shrinkPosToBoundaries(vec2i pos, vec2u size) const
     assert(size_.y >= size.y);
 
     vec2i newPos = pos;
+    vec2i intSize_ = vec2i{static_cast<int>(size_.x), static_cast<int>(size_.y)};
+    vec2i intSize  = vec2i{static_cast<int>(size.x ), static_cast<int>(size.y )};
+
     newPos.x = newPos.x < pos_.x ? pos_.x : newPos.x;
     newPos.y = newPos.y < pos_.y ? pos_.y : newPos.y;
-    newPos.x = newPos.x + size.x > pos_.x + size_.x ? pos_.x + size_.x - size.x : newPos.x;
-    newPos.y = newPos.y + size.y > pos_.y + size_.y ? pos_.y + size_.y - size.y : newPos.y;
+    newPos.x = newPos.x + intSize.x > pos_.x + intSize_.x ? pos_.x + intSize_.x - intSize.x : newPos.x;
+    newPos.y = newPos.y + intSize.y > pos_.y + intSize_.y ? pos_.y + intSize_.y - intSize.y : newPos.y;
 
     return newPos;
 }
@@ -211,14 +214,19 @@ void AScrollBarButton::move(vec2d delta)
 
     if (parentSize.x != 0)
     {
-        scroll_.x += delta.x / static_cast<float>(parentSize.x - size_.x);
-        scroll_.y += delta.y / static_cast<float>(parentSize.y - size_.y);
+        scroll_.x += static_cast<float>(delta.x) / static_cast<float>(parentSize.x - size_.x);
+        scroll_.y += static_cast<float>(delta.y) / static_cast<float>(parentSize.y - size_.y);
     }
 
     scroll_.x = canScrollX_ ? scroll_.x : scrollNow.x;
     scroll_.y = canScrollY_ ? scroll_.y : scrollNow.y;
 
-    vec2i newPos = parent->shrinkPosToBoundaries(zeroScrollPos_ + vec2i{scroll_.x * (parentSize.x - size_.x), scroll_.y * (parentSize.y - size_.y)}, size_);
+    vec2i newPos = parent->shrinkPosToBoundaries(
+        zeroScrollPos_ + vec2i{static_cast<int>(scroll_.x * static_cast<float>(parentSize.x - size_.x)),
+                               static_cast<int>(scroll_.y * static_cast<float>(parentSize.y - size_.y))}, 
+        size_
+    );
+
     for (auto& shape : shapes_)
         shape->setPosition(newPos);
 
@@ -312,7 +320,7 @@ void ScrollBarX::updatePos()
     vec2i parentPos  = parent_->getPos();
     vec2u parentSize = parent_->getSize();
 
-    setPos(vec2i{ parentPos.x, parentPos.y + parentSize.y});
+    setPos(vec2i{ parentPos.x, parentPos.y + static_cast<int>(parentSize.y)});
 }
 
 void ScrollBarX::updateSize()
@@ -320,8 +328,8 @@ void ScrollBarX::updateSize()
     assert(parent_);
     vec2u parentSize = parent_->getSize();
 
-    static const size_t prettyCoeff = 40;
-    static const size_t minYSize = 5;
+    static const unsigned prettyCoeff = 40;
+    static const unsigned minYSize = 5;
 
     setSize(vec2u{parentSize.x, std::max(minYSize, parentSize.y / prettyCoeff)});
 }
@@ -340,7 +348,7 @@ void ScrollBarY::updatePos()
     vec2i parentPos = parent_->getPos();
     vec2u parentSize = parent_->getSize();
     
-    setPos(vec2i{ parentPos.x + parentSize.x, parentPos.y });
+    setPos(vec2i{ parentPos.x + static_cast<int>(parentSize.x), parentPos.y });
 }
 
 void ScrollBarY::updateSize()
@@ -349,8 +357,8 @@ void ScrollBarY::updateSize()
 
     vec2u parentSize = parent_->getSize();
 
-    static const size_t prettyCoeff = 40;
-    static const size_t minYSize = 5;
+    static const unsigned prettyCoeff = 40;
+    static const unsigned minYSize = 5;
 
     setSize(vec2u{std::max(minYSize, parentSize.x / prettyCoeff), parentSize.y});
 }
@@ -495,12 +503,12 @@ void ScrollBarsXYManager::draw(IRenderWindow* renderWindow)
     scrollBarY_->draw(renderWindow);
 }
 
-void ScrollBarsXYManager::addWindow(std::unique_ptr<IWindow> window)
+void ScrollBarsXYManager::addWindow(std::unique_ptr<IWindow> /* window */)
 {
     assert(false);
 }
 
-void ScrollBarsXYManager::removeWindow(wid_t id)
+void ScrollBarsXYManager::removeWindow(wid_t /* id */)
 {
     assert(false);
 }

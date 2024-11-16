@@ -54,16 +54,14 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-    ILayer* tempLayer   = canvas->getTempLayer();
 
-    vec2i canvasPos  = canvas->getPos();
     vec2u canvasSize = canvas->getSize();
 
     std::vector<std::vector<Color>> colors(canvasSize.x, std::vector<Color>(canvasSize.y, Color{0, 0, 0, 0}));
 
-    for (int x = 0; x < canvasSize.x; ++x)
+    for (int x = 0; x < static_cast<int>(canvasSize.x); ++x)
     {
-        for (int y = 0; y < canvasSize.y; ++y)
+        for (int y = 0; y < static_cast<int>(canvasSize.y); ++y)
         {
             int r = 0, g = 0, b = 0, a = 0;
             Color newColor = {0, 0, 0, 0};
@@ -77,9 +75,6 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
                 }
             }
 
-            Color pixelColor = activeLayer->getPixel(vec2i{x, y});
-            int pr = pixelColor.r; int pg = pixelColor.g; int pb = pixelColor.b; int pa = pixelColor.a;
-
             r /= 9; g /= 9; b /= 9; a /= 9;
 
 #if 0
@@ -92,9 +87,9 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
             r = std::clamp(r, 0, 255); g = std::clamp(g, 0, 255); b = std::clamp(b, 0, 255); a = std::clamp(a, 0, 255);
 #endif
 
-            newColor = {r, g, b, a};
+            newColor = {static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), static_cast<uint8_t>(a)};
 
-            colors[x][y] = newColor;
+            colors[static_cast<size_t>(x)][static_cast<size_t>(y)] = newColor;
         }
     }
 
@@ -135,7 +130,8 @@ bool loadPlugin() // onLoadPlugin
     buttonSprite->setPosition(pos.x, pos.y);
     
     vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<double>(size.x) / spriteSize.x, static_cast<double>(size.y) / spriteSize.y);
+    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
+                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
     std::unique_ptr<ps::ASpritedBarButton> button{ new BlurFilterButton(std::move(buttonSprite), std::move(buttonTexture)) };
 
     button->setPos(pos);

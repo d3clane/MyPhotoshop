@@ -126,8 +126,8 @@ void ASpritedBarButton::setSize(vec2u size)
     mainSprite_->setScale(1.f, 1.f);
     auto spriteSize = mainSprite_->getSize();
 
-    mainSprite_->setScale(static_cast<double>(size.x) / spriteSize.x, 
-                          static_cast<double>(size.y) / spriteSize.y);
+    mainSprite_->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
+                          static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
 }
 
 // ABar implementation

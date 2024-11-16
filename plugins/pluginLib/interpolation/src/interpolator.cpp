@@ -8,9 +8,16 @@ namespace ps
 namespace 
 {
 
+bool isEqual(double val1, double val2)
+{
+    static const double eps = 1e-7;
+
+    return std::fabs(val1 - val2) < eps;
+}
+
 bool isEqual(const vec2d& point1, const vec2d& point2)
 {
-    return point1.x == point2.x && point1.y == point2.y;
+    return isEqual(point1.x, point2.x) && isEqual(point1.y, point2.y);
 }
 
 }

@@ -22,8 +22,7 @@ vec2d calcIntermidiateVal(
 }
 
 vec2d calcCatmullRomPoint(
-    const CatmullRomInterpolation::CatmullRomPoint points[kCatmullRomPoints], const double alpha, 
-    const double posT
+    const CatmullRomInterpolation::CatmullRomPoint points[kCatmullRomPoints], const double posT
 )
 {
     vec2d a3 = calcIntermidiateVal(
@@ -55,8 +54,8 @@ vec2d calcCatmullRomPoint(
 
 double calcNextT(const vec2d& prevPoint, const vec2d& nextPoint, double prevT, const double alpha)
 {
-    int dx = nextPoint.x - prevPoint.x;
-    int dy = nextPoint.y - prevPoint.y;
+    double dx = nextPoint.x - prevPoint.x;
+    double dy = nextPoint.y - prevPoint.y;
 
     return std::pow(std::sqrt(dx * dx + dy * dy), alpha) + prevT;
 }
@@ -83,14 +82,14 @@ vec2d CatmullRomInterpolation::operator[](double pos) const
 {
     int posInPointsArray = (int)pos;
     double deltaToPosInArray = pos - posInPointsArray;
-
+ 
     assert(posInPointsArray >= 0);
     assert(posInPointsArray < 3);
 
     double dt = points_[posInPointsArray + 1].t - points_[posInPointsArray].t;
     double t  = points_[posInPointsArray].t + deltaToPosInArray * dt;
 
-    return calcCatmullRomPoint(points_, alpha_, t);
+    return calcCatmullRomPoint(points_, t);
 }
 
 vec2d& CatmullRomInterpolation::operator[](int pos)

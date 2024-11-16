@@ -38,7 +38,7 @@ vec2i calculateCutRectangleTopLeft(vec2u fullSize, vec2u visibleSize, vec2f scro
 
 size_t getCutRectPosInFullPixelsArray(CutRect area, vec2i pos, vec2u fullSize)
 {
-    return static_cast<size_t>((area.pos.y + pos.y) * fullSize.x + area.pos.x + pos.x);
+    return static_cast<size_t>((area.pos.y + pos.y) * static_cast<int>(fullSize.x) + area.pos.x + pos.x);
 }
 
 std::vector<Color> cutRectangle(const std::vector<Color>& pixels, vec2u pixelsArrayFullSize, 
@@ -52,7 +52,9 @@ std::vector<Color> cutRectangle(const std::vector<Color>& pixels, vec2u pixelsAr
     {
         for (size_t y = 0; y < size.y; ++y)
         {
-            size_t pixelPos = getCutRectPosInFullPixelsArray(area, vec2i{x, y}, pixelsArrayFullSize);
+            size_t pixelPos = getCutRectPosInFullPixelsArray(area, 
+                                                             vec2i{static_cast<int>(x), static_cast<int>(y)}, 
+                                                             pixelsArrayFullSize);
             result[(y * size.x + x)] = pixels[pixelPos];
         }
     }
@@ -70,7 +72,8 @@ Layer::Layer(vec2u size) : fullSize_(size), pixels_(fullSize_.x * fullSize_.y)
 
 Color Layer::getPixel(vec2i pos) const 
 {
-    if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
+    if (pos.x < 0 || pos.y < 0 || 
+        pos.x >= static_cast<int>(area_.size.x) || pos.y >= static_cast<int>(area_.size.y))
         return {0, 0, 0, 0};
 
     return pixels_.at(getCutRectPosInFullPixelsArray(area_, pos, fullSize_));
@@ -78,7 +81,8 @@ Color Layer::getPixel(vec2i pos) const
 
 void Layer::setPixel(vec2i pos, Color pixel) 
 {
-    if (pos.x < 0 || pos.y < 0 || pos.x >= area_.size.x || pos.y >= area_.size.y)
+    if (pos.x < 0 || pos.y < 0 || 
+        pos.x >= static_cast<int>(area_.size.x) || pos.y >= static_cast<int>(area_.size.y))
         return;
 
     size_t pixelPos = getCutRectPosInFullPixelsArray(area_, pos, fullSize_);
@@ -111,7 +115,7 @@ void Layer::changeArea(const CutRect& area)
 
 // Canvas implementation
 
-Canvas::Canvas(vec2i pos, vec2u size) : pos_(pos), size_(size)
+Canvas::Canvas(vec2i pos, vec2u size) : size_(size), pos_(pos)
 {
     fullSize_ = calculateFullSize(size);
 
@@ -165,8 +169,11 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 
 #endif
     vec2u renderWindowSize = renderWindow->getSize();
-    setSize({renderWindowSize.x * CanvasSize.x , renderWindowSize.y * CanvasSize.y});
-    setPos ({CanvasTopLeftPos.x * renderWindowSize.x, CanvasTopLeftPos.y * renderWindowSize.y});
+    setSize(vec2i{static_cast<int>(CanvasSize.x * static_cast<float>(renderWindowSize.x)),
+                  static_cast<int>(CanvasSize.y * static_cast<float>(renderWindowSize.y))});
+
+    setPos(vec2i{static_cast<int>(CanvasTopLeftPos.x * static_cast<float>(renderWindowSize.x)), 
+                 static_cast<int>(CanvasTopLeftPos.y * static_cast<float>(renderWindowSize.y))});
 
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
@@ -229,10 +236,10 @@ const ILayer* Canvas::getTempLayer() const
 void Canvas::cleanTempLayer() 
 {
     Color pixel = {0u, 0u, 0u, 0u}; // important that alpha is 0
-    for (int x = 0; x < fullSize_.x; x++) 
+    for (int x = 0; x < static_cast<int>(fullSize_.x); x++) 
     {
-        for (int y = 0; y < fullSize_.y; y++) 
-            tempLayer_->setPixel({x, y}, pixel);
+        for (int y = 0; y < static_cast<int>(fullSize_.y); y++) 
+            tempLayer_->setPixel(vec2i{x, y}, pixel);
     }
 }
 
@@ -246,7 +253,7 @@ bool Canvas::removeLayer(size_t index)
     if (index >= layers_.size()) 
         return false;
 
-    layers_.erase(layers_.begin() + index);
+    layers_.erase(layers_.begin() + static_cast<long>(index));
     return true;
 }
 
@@ -257,16 +264,16 @@ bool Canvas::insertLayer(size_t index, std::unique_ptr<ILayer> layer)
     }
 
     std::unique_ptr<Layer> newLayer = std::make_unique<Layer>(fullSize_);
-    for (int x = 0; x < fullSize_.x; x++) 
+    for (int x = 0; x < static_cast<int>(fullSize_.x); x++) 
     {
-        for (int y = 0; y < fullSize_.y; y++) 
+        for (int y = 0; y < static_cast<int>(fullSize_.y); y++) 
         {
             vec2i pos = {x, y};
             newLayer->setPixel(pos, layer->getPixel(pos));
         }
     }
 
-    layers_.insert(layers_.begin() + index, std::move(newLayer));
+    layers_.insert(layers_.begin() + static_cast<long>(index), std::move(newLayer));
     return true;
 }
 
@@ -275,7 +282,7 @@ bool Canvas::insertEmptyLayer(size_t index)
     if (index > layers_.size()) 
         return false;
 
-    layers_.insert(layers_.begin() + index, std::make_unique<Layer>(fullSize_));
+    layers_.insert(layers_.begin() + static_cast<long>(index), std::make_unique<Layer>(fullSize_));
     return true;
 }
 
@@ -291,10 +298,10 @@ void Canvas::setPos(vec2i pos)
 
 void Canvas::setSize(vec2i size) 
 {
-    if (size_.x == size.x && size_.y == size.y)
+    if (size_.x == static_cast<unsigned>(size.x) && size_.y == static_cast<unsigned>(size.y))
         return;
     
-    size_ = {static_cast<unsigned>(size.x), static_cast<unsigned>(size.y)};
+    size_ = vec2u{static_cast<unsigned>(size.x), static_cast<unsigned>(size.y)};
     fullSize_ = calculateFullSize(size_);
 
     boundariesShape_->setSize({size_.x, size_.y});
@@ -313,8 +320,8 @@ void Canvas::setSize(vec2i size)
 
 void Canvas::setScale(vec2f scale) 
 {
-    setSize({static_cast<unsigned>(size_.x * scale.x / scale_.x), 
-             static_cast<unsigned>(size_.y * scale.y / scale_.y)});
+    setSize(vec2i{static_cast<int>(static_cast<float>(size_.x) * scale.x / scale_.x), 
+                  static_cast<int>(static_cast<float>(size_.y) * scale.y / scale_.y)});
 
     scale_ = scale;
 }
@@ -367,7 +374,7 @@ vec2u Canvas::getSize() const
 
 void Canvas::setParent(const IWindow* parent)
 {
-    assert(false);
+    parent_ = parent;
 }
 
 void Canvas::forceActivate() 

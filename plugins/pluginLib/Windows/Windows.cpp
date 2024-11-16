@@ -59,9 +59,8 @@ bool AWindow::isWindowContainer() const
 
 bool AWindow::checkIsHovered(vec2i mousePos)
 {
-    //std::cerr << "CHECK IS HOVERED, POS: " << pos_.x << " " << pos_.y << " SIZE: " << size_.x << " " << size_.y << "MOUSE POS: " << mousePos.x << " " << mousePos.y << std::endl;
-    return mousePos.x >= pos_.x && mousePos.x < static_cast<int>(pos_.x + size_.x)
-        && mousePos.y >= pos_.y && mousePos.y < static_cast<int>(pos_.y + size_.y);
+    return mousePos.x >= pos_.x && mousePos.x < pos_.x + static_cast<int>(size_.x)
+        && mousePos.y >= pos_.y && mousePos.y < pos_.y + static_cast<int>(size_.y);
 }
 
 bool AWindow::checkIsClicked(const Event& event, vec2i mousePos)
@@ -141,17 +140,19 @@ vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize,
 
     vec2i result = objectPos;
     result.x = std::max(result.x, boundaryPos.x);
-    result.x = std::min(result.x, static_cast<int>(boundaryPos.x + boundarySize.x - objectSize.x));
+    result.x = std::min(result.x, 
+                        boundaryPos.x + static_cast<int>(boundarySize.x) - static_cast<int>(objectSize.x));
     result.y = std::max(result.y, boundaryPos.y);
-    result.y = std::min(result.y, static_cast<int>(boundaryPos.y + boundarySize.y - objectSize.y));
+    result.y = std::min(result.y, 
+                        boundaryPos.y + static_cast<int>(boundarySize.y) - static_cast<int>(objectSize.y));
 
     return result;
 }
 
 bool checkIsHovered(vec2i mousePos, const vec2i& pos, const vec2u& size)
 {
-    return mousePos.x >= pos.x && mousePos.x < static_cast<int>(pos.x + size.x)
-        && mousePos.y >= pos.y && mousePos.y < static_cast<int>(pos.y + size.y);
+    return mousePos.x >= pos.x && mousePos.x < pos.x + static_cast<int>(size.x)
+        && mousePos.y >= pos.y && mousePos.y < pos.y + static_cast<int>(size.y);
 }
 
 bool updateIsPressed(const Event& event, bool prevPressedState, bool isHovered)

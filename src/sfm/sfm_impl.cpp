@@ -164,7 +164,7 @@ void RenderWindow::draw(Drawable* target)
 
 void RenderWindow::setFps(float fps)
 {
-    window_.setFramerateLimit(fps);
+    window_.setFramerateLimit(static_cast<unsigned>(fps));
 }
 
 float RenderWindow::getFps() const
@@ -264,8 +264,8 @@ vec2u Sprite::getSize() const
 {
     sf::Vector2u size = sprite_.getTexture()->getSize();
 
-    return { static_cast<int>(size.x*  sprite_.getScale().x), 
-             static_cast<int>(size.y*  sprite_.getScale().y) };
+    return vec2u{ static_cast<unsigned>(static_cast<float>(size.x) * sprite_.getScale().x), 
+                  static_cast<unsigned>(static_cast<float>(size.y) * sprite_.getScale().y) };
 }
 
 void Sprite::setColor(const Color& color) 

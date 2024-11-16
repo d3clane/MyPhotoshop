@@ -10,7 +10,7 @@ CFLAGS = -D _DEBUG -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wsuggest-override -Wswitch-default -Wswitch-enum 		  \
 		   -Wundef -Wunreachable-code -Wunused -Wvariadic-macros   \
 		   -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs 			  \
-		   -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
+		   -Wstack-protector -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
 		   -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-protector  						  \
 		   -fPIE -Werror=vla #-fsanitize=address				  
 

@@ -99,7 +99,8 @@ void InstrumentBar::drawChildren(IRenderWindow* renderWindow)
 
 // color button implementation
 
-ColorButton::ColorButton(std::shared_ptr<AChangeColorAction> action) : action_(action)
+ColorButton::ColorButton(std::shared_ptr<AChangeColorAction> action, size_t indexInColorBar) 
+    : action_(action), indexInColorBar_(indexInColorBar)
 {
     shape_ = IRectangleShape::create(0, 0);
     shape_->setFillColor(action_->getColor());
@@ -115,7 +116,11 @@ void ColorButton::draw(IRenderWindow* renderWindow)
 {
     shape_->draw(renderWindow);
 
+#if 0
+    std::cerr << "FINISHING BUTTON DRAW\n";
     parent_->finishButtonDraw(renderWindow, this);
+    std::cerr << "FINISHED BUTTON DRAW\n";
+#endif
 }
 
 bool ColorButton::update(const IRenderWindow* renderWindow, const Event& event)
@@ -247,14 +252,14 @@ ChildInfo ColorBar::getChildInfo(size_t childIndex) const
     
     int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize_.x + gapSize_) + gapSize_);
 
-    if (size_.x < size_.y)
+    if (size_.y < size_.x)
     {
-        info.pos.x = shift;
+        info.pos.x = pos_.x + shift;
         info.pos.y = pos_.y + static_cast<int>(gapSize_);
     }
     else
     {
-        info.pos.y = shift;
+        info.pos.y = pos_.y + shift;
         info.pos.x = pos_.x + static_cast<int>(gapSize_);
     }
 
@@ -312,12 +317,8 @@ std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMedia
     {
 
         auto action = std::make_shared<ChangeFillColorAction>(colors[i], mediator);
-        auto colorButton = std::make_unique<ColorButton>(action);
+        auto colorButton = std::make_unique<ColorButton>(action, i);
         colorButton->setParent(colorBar.get());
-
-        ChildInfo info = colorBar->getNextChildInfo();
-        colorButton->setPos(info.pos);
-        colorButton->setSize(vec2u{static_cast<unsigned>(info.size.x), static_cast<unsigned>(info.size.y)});
 
         colorBar->addWindow(std::move(colorButton));
     }

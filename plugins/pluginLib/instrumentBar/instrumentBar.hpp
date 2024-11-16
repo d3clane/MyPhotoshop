@@ -46,7 +46,7 @@ class ColorBar;
 class ColorButton : public ABarButton
 {
 public:
-    ColorButton(std::shared_ptr<AChangeColorAction> action);
+    ColorButton(std::shared_ptr<AChangeColorAction> action, size_t indexInColorBar);
 
     void draw(IRenderWindow* renderWindow) override;
     bool update(const IRenderWindow* renderWindow, const Event& event) override;

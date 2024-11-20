@@ -2,20 +2,14 @@
 #define PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_ACTIONS_HPP
 
 #include "mediator.hpp"
+#include "windows/actions.hpp"
+
 #include <memory>
 
 namespace ps
 {
 
 class ColorButton;
-
-class IAction
-{
-public:
-    virtual void operator()() = 0;
-
-    virtual ~IAction() = default;
-};
 
 class AChangeColorAction : public IAction
 {

@@ -58,11 +58,36 @@ public:
     void setSize(vec2u size) override;
 
     void draw(IRenderWindow* renderWindow) override = 0;
+
 protected:
     void draw(IRenderWindow* renderWindow, const IBar* parent);
 
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
+};
+
+class ANamedBarButton : public ABarButton
+{
+public:
+    void setPos (vec2i pos) override;
+    void setSize(vec2u size) override;
+
+    void draw(IRenderWindow* renderWindow) override = 0;
+
+protected:
+    void draw(IRenderWindow* renderWindow, const IBar* parent);
+    void rescaleNameToFit();  
+
+protected:
+    std::unique_ptr<IText> name_;
+    std::shared_ptr<IFont> font_;
+};
+
+// TODO: add to instrument bar / color bar [ create PluginABars ]
+class IPluginsBar : public IBar
+{
+    virtual size_t getNextChildId() const;
+    virtual ChildInfo getChildInfo(size_t childId) const;
 };
 
 class ABar : public IBar
@@ -100,6 +125,11 @@ protected:
     std::unique_ptr<IRectangleShape> shape_;
 };
 
+class APluginsBar : public IPluginsBar
+{
+    // TODO: 
+};
+
 class AShapedButtonsBar : public ABar
 {
 public:
@@ -121,6 +151,10 @@ protected:
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
 };
 
+class AShapedButtonsPluginsBar : public ABar
+{
+    // TODO: 
+};
 
 namespace bar_children_handler_funcs
 {

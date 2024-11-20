@@ -11,6 +11,9 @@
 #include "bars/ps_bar.hpp"
 #include "windows/windows.hpp"
 
+#include "instrumentBar/mediator.hpp"
+#include "toolbar/toolbarButton.hpp"
+
 #include <iostream>
 
 namespace 
@@ -20,7 +23,9 @@ using namespace ps;
 using namespace psapi;
 using namespace psapi::sfm;
 
-class LineButton : public ASpritedBarButton 
+using MediatorType = APropertiesMediator;
+
+class LineButton : public AInstrumentButton<MediatorType>
 {
 public:
     LineButton() = default;
@@ -29,11 +34,7 @@ public:
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
     void draw(IRenderWindow* renderWindow) override;
 
-    void setParent(const IWindow* parent) override;
-
 private:
-    const IBar* parent_;
-
     bool canvasIsAlreadyPressed_ = false;
 
     vec2i lineBeginPos_;
@@ -50,19 +51,22 @@ void copyLineToLayer(ILayer* layer, const IRectangleShape* line, vec2i canvasPos
     copyImageToLayer(layer, image, canvasPos, image->getSize());
 }
 
-std::unique_ptr<IRectangleShape> createLine(vec2i beginPos, const ICanvas* canvas)
+std::unique_ptr<IRectangleShape> createLineShape(vec2i beginPos, const ICanvas* canvas,
+                                                 std::shared_ptr<MediatorType> mediator)
 {
     vec2i mousePos = canvas->getMousePosition() + canvas->getPos();
 
     const float lineLength = static_cast<float>(len(beginPos, mousePos));
     const float angle = static_cast<float>(std::atan2(mousePos.y - beginPos.y, mousePos.x - beginPos.x));
 
-    static const unsigned thickness = 10;
+    DrawingProperties fillProperties = mediator->getFillProperties();
+
+    static const unsigned thickness = fillProperties.thickness;
     std::unique_ptr<IRectangleShape> line = IRectangleShape::create(static_cast<unsigned>(lineLength), 
                                                                     thickness);
 
-    static const Color redColor{0xFF, 0x00, 0x00, 0xFF};
-    line->setFillColor(redColor);
+    Color color = fillProperties.color;
+    line->setFillColor(color);
     line->setOutlineThickness(0);
     line->setRotation(angle * 180.f / static_cast<float>(M_PI));
     line->setPosition(beginPos);
@@ -79,6 +83,9 @@ LineButton::LineButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture
 bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updateStateRes = updateState(renderWindow, event);
+
+    instrument_button_functions::updateInstrumentBar(instrumentBar_.get(), state_, 
+                                                     renderWindow, event);
 
     if (state_ != State::Released)
         return updateStateRes;
@@ -112,7 +119,7 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
         canvasIsAlreadyPressed_ = true;
     }
 
-    line_ = createLine(lineBeginPos_, canvas);
+    line_ = createLineShape(lineBeginPos_, canvas, mediator_);
 
     if (line_)
         const_cast<IRenderWindow*>(renderWindow)->draw(line_.get()); // crutch
@@ -126,52 +133,16 @@ void LineButton::draw(IRenderWindow* renderWindow)
 
     if (line_)
         renderWindow->draw(line_.get());
-}
-
-void LineButton::setParent(const IWindow* parent)
-{
-    parent_ = dynamic_cast<const IBar*>(parent);
-    assert(parent_);
+    
+    instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
 }
 
 } // namespace anonymous
 
 bool loadPlugin() // onLoadPlugin
 {
-    auto buttonSprite  = ISprite::create();
-    auto buttonTexture = ITexture::create();
-
-    buttonTexture.get()->loadFromFile("media/textures/paintbrush.png");
-
-    buttonSprite->setTexture(buttonTexture.get());
-
-    IWindowContainer* rootWindow = getRootWindow();
-    assert(rootWindow);
-    auto toolBar = static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId));
-    assert(toolBar);
-
-    auto info = toolBar->getNextChildInfo();
-    vec2i pos = info.pos;
-    vec2u size = { static_cast<unsigned int>(info.size.x),  
-                   static_cast<unsigned int>(info.size.y) };
-
-    buttonSprite->setPosition(pos.x, pos.y);
-    
-    vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
-                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
-
-    std::unique_ptr<ps::ASpritedBarButton> button{ new LineButton(std::move(buttonSprite), std::move(buttonTexture)) };
-
-    button->setPos(pos);
-    button->setSize(size);
-
-    assert(rootWindow->getWindowById(kToolBarWindowId));
-    
-    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->
-        addWindow(std::unique_ptr<IBarButton>(button.release()));
-
-    return true;
+    return instrument_button_functions::instrumentButtonOnLoadPlugin<
+        LineButton, MediatorType>("media/textures/paintbrush.png");
 }
 
 void unloadPlugin()

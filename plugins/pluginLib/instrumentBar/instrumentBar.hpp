@@ -101,7 +101,40 @@ private:
     mutable vec2i nextChildPos_ = {static_cast<int>(gapSize_), 0};
 };
 
-std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<APropertiesMediator> mediator);
+template<typename MediatorType>
+std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<MediatorType> mediator)
+{
+    auto instrumentBar = std::make_unique<InstrumentBar>();
+
+    Color colors[] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {255, 255, 0, 255},
+        {0, 255, 255, 255},
+        {255, 0, 255, 255}
+    };
+
+    const size_t nButtons = sizeof(colors) / sizeof(colors[0]);
+
+    vec2u size = {256, 16}; // TODO: CHANGE
+    auto colorBar = std::make_unique<ColorBar>(instrumentBar->getNextChildInfo().pos, size);
+
+    for (size_t i = 0; i < nButtons; ++i)
+    {
+
+        auto action = std::make_shared<ChangeFillColorAction>(colors[i], mediator);
+        auto colorButton = std::make_unique<ColorButton>(action, i);
+        colorButton->setParent(colorBar.get());
+
+        colorBar->addWindow(std::move(colorButton));
+    }
+    
+    // TODO: 
+    //instrumentBar->addWindow(std::move(colorBar));
+
+    return colorBar;
+}
 
 } // namespace ps
 

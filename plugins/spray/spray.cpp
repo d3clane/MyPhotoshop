@@ -10,16 +10,22 @@
 
 #include "bars/ps_bar.hpp"
 
+#include "toolbar/toolbarButton.hpp"
+#include "instrumentBar/mediator.hpp"
+
 #include <iostream>
 
+using namespace ps;
 
-namespace ps
+namespace
 {
 
 using namespace psapi;
 using namespace psapi::sfm;
 
-class SprayButton : public ASpritedBarButton 
+using MediatorType = AFillPropertiesMediator;
+
+class SprayButton : public AInstrumentButton<MediatorType> 
 {
 public:
     SprayButton() = default;
@@ -28,11 +34,9 @@ public:
     bool update(const IRenderWindow* renderWindow, const Event& event) override;
 
     void draw(IRenderWindow* renderWindow) override;
-    void setParent(const IWindow* parent) override;
-
-private:
-    const IBar* parent_;
 };
+
+void drawPoint(ICanvas* canvas, std::shared_ptr<MediatorType> mediator);
 
 SprayButton::SprayButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
 {
@@ -43,6 +47,9 @@ SprayButton::SprayButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITextu
 bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updatedState = updateState(renderWindow, event);
+
+    instrument_button_functions::updateInstrumentBar(instrumentBar_.get(), state_,
+                                                     renderWindow, event);
 
     if (state_ != State::Released)
         return updatedState;
@@ -58,59 +65,40 @@ bool SprayButton::update(const IRenderWindow* renderWindow, const Event& event)
     if (event.type != Event::MouseButtonReleased)
         return true;
 
-    size_t activeLayerIndex = canvas->getActiveLayerIndex();
-    ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-
-    auto mousePos = canvas->getMousePosition();
-    for (int i = -5; i < 5; ++i)
-        for (int j = -5; j < 5; ++j)
-            activeLayer->setPixel({mousePos.x + i, mousePos.y + j}, {0xFF, 0x00, 0x00, 0xFF});
+    drawPoint(canvas, mediator_);
     
     return updatedState;
 }
 
-void SprayButton::draw(IRenderWindow* renderWindow) { ASpritedBarButton::draw(renderWindow, parent_); }
+void SprayButton::draw(IRenderWindow* renderWindow) 
+{ 
+    ASpritedBarButton::draw(renderWindow, parent_); 
 
-void SprayButton::setParent(const IWindow* parent)
-{
-    parent_ = dynamic_cast<const IBar*>(parent);
-    assert(parent_);
+    instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
 }
 
-} // namespace ps
+void drawPoint(ICanvas* canvas, std::shared_ptr<MediatorType> mediator)
+{
+    size_t activeLayerIndex = canvas->getActiveLayerIndex();
+    ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
+
+    vec2i mousePos = canvas->getMousePosition();
+
+    DrawingProperties fillProperties = mediator->getFillProperties();
+
+    // TODO: thickness
+    Color color = fillProperties.color;
+    for (int i = -5; i < 5; ++i)
+        for (int j = -5; j < 5; ++j)
+            activeLayer->setPixel({mousePos.x + i, mousePos.y + j}, color);
+}
+
+} // namespace anonymous
 
 bool loadPlugin()
 {
-    auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
-    auto buttonTexture = std::unique_ptr<ITexture>(ITexture::create());
-
-    buttonTexture.get()->loadFromFile("media/textures/spray.png");
-
-    buttonSprite->setTexture(buttonTexture.get());
-
-    IWindowContainer* rootWindow = getRootWindow();
-    assert(rootWindow);
-    auto toolBar = static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId));
-    assert(toolBar);
-
-    auto info = toolBar->getNextChildInfo();
-    auto pos = info.pos;
-    vec2u size = { static_cast<unsigned>(info.size.x), static_cast<unsigned>(info.size.y) };
-
-    buttonSprite->setPosition(pos.x, pos.y);
-    
-    auto spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
-                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
-    std::unique_ptr<ps::ASpritedBarButton> button{ new ps::SprayButton(std::move(buttonSprite), std::move(buttonTexture)) };
-    
-    button->setPos(pos);
-    button->setSize(size);
-
-    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->
-        addWindow(std::unique_ptr<IBarButton>(button.release()));
-
-    return true;
+    return instrument_button_functions::instrumentButtonOnLoadPlugin<
+        SprayButton, MediatorType>("media/textures/spray.png");
 }
 
 void unloadPlugin()

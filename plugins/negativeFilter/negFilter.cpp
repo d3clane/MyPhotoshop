@@ -88,9 +88,12 @@ bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event
         {
             Color color = activeLayer->getPixel(vec2i{static_cast<int>(x + 1), static_cast<int>(y + 1)});
             Color negC = tempLayer->getPixel(vec2i{static_cast<int>(x), static_cast<int>(y)});
+        
+            Color newColor = Color{(negC.r + color.r) / 2, (negC.g + color.g) / 2, (negC.b + color.b) / 2, 255};
+            
+            activeLayer->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}, newColor);
 
-            activeLayer->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}, 
-            Color{(negC.r + color.r) / 2, (negC.g + color.g) / 2, (negC.b + color.b) / 2, 255});
+            
         }
     }
     

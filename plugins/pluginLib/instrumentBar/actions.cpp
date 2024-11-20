@@ -20,7 +20,7 @@ ChangeFillColorAction::ChangeFillColorAction(const Color& color,
 
 void ChangeFillColorAction::operator()()
 {
-    mediator_->getFillProperties().color = color_;
+    mediator_->fillProperties().color = color_;
 }
 
 ChangeOutlineColorAction::ChangeOutlineColorAction(const Color& color, 
@@ -31,7 +31,7 @@ ChangeOutlineColorAction::ChangeOutlineColorAction(const Color& color,
 
 void ChangeOutlineColorAction::operator()()
 {
-    mediator_->getOutlineProperties().color = color_;
+    mediator_->outlineProperties().color = color_;
 }
 
 } // namespace ps

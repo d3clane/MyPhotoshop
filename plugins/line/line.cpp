@@ -59,7 +59,7 @@ std::unique_ptr<IRectangleShape> createLineShape(vec2i beginPos, const ICanvas* 
     const float lineLength = static_cast<float>(len(beginPos, mousePos));
     const float angle = static_cast<float>(std::atan2(mousePos.y - beginPos.y, mousePos.x - beginPos.x));
 
-    DrawingProperties fillProperties = mediator->getFillProperties();
+    DrawingProperties fillProperties = mediator->fillProperties();
 
     static const unsigned thickness = fillProperties.thickness;
     std::unique_ptr<IRectangleShape> line = IRectangleShape::create(static_cast<unsigned>(lineLength), 

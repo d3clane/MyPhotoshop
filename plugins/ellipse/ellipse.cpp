@@ -98,9 +98,9 @@ std::unique_ptr<IEllipseShape> createEllipseShape(const vec2i& beginEllipsePos, 
     std::unique_ptr<IEllipseShape> ellipse = IEllipseShape::create(ellipseXSize, ellipseYSize);
     assert(ellipse);
 
-    DrawingProperties fillProperties = mediator->getFillProperties();
+    DrawingProperties fillProperties = mediator->fillProperties();
     Color color = fillProperties.color;
-    
+
     ellipse->setFillColor(color);
     ellipse->setOutlineThickness(0);
     ellipse->setPosition(topLeft);

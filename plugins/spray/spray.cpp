@@ -84,7 +84,7 @@ void drawPoint(ICanvas* canvas, std::shared_ptr<MediatorType> mediator)
 
     vec2i mousePos = canvas->getMousePosition();
 
-    DrawingProperties fillProperties = mediator->getFillProperties();
+    DrawingProperties fillProperties = mediator->fillProperties();
 
     // TODO: thickness
     Color color = fillProperties.color;

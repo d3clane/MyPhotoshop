@@ -18,8 +18,8 @@ struct DrawingProperties
 class AFillPropertiesMediator
 {
 public:
-    DrawingProperties& getFillProperties()             { return fillProperties_; }
-    const DrawingProperties& getFillProperties() const { return fillProperties_; }
+    DrawingProperties& fillProperties()             { return fillProperties_; }
+    const DrawingProperties& fillProperties() const { return fillProperties_; }
 
     virtual ~AFillPropertiesMediator() = default;
 
@@ -30,8 +30,8 @@ private:
 class AOutlinePropertiesMediator
 {
 public:
-    DrawingProperties& getOutlineProperties()             { return outlineProperties_; }
-    const DrawingProperties& getOutlineProperties() const { return outlineProperties_; }
+    DrawingProperties& outlineProperties()             { return outlineProperties_; }
+    const DrawingProperties& outlineProperties() const { return outlineProperties_; }
 
 private:
     DrawingProperties outlineProperties_;

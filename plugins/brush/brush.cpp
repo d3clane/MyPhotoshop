@@ -114,7 +114,7 @@ bool drawTrace(ICanvas* canvas, std::shared_ptr<MediatorType> mediator, const In
 
 void drawPoint(ILayer* layer, const vec2i& point, std::shared_ptr<MediatorType> mediator)
 {
-    DrawingProperties properties = mediator->getFillProperties();
+    DrawingProperties properties = mediator->fillProperties();
     unsigned thickness = properties.thickness;
     int drawingRange = static_cast<int>(thickness + 1) / 2;
     Color color = properties.color;

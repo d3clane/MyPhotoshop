@@ -14,6 +14,7 @@
 
 #include "bars/ps_bar.hpp"
 #include "windows/windows.hpp"
+#include "filters/filters.hpp"
 
 #include <iostream>
 
@@ -45,11 +46,6 @@ NegativeFilterButton::NegativeFilterButton(std::unique_ptr<ISprite> sprite, std:
     mainTexture_ = std::move(texture);
 }
 
-Color applyNegative(const Color& prev)
-{
-    return Color{-prev.r + 255, -prev.g + 255, -prev.b + 255, prev.a};
-}
-
 bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updateStateRes = updateState(renderWindow, event);
@@ -66,39 +62,15 @@ bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-    ILayer* tempLayer   = canvas->getTempLayer();
 
     vec2u canvasSize = canvas->getSize();
 
-    for (size_t x = 0; x < canvasSize.x; ++x)
-    {
-        for (size_t y = 0; y < canvasSize.y; ++y)
-        {
-            vec2i posOnScreen(vec2i{static_cast<int>(x), static_cast<int>(y)});
-
-            Color pixelColor = activeLayer->getPixel(posOnScreen);
-            Color newColor = applyNegative(pixelColor);
-            tempLayer->setPixel(posOnScreen, newColor);
-        }
-    }
-
-    for (size_t x = 0; x < canvasSize.x; ++x)
-    {
-        for (size_t y = 0; y < canvasSize.y; ++y)
-        {
-            Color color = activeLayer->getPixel(vec2i{static_cast<int>(x + 1), static_cast<int>(y + 1)});
-            Color negC = tempLayer->getPixel(vec2i{static_cast<int>(x), static_cast<int>(y)});
-        
-            Color newColor = Color{(negC.r + color.r) / 2, (negC.g + color.g) / 2, (negC.b + color.b) / 2, 255};
-            
-            activeLayer->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}, newColor);
-
-            
-        }
-    }
+    std::vector<std::vector<Color>> pixels = getLayerScreenIn2D(activeLayer, canvasSize);
+    std::vector<std::vector<Color>> negative = getNegative(pixels);
     
-    canvas->cleanTempLayer();
-
+    std::vector<std::vector<Color>> basRelief = getBasRelief(pixels, negative);
+    copyPixelsToLayer(activeLayer, negative);
+    
     state_ = State::Normal;
 
     return true;

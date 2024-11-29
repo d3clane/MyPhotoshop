@@ -55,7 +55,7 @@ vec2i RootWindow::getPos() const {
 }
 
 vec2u RootWindow::getSize() const {
-    return {0, 0};
+    return {1920, 1080}; // TODO: hardCoded...
 }
 
 void RootWindow::setParent(const IWindow* /* parent */) 

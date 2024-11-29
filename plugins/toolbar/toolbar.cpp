@@ -141,6 +141,10 @@ void Toolbar::removeWindow(wid_t id)
 
 bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
 {
+    // TODO: think
+    nextChildIndex_ = 0;
+    numChildren_ = 0;
+
     vec2u renderWindowSize = renderWindow->getSize();
     setSize({static_cast<unsigned>(static_cast<float>(renderWindowSize.x) * ToolbarSize.x),
              static_cast<unsigned>(static_cast<float>(renderWindowSize.y) * ToolbarSize.y)});

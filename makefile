@@ -35,7 +35,8 @@ override CFLAGS += $(LIB_INC)
 CPPSRC = src/main.cpp
 PLUGIN_LIB_NAMES := bars/ps_bar.cpp canvas/canvas.cpp interpolation/src/catmullRom.cpp \
 					interpolation/src/interpolator.cpp windows/windows.cpp scrollbar/scrollbar.cpp \
-					instrumentBar/actions.cpp instrumentBar/instrumentBar.cpp toolbar/toolbarButton.cpp
+					instrumentBar/actions.cpp instrumentBar/instrumentBar.cpp toolbar/toolbarButton.cpp	\
+					filters/filters.cpp
 PLUGIN_LIB = $(addprefix plugins/pluginLib/, $(PLUGIN_LIB_NAMES))
 
 CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))

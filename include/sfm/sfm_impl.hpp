@@ -98,7 +98,6 @@ public:
     Image(const Image& other) { image_ = other.image_; }
     virtual ~Image() = default;
 
-
     void create(unsigned int width, unsigned int height, const Color &color = Color(0, 0, 0)) override;
     void create(vec2u size,                              const Color &color = Color(0, 0, 0)) override;
 
@@ -114,7 +113,10 @@ public:
     Color getPixel(unsigned int x, unsigned int y) const override;
     Color getPixel(vec2u pos)                      const override;
 
+    vec2i getPos() const override;
+    void setPos(const vec2i &pos) override;
 private:
+    vec2i pos_;
     sf::Image image_;
 
     friend class Texture;
@@ -135,6 +137,7 @@ class Text : public IText
 public:
     virtual ~Text() = default;
 
+    IntRect getGlobalBounds() const override;
     void draw(IRenderWindow *window) const override;
     void setString(const std::string& string) override;
     void setFont(const IFont* font) override;
@@ -143,6 +146,8 @@ public:
     void setFillColor(const Color* color) override;
     void setOutlineColor(const Color* color) override;
     void setOutlineThickness(float thickness) override;
+    void setPos(const vec2f &pos)   override;
+    void setSize(const vec2f &size) override;
 
 private:
     sf::Text text_;

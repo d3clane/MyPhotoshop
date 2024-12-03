@@ -1,13 +1,16 @@
-#include "plugins/canvas/canvas.hpp"
-#include "plugins/toolbar/toolbar.hpp"
-#include "plugins/brush/brush.hpp"
-#include "plugins/spray/spray.hpp"
-
 #include "api/api_sfm.hpp"
+#include "api/api_photoshop.hpp"
+#include "api_impl/api_photoshop.hpp"
+
+#include <iostream>
+#include <cassert>
 
 #include <SFML/Graphics.hpp>
 
 #include <dlfcn.h>
+
+using namespace psapi;
+using namespace psapi::sfm;
 
 void loadPlugin(const char* libName)
 {
@@ -34,9 +37,7 @@ void loadPlugin(const char* libName)
 
 int main()
 {
-    auto renderWindow = psapi::IRenderWindow::create(1920, 1080, "photoshop");
-    renderWindow->setFps(60);
-    
+    /*
     loadPlugin("libs/lib_canvas.dylib");
     loadPlugin("libs/lib_toolbar.dylib");
     loadPlugin("libs/lib_spray.dylib");
@@ -45,9 +46,13 @@ int main()
     loadPlugin("libs/lib_ellipse.dylib");
     loadPlugin("libs/lib_negative_filter.dylib");
     loadPlugin("libs/lib_blur_filter.dylib");
+    */
 
-    auto rootWindow = psapi::getRootWindow();
+    RootWindow* rootWindow = RootWindow::create(vec2u{1920, 1080});
+    AActionController* actionController = getActionController();
 
+    IRenderWindow* renderWindow = rootWindow->getRenderWindow();
+    assert(renderWindow);
     while (renderWindow->isOpen())
     {
         psapi::sfm::Event event;
@@ -56,13 +61,12 @@ int main()
             if (event.type == psapi::sfm::Event::Closed)
                 renderWindow->close();
 
-            rootWindow->update(renderWindow.get(), event);
+            actionController->execute(rootWindow->createAction(renderWindow, event));
         }
 
-        rootWindow->update(renderWindow.get(), event);
-        
+        actionController->execute(rootWindow->createAction(renderWindow, event));
         renderWindow->clear();
-        rootWindow->draw(renderWindow.get());
+        rootWindow->draw(renderWindow);
         renderWindow->display();
     }
 }

@@ -1,30 +1,46 @@
 #include "api/api_photoshop.hpp"
+#include "api_impl/api_photoshop.hpp"
 
 #include <cassert>
 #include <iostream>
 
+
 namespace psapi
 {
 
-class RootWindow : public IWindowVector 
+class RootWindowAction : public IAction
 {
 public:
-    void draw  (      IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow,
-                        const Event& event)           override;
-    int64_t getId() const override;
+    bool execute(const Key& key) override;
+    bool isUndoable(const Key& key) override;
 
-    vec2i getPos()  const          override;
-    vec2u getSize() const          override;
-    void setParent(const IWindow* parent) override;
-    void forceActivate()                  override;
-    void forceDeactivate()                override;
-
-    bool isActive() const override;
+    void addAction(std::unique_ptr<IAction> action);
 
 private:
-    bool isActive_ = true;
+    std::vector<std::unique_ptr<IAction>> actions_;
 };
+
+bool RootWindowAction::execute(const Key& /*key*/)
+{
+    AActionController* actionController = getActionController();
+
+    bool updatedSomeone = 0;
+    for (auto& action : actions_)
+        updatedSomeone |= actionController->execute(std::move(action));
+    // Problem: can do something like action->execute(key);
+
+    return updatedSomeone;
+}
+
+bool RootWindowAction::isUndoable(const Key& /* key */) 
+{
+    return false;
+}
+
+void RootWindowAction::addAction(std::unique_ptr<IAction> action)
+{
+    actions_.push_back(std::move(action));
+}
 
 void RootWindow::draw(IRenderWindow* renderWindow) 
 {
@@ -35,27 +51,30 @@ void RootWindow::draw(IRenderWindow* renderWindow)
     }
 }
 
-bool RootWindow::update(const IRenderWindow* renderWindow,
-                        const Event& event) 
+std::unique_ptr<IAction> RootWindow::createAction(const IRenderWindow* renderWindow,
+                                                  const Event& event) 
 {
-    bool updatedSomeone = false;
+    auto action = std::make_unique<RootWindowAction>();
 
     for (auto& window : windows_)
-        updatedSomeone |= window->update(renderWindow, event);
+        action->addAction(window->createAction(renderWindow, event));
 
-    return updatedSomeone;
+    return action;
 }
 
-int64_t RootWindow::getId() const {
+wid_t RootWindow::getId() const 
+{
     return kRootWindowId;
 }
 
-vec2i RootWindow::getPos() const {
+vec2i RootWindow::getPos() const 
+{
     return {0, 0};
 }
 
-vec2u RootWindow::getSize() const {
-    return {1920, 1080}; // TODO: hardCoded...
+vec2u RootWindow::getSize() const 
+{
+    return renderWindow_->getSize();
 }
 
 void RootWindow::setParent(const IWindow* /* parent */) 
@@ -75,33 +94,16 @@ void RootWindow::forceDeactivate()
 
 bool RootWindow::isActive() const
 {
-    return isActive_;
-}
-
-IWindow::~IWindow() = default;
-
-IWindowContainer* getRootWindow()
-{
-    static RootWindow rootWindow;
-    return &rootWindow;
-}
-
-bool IWindowContainer::isWindowContainer() const 
-{
     return true;
 }
 
-bool IWindowVector::isWindowContainer() const 
-{
-    return true;
-}
-
-void IWindowVector::addWindow(std::unique_ptr<IWindow> window) 
+void RootWindow::addWindow(std::unique_ptr<IWindow> window)
 {
     windows_.push_back(std::move(window));
 }
 
-void IWindowVector::removeWindow(wid_t id) {
+void RootWindow::removeWindow(wid_t id) 
+{
     for (auto it = windows_.begin(); it != windows_.end(); it++) 
     {
         if ((*it)->getId() == id) 
@@ -110,32 +112,139 @@ void IWindowVector::removeWindow(wid_t id) {
             return;
         }
     }
+}
 
+IWindow* RootWindow::getWindowById(wid_t id)
+{
+    if (id == kRootWindowId)
+        return static_cast<IWindow*>(this);
+    
     for (auto& window : windows_)
     {
-        if (window->isWindowContainer())
-            static_cast<IWindowContainer*>(window.get())->removeWindow(id);
-    }
-}
-
-IWindow* IWindowVector::getWindowById(wid_t id) 
-{
-    return const_cast<IWindow*>(static_cast<const IWindowVector*>(this)->getWindowById(id));
-}
-
-const IWindow* IWindowVector::getWindowById(wid_t id) const 
-{
-    if (id == kInvalidWindowId) {
-        return nullptr;
+        IWindow* outWindow = window->getWindowById(id);
+        if (outWindow)
+            return outWindow;
     }
 
-    for (const auto& window : windows_) {
-        IWindow* result = window->getWindowById(id);
-        if (result)
-            return result;
-    }
-    
     return nullptr;
 }
 
+const IWindow* RootWindow::getWindowById(wid_t id) const
+{
+    return const_cast<RootWindow*>(this)->getWindowById(id);
+}
+
+void RootWindow::setSize(const vec2u& /*size*/)
+{
+    assert(false);
+}
+
+void RootWindow::setPos(const vec2i& /*pos*/)
+{
+    assert(false);
+}
+
+layer_id_t RootWindow::getUpperLayerId() const
+{
+    return maxLayerId_;
+}
+
+layer_id_t RootWindow::increaseLayerId()
+{
+    return ++maxLayerId_;
+}
+
+layer_id_t RootWindow::decreaseLayerId()
+{
+    assert(maxLayerId_ > 0);
+
+    return --maxLayerId_;
+}
+
+IRenderWindow* RootWindow::getRenderWindow()
+{
+    return renderWindow_.get();
+}
+
+RootWindow* RootWindow::create(vec2u size)
+{
+    static RootWindow* rootWindow = new RootWindow;
+
+    if (rootWindow->renderWindow_.get() == nullptr)
+    {
+        rootWindow->renderWindow_ = IRenderWindow::create(size.x, size.y, "Photoshop");
+        rootWindow->renderWindow_->setFps(60);
+    }
+
+    return rootWindow;
+}
+
+IRootWindow* getRootWindow()
+{
+    return RootWindow::create(vec2u{0, 0});
+}
+
+vec2i getScreenSize()
+{
+    vec2u size = getRootWindow()->getSize();
+    return vec2i{static_cast<int>(size.x), static_cast<int>(size.y)};
+}
+
+sfm::IntRect getCanvasIntRect()
+{
+    vec2i size = getScreenSize();
+    
+    sfm::IntRect rect;
+    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.1f),
+                 static_cast<int>     (static_cast<float>(size.y) * 0.15f)};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.8f),
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.7f)};
+    
+    return rect;
+}
+
+sfm::IntRect getToolbarIntRect()
+{
+    vec2i size = getScreenSize();
+
+    sfm::IntRect rect;
+    rect.pos  = {0, 0};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.055f), 
+                 static_cast<unsigned>(size.y)};
+    
+    return rect;
+}
+
+sfm::IntRect getOptionsBarIntRect()
+{
+    vec2i size = getScreenSize();
+
+    sfm::IntRect rect;
+    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.055f), 0};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.945f), 
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.055f)};
+    
+    return rect;
+}
+
+sfm::IntRect getInstrumentOptionsIntRect()
+{
+    vec2i size = getScreenSize();
+
+    sfm::IntRect rect;
+
+    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.055f), 
+                 static_cast<int>     (static_cast<float>(size.y) * 0.055f)};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.945f), 
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.055f)};
+    
+    return rect;
+}
+
+bool IWindowContainer::isWindowContainer() const 
+{
+    return true;
+}
+
 } // namespace psapi
+

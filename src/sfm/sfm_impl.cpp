@@ -182,16 +182,14 @@ bool Texture::create(unsigned int width, unsigned int height)
 
 bool Texture::loadFromFile(const std::string& filename, const IntRect& area) 
 {
-    sf::IntRect sfArea(area.top_x, area.top_y,
-                       area.width, area.height);
+    sf::IntRect sfArea(area.pos.x, area.pos.y, (int)area.size.x, (int)area.size.y);
 
     return texture_.loadFromFile(filename, sfArea);
 }
 
 bool Texture::loadFromMemory(const void* data, std::size_t size, const IntRect& area) 
 {
-    sf::IntRect sfArea(area.top_x, area.top_y,
-                       area.width, area.height);
+    sf::IntRect sfArea(area.pos.x, area.pos.y, (int)area.size.x, (int)area.size.y);
 
     return texture_.loadFromMemory(data, size, sfArea);
 }
@@ -239,10 +237,10 @@ void Sprite::setTexture(const ITexture* texture, bool reset_rect)
 
 void Sprite::setTextureRect(const IntRect& rectangle) 
 {
-    sprite_.setTextureRect(sf::IntRect(static_cast<int>(rectangle.top_x),
-                                       static_cast<int>(rectangle.top_y),
-                                       static_cast<int>(rectangle.width),
-                                       static_cast<int>(rectangle.height)));
+    sprite_.setTextureRect(sf::IntRect(static_cast<int>(rectangle.pos.x),
+                                       static_cast<int>(rectangle.pos.y),
+                                       static_cast<int>(rectangle.size.x),
+                                       static_cast<int>(rectangle.size.y)));
 }
 
 void Sprite::setPosition(float x, float y) 
@@ -293,8 +291,8 @@ const vec2f Sprite::getPosition() const
 IntRect Sprite::getGlobalBounds() const 
 {
     sf::FloatRect bounds = sprite_.getGlobalBounds();
-    return { static_cast<int>(bounds.left),  static_cast<int>(bounds.top),
-             static_cast<int>(bounds.width), static_cast<int>(bounds.height) };
+    return { vec2i{static_cast<int>     (bounds.left ), static_cast<int>     (bounds.top   )},
+             vec2u{static_cast<unsigned>(bounds.width), static_cast<unsigned>(bounds.height)} };
 }
 
 void Sprite::draw(IRenderWindow* window) const
@@ -352,6 +350,27 @@ void Text::setOutlineColor(const Color* color)
 void Text::setOutlineThickness(float thickness) 
 {
     text_.setOutlineThickness(thickness);
+}
+
+IntRect Text::getGlobalBounds() const
+{
+    sf::FloatRect bounds = text_.getGlobalBounds();
+    return { vec2i{static_cast<int>     (bounds.left ), static_cast<int>     (bounds.top   )},
+             vec2u{static_cast<unsigned>(bounds.width), static_cast<unsigned>(bounds.height)} };
+}
+
+void Text::setPos(const vec2f &pos)
+{
+    text_.setPosition(pos.x, pos.y);
+}
+
+void Text::setSize(const vec2f &size)
+{
+    text_.setScale(sf::Vector2f{1.f, 1.f});
+
+    sf::FloatRect bounds = text_.getGlobalBounds();
+    text_.setScale(sf::Vector2f{static_cast<float>(size.x) / bounds.width,
+                                static_cast<float>(size.y) / bounds.height});
 }
 
 // Image implementation
@@ -413,6 +432,16 @@ Color Image::getPixel(vec2u pos) const
 std::unique_ptr<IImage> IImage::create() 
 {
     return std::make_unique<Image>();
+}
+
+vec2i Image::getPos() const
+{
+    return pos_;
+}
+
+void Image::setPos(const vec2i &pos)
+{
+    pos_ = pos;
 }
 
 // Rectangle implementation

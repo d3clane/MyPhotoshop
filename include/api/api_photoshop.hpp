@@ -6,29 +6,15 @@
 #ifndef API_PHOTOSHOP_HPP
 #define API_PHOTOSHOP_HPP
 
+#include "api_actions.hpp"
 #include "api_sfm.hpp"
+
 #include <cstdint>
 #include <memory>
-#include <vector>
 
-static const psapi::sfm::vec2f CanvasTopLeftPos = psapi::sfm::vec2f(0.1f, 0.15f);
-static const psapi::sfm::vec2f CanvasSize       = psapi::sfm::vec2f(0.8f, 0.7f);
+namespace psapi
+{
 
-static const psapi::sfm::vec2f ToolbarTopLeftPos = psapi::sfm::vec2f(0.00f, 0.00f);
-static const psapi::sfm::vec2f ToolbarSize       = psapi::sfm::vec2f(0.055f, 1.f);
-
-static const psapi::sfm::vec2f OptionBarTopLeftPos = psapi::sfm::vec2f(0.055f, 0.00f);
-static const psapi::sfm::vec2f OptionBarSize       = psapi::sfm::vec2f(0.945f, 0.055f);
-
-static const psapi::sfm::vec2f InstrumentOptionsTopLeftPos = psapi::sfm::vec2f(0.055f, 0.055f);
-static const psapi::sfm::vec2f InstrumentOptionsSize       = psapi::sfm::vec2f(0.945f, 0.055f);
-
-namespace psapi {
-
-namespace sfm {
-    class IRenderWindow;
-    class Event;
-} // namespace sfm
 
 using sfm::IRenderWindow;
 using sfm::Event;
@@ -50,13 +36,30 @@ using sfm::vec2d;
 /** @brief Invalid window ID constant. */
 const wid_t kInvalidWindowId = -1;
 
+
+/**
+ * @brief Get size and position of objects in Photoshop
+ */
+sfm::IntRect getCanvasIntRect();
+sfm::IntRect getToolbarIntRect();
+sfm::IntRect getOptionsBarIntRect();
+sfm::IntRect getInstrumentOptionsIntRect();
+
+/**
+ * @brief Get the size of the screen
+ *
+ * @return psapi::sfm::vec2i
+ */
+psapi::sfm::vec2i getScreenSize();
+
 /**
  * @brief Interface representing a basic window.
  */
 class IWindow
 {
 public:
-    virtual ~IWindow();
+    virtual ~IWindow() = default;
+
     /**
      * @brief Renders the window.
      * @param renderWindow The render target.
@@ -64,12 +67,10 @@ public:
     virtual void draw(IRenderWindow* renderWindow) = 0;
 
     /**
-     * @brief Updates the window based on events.
-     * @param renderWindow The render target.
-     * @param event The event to process.
-     * @return True if the window was updated, false otherwise.
+     * @brief creates an action for action controller to execute
+     *
      */
-    virtual bool update(const IRenderWindow* renderWindow, const Event& event) = 0;
+    virtual std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) = 0;
 
     /**
      * @brief Gets the unique ID of the window.
@@ -99,9 +100,21 @@ public:
 
     /**
      * @brief Gets the size of the window.
-     * @return The window size as a vec2i.
+     * @return The window size as a vec2u.
      */
     virtual vec2u getSize() const = 0;
+
+    /**
+     * @brief Sets the size of the window.
+     * @param pos The new window position as a vec2i.
+     */
+    virtual void setSize(const vec2u& size) = 0;
+
+    /**
+     * @brief Sets the position of the window.
+     * @param pos The new window position as a vec2i.
+     */
+    virtual void setPos(const vec2i& pos) = 0;
 
     /**
      * @brief Sets the parent of this window.
@@ -152,29 +165,6 @@ public:
     virtual bool isWindowContainer() const override;
 };
 
-/**
- * @brief A container class that stores windows in a vector.
- */
-class IWindowVector : public IWindowContainer
-{
-public:
-    virtual void addWindow(std::unique_ptr<IWindow> window) override;
-    virtual void removeWindow(wid_t id) override;
-
-    virtual       IWindow* getWindowById(wid_t id)       override;
-    virtual const IWindow* getWindowById(wid_t id) const override;
-
-    virtual bool isWindowContainer() const override;
-
-protected:
-    std::vector<std::unique_ptr<IWindow> > windows_; ///< Vector of windows.
-};
-
-/**
- * @brief Retrieves the root window of the application.
- * @return A pointer to the root window container.
- */
-IWindowContainer* getRootWindow();
 
 /**
  * @brief Function pointer type for general-purpose functions.
@@ -187,6 +177,26 @@ using generalFunction = void* (*)(void*);
  * @return A pointer to the function, or nullptr if not found.
  */
 generalFunction getGeneralFunction(const std::string& name);
+
+
+using layer_id_t = int64_t;
+
+class IRootWindow : public IWindowContainer
+{
+public:
+    virtual ~IRootWindow() = default;
+
+    virtual layer_id_t getUpperLayerId() const = 0;
+    virtual layer_id_t increaseLayerId() = 0;
+    virtual layer_id_t decreaseLayerId() = 0;
+};
+
+
+/**
+ * @brief Retrieves the root window of the application.
+ * @return A pointer to the root window container.
+ */
+IRootWindow* getRootWindow();
 
 } // namespace psapi
 

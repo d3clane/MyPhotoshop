@@ -1,4 +1,4 @@
-#include "bars/ps_bar.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
 
 #include <cassert>
 #include <iostream>

@@ -2,8 +2,8 @@
 #define PLUGINS_CANVAS_SCROLLBAR_HPP
 
 #include "api/api_photoshop.hpp"
-#include "windows/windows.hpp"
-#include "interpolation/include/interpolator.hpp"
+#include "pluginLib/windows/windows.hpp"
+#include "pluginLib/interpolation/include/interpolator.hpp"
 
 namespace ps
 {
@@ -54,14 +54,18 @@ class AScrollBarButton : public PressButton
 public:
     AScrollBarButton(vec2i pos, vec2u size, wid_t id);
 
-    void setSize(vec2u size);
 
+    void setSize(const vec2u& size) override;
     void move  (vec2d offset); // TODO: transformable 
-    void setPos(vec2i pos);
+    void setPos(const vec2i& pos) override;
 
     void setState(State state);
-    
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
+
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
+                                          
+    bool update(const IRenderWindow* renderWindow, const Event& event);
+
     void draw(IRenderWindow* renderWindow) override;
 
     void setScrollable(IScrollableWindow* scrollable);
@@ -93,7 +97,11 @@ class AScrollBar : public IWindowContainer
 public:
     AScrollBar(vec2i pos, vec2u size, wid_t id);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
+
+    bool update(const IRenderWindow* renderWindow, const Event& event);
+
     void draw(IRenderWindow* renderWindow) override;
 
     IWindow* getWindowById(wid_t id) override;
@@ -105,6 +113,9 @@ public:
 
     vec2i getPos() const override;
     vec2u getSize() const override;
+
+    void setPos(const vec2i& pos) override;
+    void setSize(const vec2u& size) override;
 
     void setParent(const IWindow* parent) override;
 
@@ -126,9 +137,6 @@ public:
 protected:
     virtual void updatePos () = 0;
     virtual void updateSize() = 0;
-
-    void setPos (vec2i pos );
-    void setSize(vec2u size);
 
 protected:
     wid_t id_ = kInvalidWindowId;
@@ -187,7 +195,11 @@ class ScrollBarsXYManager : public IWindowContainer
 public:
     ScrollBarsXYManager(std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
+
+    bool update(const IRenderWindow* renderWindow, const Event& event);
+
     void draw(IRenderWindow* renderWindow) override;
 
     IWindow* getWindowById(wid_t id) override;
@@ -199,6 +211,9 @@ public:
 
     vec2i getPos() const override;
     vec2u getSize() const override;
+    
+    void setPos(const vec2i& pos) override;
+    void setSize(const vec2u& size) override;
 
     void setParent(const IWindow* parent) override;
 
@@ -209,12 +224,6 @@ public:
 
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
-
-#if 0
-private:
-    void updatePromisedScroll (const Event& event);
-    void proceedPromisedScroll(ScrollBarButtonX* scrollBarButtonX, ScrollBarButtonY* scrollBarButtonY);
-#endif
 
 private:
     wid_t id_ = kInvalidWindowId;
@@ -228,10 +237,6 @@ private:
 
     std::unique_ptr<ScrollBarX> scrollBarX_;
     std::unique_ptr<ScrollBarY> scrollBarY_;
-
-#if 0
-    vec2f promisedScroll_ = {0, 0};
-#endif
 };
 } // namespace ps
 

@@ -1,6 +1,7 @@
 #include "canvas.hpp"
 #include "api/api_sfm.hpp"
-#include "scrollbar/scrollbar.hpp"
+#include "pluginLib/scrollbar/scrollbar.hpp"
+#include "plugins/pluginLib/actions/actions.hpp" // TODO: ?
 
 #include <cassert>
 #include <iostream>
@@ -64,10 +65,49 @@ std::vector<Color> cutRectangle(const std::vector<Color>& pixels, vec2u pixelsAr
 
 } // namespace anonymous
 
+// Layer snapshot implementation
+
+LayerSnapshot::LayerSnapshot(const std::vector<std::shared_ptr<Drawable>>& drawables,
+                             const std::vector<Color>& pixels) 
+ : drawables_(drawables), pixels_(pixels) 
+{
+}
+
+std::vector<std::shared_ptr<Drawable>> LayerSnapshot::getDrawables() const { return drawables_; }
+std::vector<Color> LayerSnapshot::getPixels() const { return pixels_; }
+
 // Layer implementation
 
-Layer::Layer(vec2u size) : fullSize_(size), pixels_(fullSize_.x * fullSize_.y)
+Layer::Layer(vec2u size, vec2u fullSize) 
+    : size_(size), fullSize_(fullSize),
+      pixels_(fullSize_.x * fullSize_.y, Color{}.getStandardColor(Color::Type::White))
 {
+}
+
+drawable_id_t Layer::addDrawable(std::unique_ptr<Drawable> object)
+{
+    // TODO: pretty bad logic, cleaning vector only on removeAllDrawables.
+
+    drawables_.push_back(std::move(object));
+    return static_cast<drawable_id_t>(drawables_.size()) - 1;
+}
+
+void Layer::removeDrawable(drawable_id_t id)
+{
+    assert(static_cast<size_t>(id) < drawables_.size());
+    assert(id >= 0);
+    
+    drawables_[static_cast<size_t>(id)].reset();
+}
+
+void Layer::removeAllDrawables()
+{
+    drawables_.clear();
+}
+
+vec2u Layer::getSize() const
+{
+    return size_;
 }
 
 Color Layer::getPixel(vec2i pos) const 
@@ -113,13 +153,49 @@ void Layer::changeArea(const CutRect& area)
     area_ = area;
 }
 
+std::unique_ptr<ILayerSnapshot> Layer::save() // NOTE: const))
+{
+    return std::make_unique<LayerSnapshot>(drawables_, pixels_);
+}
+
+void Layer::restore(ILayerSnapshot* snapshot)
+{
+    auto layerSnapshot = dynamic_cast<LayerSnapshot*>(snapshot);
+    assert(layerSnapshot);
+
+    drawables_ = layerSnapshot->getDrawables();
+    pixels_ = layerSnapshot->getPixels();
+}
+
+// Canvas snapshot implementation
+
+CanvasSnapshot::CanvasSnapshot(std::unique_ptr<LayerSnapshot> tempLayer, 
+                               std::vector<std::unique_ptr<LayerSnapshot>>&& layers) 
+ : tempLayer_(std::move(tempLayer))
+{
+    layers_.swap(layers);
+}
+
+LayerSnapshot* CanvasSnapshot::getTempLayerSnapshot() const { return tempLayer_.get(); }
+
+std::vector<LayerSnapshot*> CanvasSnapshot::getLayersSnapshots() const
+{
+    std::vector<LayerSnapshot*> result;
+    for (const auto& layer : layers_)
+    {
+        assert(layer.get());
+        result.push_back(layer.get());
+    }
+    return result;
+}
+
 // Canvas implementation
 
 Canvas::Canvas(vec2i pos, vec2u size) : size_(size), pos_(pos)
 {
     fullSize_ = calculateFullSize(size);
 
-    tempLayer_ = std::make_unique<Layer>(fullSize_);
+    tempLayer_ = std::make_unique<Layer>(size, fullSize_);
     
     boundariesShape_ = IRectangleShape::create(size_.x, size_.y);
 
@@ -127,7 +203,7 @@ Canvas::Canvas(vec2i pos, vec2u size) : size_(size), pos_(pos)
     boundariesShape_->setPosition(pos_);
     boundariesShape_->setOutlineThickness(0);
 
-    layers_.push_back(std::make_unique<Layer>(fullSize_));
+    layers_.push_back(std::make_unique<Layer>(size, fullSize_));
 }
 
 void Canvas::draw(IRenderWindow* renderWindow) 
@@ -147,41 +223,58 @@ void Canvas::draw(IRenderWindow* renderWindow)
     drawLayer(*tempLayer_.get(), renderWindow);
 }
 
+std::unique_ptr<IAction> Canvas::createAction(const IRenderWindow* renderWindow, 
+                                              const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<Canvas>>(*this, renderWindow, event);
+}
+
+uint8_t Canvas::updatePressType(uint8_t pressType, const Event& event)
+{
+    assert(event.type == Event::MouseButtonPressed);
+
+    switch(event.mouseButton.button)
+    {
+        case Mouse::Button::Left:
+            return pressType | static_cast<uint8_t>(PressType::LMB);
+        case Mouse::Button::Right:
+            return pressType | static_cast<uint8_t>(PressType::RMB);
+        case Mouse::Button::Middle:
+            return pressType | static_cast<uint8_t>(PressType::MMB);
+
+        case Mouse::Button::XButton1:
+        case Mouse::Button::XButton2:
+        default:
+            return pressType;
+    }
+
+    return pressType;
+}
+
 bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 {
     if (!isActive_)
         return false;
 
-#if 0
-    auto tmp = IImage::create();
-
-    assert(tmp);
-    tmp->loadFromFile("forest.jpg");
-    assert(tmp);
-
-    for (size_t x = 0; x < size_.x; ++x)
-    {
-        for (size_t y = 0; y < size_.y; ++y)
-        {
-            layers_[activeLayer_]->setPixel(vec2i{x, y}, tmp->getPixel(vec2u{x, y}));
-        }
-    }
-
-#endif
-    vec2u renderWindowSize = renderWindow->getSize();
-    setSize(vec2i{static_cast<int>(CanvasSize.x * static_cast<float>(renderWindowSize.x)),
-                  static_cast<int>(CanvasSize.y * static_cast<float>(renderWindowSize.y))});
-
-    setPos(vec2i{static_cast<int>(CanvasTopLeftPos.x * static_cast<float>(renderWindowSize.x)), 
-                 static_cast<int>(CanvasTopLeftPos.y * static_cast<float>(renderWindowSize.y))});
+    IntRect canvasIntRect = getCanvasIntRect();
+    setSize(canvasIntRect.size);
+    setPos (canvasIntRect.pos );
 
     lastMousePosRelatively_ = Mouse::getPosition(renderWindow) - pos_;
 
-    isPressed_ = updateIsPressed(event, isPressed_, 
-                                 checkIsHovered(lastMousePosRelatively_ + pos_, pos_, size_));
+    bool isPressed = (pressType_ != 0);
+
+    isPressed = updateIsPressed(event, isPressed, 
+                                checkIsHovered(lastMousePosRelatively_, vec2i{0, 0}, size_));
+
+    if (!isPressed)
+        pressType_ = 0;
+    else if (pressType_ == 0 /* && isPressed */)
+        pressType_ = updatePressType(pressType_, event);
 
     return true;
 }
+
 
 void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow) 
 {
@@ -208,9 +301,19 @@ vec2i Canvas::getMousePosition() const
     return { lastMousePosRelatively_.x, lastMousePosRelatively_.y };
 }
 
-bool Canvas::isPressed() const
+bool Canvas::isPressedLeftMouseButton() const
 {
-    return isPressed_;
+    return pressType_ & static_cast<uint8_t>(PressType::LMB);
+}
+
+bool Canvas::isPressedRightMouseButton() const
+{
+    return pressType_ & static_cast<uint8_t>(PressType::RMB);
+}
+
+bool Canvas::isPressedScrollButton() const
+{
+    return pressType_ & static_cast<uint8_t>(PressType::MMB);
 }
 
 ILayer* Canvas::getLayer(size_t index)
@@ -263,7 +366,7 @@ bool Canvas::insertLayer(size_t index, std::unique_ptr<ILayer> layer)
         return false;
     }
 
-    std::unique_ptr<Layer> newLayer = std::make_unique<Layer>(fullSize_);
+    std::unique_ptr<Layer> newLayer = std::make_unique<Layer>(size_, fullSize_);
     for (int x = 0; x < static_cast<int>(fullSize_.x); x++) 
     {
         for (int y = 0; y < static_cast<int>(fullSize_.y); y++) 
@@ -282,11 +385,12 @@ bool Canvas::insertEmptyLayer(size_t index)
     if (index > layers_.size()) 
         return false;
 
-    layers_.insert(layers_.begin() + static_cast<long>(index), std::make_unique<Layer>(fullSize_));
+    layers_.insert(layers_.begin() + static_cast<long>(index), 
+                   std::make_unique<Layer>(size_, fullSize_));
     return true;
 }
 
-void Canvas::setPos(vec2i pos) 
+void Canvas::setPos(const vec2i& pos) 
 {
     if (pos.x == pos_.x && pos.y == pos_.y)
         return;
@@ -296,12 +400,12 @@ void Canvas::setPos(vec2i pos)
     boundariesShape_->setPosition(pos);
 }
 
-void Canvas::setSize(vec2i size) 
+void Canvas::setSize(const vec2u& size) 
 {
-    if (size_.x == static_cast<unsigned>(size.x) && size_.y == static_cast<unsigned>(size.y))
+    if (size_.x == size.x && size_.y == size.y)
         return;
     
-    size_ = vec2u{static_cast<unsigned>(size.x), static_cast<unsigned>(size.y)};
+    size_ = size;
     fullSize_ = calculateFullSize(size_);
 
     boundariesShape_->setSize({size_.x, size_.y});
@@ -318,12 +422,11 @@ void Canvas::setSize(vec2i size)
     }
 }
 
-void Canvas::setScale(vec2f scale) 
+void Canvas::setZoom(vec2f zoom)
 {
-    setSize(vec2i{static_cast<int>(static_cast<float>(size_.x) * scale.x / scale_.x), 
-                  static_cast<int>(static_cast<float>(size_.y) * scale.y / scale_.y)});
-
-    scale_ = scale;
+    zoom_ = zoom;
+    assert(false);
+    // TODO: 
 }
 
 size_t Canvas::getActiveLayerIndex() const 
@@ -431,6 +534,60 @@ vec2u Canvas::getFullSize()
     return fullSize_;
 }
 
+Color Canvas::getCanvasBaseColor() const
+{
+    return Color{}.getStandardColor(Color::Type::White);
+}
+
+std::unique_ptr<ICanvasSnapshot> Canvas::save()
+{
+    std::vector<std::unique_ptr<LayerSnapshot>> layersSnapshots;
+
+    for (auto& layer : layers_)
+    {
+        std::unique_ptr<ILayerSnapshot> iLayerSnapshot = layer->save();
+        std::unique_ptr<LayerSnapshot> layerSnapshot{
+            static_cast<LayerSnapshot*>(iLayerSnapshot.release())
+        };
+        
+        layersSnapshots.push_back(std::move(layerSnapshot));
+    }
+
+    std::unique_ptr<ILayerSnapshot> iTempLayerSnapshot = tempLayer_->save();
+    std::unique_ptr<LayerSnapshot> tempLayerSnapshot{
+        static_cast<LayerSnapshot*>(iTempLayerSnapshot.release())
+    };
+    
+    return std::make_unique<CanvasSnapshot>(std::move(tempLayerSnapshot), std::move(layersSnapshots));
+}
+
+void Canvas::restore(ICanvasSnapshot* snapshot)
+{
+    auto canvasSnapshot = dynamic_cast<CanvasSnapshot*>(snapshot);
+    assert(canvasSnapshot);
+
+    tempLayer_->restore(canvasSnapshot->getTempLayerSnapshot());
+    
+    std::vector<LayerSnapshot*> layerSnapshots = canvasSnapshot->getLayersSnapshots();
+
+    size_t minSize = std::min(layers_.size(), layerSnapshots.size());
+    for (size_t i = 0; i < minSize; ++i)
+    {
+        layers_[i]->restore(layerSnapshots[i]);
+    }
+
+    if (minSize < layers_.size())
+        layers_.erase(layers_.begin() + static_cast<ptrdiff_t>(minSize), layers_.end());
+    else
+    {
+        for (size_t i = minSize; i < layerSnapshots.size(); ++i)
+        {
+            layers_.push_back(std::make_unique<Layer>(size_, fullSize_));
+            layers_.back()->restore(layerSnapshots[i]);
+        }
+    }
+}
+
 } // namespace ps
 
 namespace
@@ -473,7 +630,7 @@ std::unique_ptr<Canvas> createCanvas()
 
 } // namespace anonymous
 
-bool loadPlugin()
+bool onLoadPlugin()
 {
     auto rootWindow = getRootWindow();
 
@@ -495,11 +652,10 @@ bool loadPlugin()
 
     rootWindow->addWindow(std::unique_ptr<ICanvas>(canvas.release()));
     rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarsXYManager.release()));
-
     return true;
 }
 
-void unloadPlugin()
+void onUnloadPlugin()
 {
     getRootWindow()->removeWindow(kCanvasWindowId);
     return;

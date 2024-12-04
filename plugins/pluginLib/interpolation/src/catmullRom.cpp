@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "interpolation/include/catmullRom.hpp"
+#include "pluginLib/interpolation/include/catmullRom.hpp"
 
 namespace ps
 {

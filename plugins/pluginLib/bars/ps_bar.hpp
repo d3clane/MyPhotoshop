@@ -3,7 +3,7 @@
 
 #include "api/api_bar.hpp"
 #include "api/api_sfm.hpp"
-#include "windows/windows.hpp"
+#include "pluginLib/windows/windows.hpp"
 
 using namespace psapi;
 using namespace sfm;

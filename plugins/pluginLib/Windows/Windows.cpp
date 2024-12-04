@@ -37,6 +37,16 @@ vec2u AWindow::getSize() const
     return size_;
 }
 
+void AWindow::setPos(const vec2i& pos)
+{
+    pos_ = pos;
+}
+
+void AWindow::setSize(const vec2u& size)
+{
+    size_ = size;
+}
+
 void AWindow::forceActivate()
 {
     isActive_ = true;
@@ -86,29 +96,6 @@ void AWindow::setParent(const IWindow* parent)
 {
     parent_ = parent;
 }
-
-// AWindowVector implementation
-
-AWindowVector::AWindowVector(vec2i pos, vec2u size, wid_t id) : AWindow(pos, size, id)
-{
-}
-
-bool AWindowVector::updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event)
-{
-    bool updatedSomeone = false;
-
-    for (auto& window : windows_)
-        updatedSomeone |= window->update(renderWindow, event);
-    
-    return updatedSomeone;
-}
-
-void AWindowVector::drawChildren(IRenderWindow* renderWindow)
-{
-    for (const auto& window : windows_)
-        window->draw(renderWindow);
-}
-
 
 // AWindowContainer implementation
 

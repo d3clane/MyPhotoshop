@@ -4,7 +4,7 @@
 #include "api/api_photoshop.hpp"
 #include "api/api_bar.hpp"
 
-#include "bars/ps_bar.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
 #include "actions.hpp"
 
 #include <string>

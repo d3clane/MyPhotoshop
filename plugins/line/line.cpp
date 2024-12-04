@@ -8,8 +8,8 @@
 #include "api/api_canvas.hpp"
 #include "canvas/canvas.hpp"
 
-#include "bars/ps_bar.hpp"
-#include "windows/windows.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
+#include "pluginLib/windows/windows.hpp"
 
 #include "instrumentBar/mediator.hpp"
 #include "toolbar/toolbarButton.hpp"

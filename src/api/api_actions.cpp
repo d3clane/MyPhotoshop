@@ -22,7 +22,8 @@ private:
 
 bool ActionController::execute(std::unique_ptr<IAction> action)
 {
-    actionExecute(action.get());
+    if (!actionExecute(action.get()))
+        return false;
 
     auto beginEraseIt = actions_.begin() + (currentPos_ + 1);
     if (beginEraseIt != actions_.end())

@@ -2,7 +2,7 @@
 #define PLUGINS_PLUGIN_LIB_TOOLBAR_BUTTON_HPP
 
 #include "api/api_bar.hpp"
-#include "bars/ps_bar.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
 #include "instrumentBar/instrumentBar.hpp"
 
 #include <cassert>

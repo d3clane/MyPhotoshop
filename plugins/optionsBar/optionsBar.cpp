@@ -1,5 +1,5 @@
 #include "optionsBar.hpp"
-#include "plugins/pluginLib/bars/ps_bar.hpp"
+#include "plugins/pluginLib/pluginLib/bars/ps_bar.hpp"
 
 using namespace ps;
 using namespace psapi;

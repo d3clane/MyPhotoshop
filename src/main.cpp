@@ -22,7 +22,7 @@ void loadPlugin(const char* libName)
         return;
     }
 
-    void (*load_func)() = (void (*)())dlsym(handle, "loadPlugin");
+    void (*load_func)() = (void (*)())dlsym(handle, "onLoadPlugin");
 
     if (!load_func) 
     {
@@ -37,8 +37,11 @@ void loadPlugin(const char* libName)
 
 int main()
 {
-    /*
+    RootWindow* rootWindow = RootWindow::create(vec2u{1920, 1080});
+    AActionController* actionController = getActionController();
+    
     loadPlugin("libs/lib_canvas.dylib");
+    /*
     loadPlugin("libs/lib_toolbar.dylib");
     loadPlugin("libs/lib_spray.dylib");
     loadPlugin("libs/lib_brush.dylib");
@@ -48,8 +51,6 @@ int main()
     loadPlugin("libs/lib_blur_filter.dylib");
     */
 
-    RootWindow* rootWindow = RootWindow::create(vec2u{1920, 1080});
-    AActionController* actionController = getActionController();
 
     IRenderWindow* renderWindow = rootWindow->getRenderWindow();
     assert(renderWindow);

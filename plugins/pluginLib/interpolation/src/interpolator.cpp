@@ -1,4 +1,4 @@
-#include "interpolation/include/interpolator.hpp"
+#include "pluginLib/interpolation/include/interpolator.hpp"
 
 #include <iostream>
 

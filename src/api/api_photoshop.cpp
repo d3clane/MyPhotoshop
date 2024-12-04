@@ -1,5 +1,6 @@
 #include "api/api_photoshop.hpp"
 #include "api_impl/api_photoshop.hpp"
+#include "api/api_canvas.hpp"
 
 #include <cassert>
 #include <iostream>

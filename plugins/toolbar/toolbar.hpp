@@ -1,7 +1,7 @@
 #ifndef PS_TOOLBAR_TOOLBAR_HPP
 #define PS_TOOLBAR_TOOLBAR_HPP
 
-#include "bars/ps_bar.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
 
 extern "C" 
 {

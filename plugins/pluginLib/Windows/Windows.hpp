@@ -22,6 +22,9 @@ public:
     vec2i getPos() const override;
     vec2u getSize() const override;
 
+    void setPos(const vec2i& pos) override;
+    void setSize(const vec2u& size) override;
+
     void forceActivate() override;
     void forceDeactivate() override;
 
@@ -44,16 +47,6 @@ protected:
     virtual bool checkIsHovered(vec2i mousePos);
     virtual bool checkIsClicked(const Event& event, vec2i mousePos);
     virtual bool updateIsPressed(const Event& event, bool prevPressedState, vec2i mousePos);
-};
-
-class AWindowVector : public IWindowVector, public AWindow
-{
-public:
-    AWindowVector(vec2i pos, vec2u size, wid_t id);
-
-protected:
-    bool updateChildren(const IRenderWindow* renderWindow, const sfm::Event& event);
-    void drawChildren(IRenderWindow* renderWindow);
 };
 
 #if 0

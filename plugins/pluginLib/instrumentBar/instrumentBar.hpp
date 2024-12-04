@@ -1,8 +1,8 @@
 #ifndef PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_HPP
 #define PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_HPP
 
-#include "bars/ps_bar.hpp"
-#include "windows/windows.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
+#include "pluginLib/windows/windows.hpp"
 #include "mediator.hpp"
 #include "actions.hpp"
 

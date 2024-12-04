@@ -8,7 +8,7 @@
 #include "api/api_bar.hpp"
 #include "api/api_canvas.hpp"
 
-#include "bars/ps_bar.hpp"
+#include "pluginLib/bars/ps_bar.hpp"
 
 #include "toolbar/toolbarButton.hpp"
 #include "instrumentBar/mediator.hpp"

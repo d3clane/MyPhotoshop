@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 
 namespace ps
 {
@@ -227,6 +228,9 @@ void AScrollBarButton::move(vec2d delta)
 
     scroll_.x = canScrollX_ ? scroll_.x : scrollNow.x;
     scroll_.y = canScrollY_ ? scroll_.y : scrollNow.y;
+
+    scroll_.x = std::clamp(scroll_.x, 0.f, 1.f);
+    scroll_.y = std::clamp(scroll_.y, 0.f, 1.f);
 
     vec2i newPos = parent->shrinkPosToBoundaries(
         zeroScrollPos_ + vec2i{static_cast<int>(scroll_.x * static_cast<float>(parentSize.x - size_.x)),

@@ -31,11 +31,12 @@ void copyImageToLayer(ILayer* dst, const IImage* src, const vec2i& layerPos)
     vec2i beginPos = src->getPos() - layerPos;
     vec2u imageSize = src->getSize();
 
-    for (int x = std::min(0, beginPos.x); x < beginPos.x + static_cast<int>(imageSize.x); ++x)
+    for (int x = beginPos.x; x < beginPos.x + static_cast<int>(imageSize.x); ++x)
     {
-        for (int y = 0; y < beginPos.y + static_cast<int>(imageSize.y); ++y)
+        for (int y = beginPos.y; y < beginPos.y + static_cast<int>(imageSize.y); ++y)
         {
-            Color pixel = src->getPixel(static_cast<unsigned>(x), static_cast<unsigned>(y));
+            Color pixel = src->getPixel(static_cast<unsigned>(x - beginPos.x), 
+                                        static_cast<unsigned>(y - beginPos.y));
             if (pixel.a == 0)
                 continue;
 

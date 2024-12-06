@@ -2,11 +2,12 @@
 #define PS_TOOLBAR_TOOLBAR_HPP
 
 #include "pluginLib/bars/ps_bar.hpp"
+#include <vector>
 
 extern "C" 
 {
-    bool   loadPlugin();
-    void unloadPlugin();
+    bool onLoadPlugin();
+    void onUnloadPlugin();
 }
 
 namespace ps 
@@ -27,24 +28,28 @@ public:
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
 
-    ChildInfo getNextChildInfo() const override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow,
+                                          const sfm::Event& event) override;
 
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const sfm::Event& event);
 
     void setParent(const IWindow* parent) override;
+    bool unPressAllButtons() override;
 
 protected:
     void drawChildren(IRenderWindow* renderWindow) override;
+
+private:
+    void setChildrenInfo();
 
 private:
     const IWindow* parent_;
 
     size_t gapSize_ = 16;
 
-    mutable size_t nextChildIndex_ = 0;
-    mutable size_t numChildren_ = 0;
+    size_t nextChildIndex_ = 0;
 
-    vec2i childSize_ = {64, 64};
+    vec2u childSize_ = {64, 64};
 
     std::vector<std::unique_ptr<ASpritedBarButton>> windows_;
 };

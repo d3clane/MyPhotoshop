@@ -10,6 +10,8 @@ namespace ps
 
 void copyLayerToLayer(ILayer* dst, const ILayer* src, const vec2u& size)
 {
+    // TODO: maybe unzoom layer, because need to copy fullSize, not only part of the size? 
+
     for (size_t x = 0; x < size.x; ++x)
     {
         for (size_t y = 0; y < size.y; ++y)
@@ -22,18 +24,22 @@ void copyLayerToLayer(ILayer* dst, const ILayer* src, const vec2u& size)
     }
 }
 
-void copyImageToLayer(ILayer* dst, const IImage* src, const vec2i& layerPos, const vec2u& size)
+void copyImageToLayer(ILayer* dst, const IImage* src, const vec2i& layerPos)
 {
     assert(src->getSize().x == 1920 && src->getSize().y == 1080);
 
-    for (unsigned x = 0; x < size.x; ++x)
+    vec2i beginPos = src->getPos() - layerPos;
+    vec2u imageSize = src->getSize();
+
+    for (int x = std::min(0, beginPos.x); x < beginPos.x + static_cast<int>(imageSize.x); ++x)
     {
-        for (unsigned y = 0; y < size.y; ++y)
+        for (int y = 0; y < beginPos.y + static_cast<int>(imageSize.y); ++y)
         {
-            if (src->getPixel(x, y).a == 0)
+            Color pixel = src->getPixel(static_cast<unsigned>(x), static_cast<unsigned>(y));
+            if (pixel.a == 0)
                 continue;
 
-            dst->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)} - layerPos, src->getPixel(x, y));
+            dst->setPixel(vec2i{x, y}, pixel);
         }
     }
 }
@@ -46,7 +52,6 @@ std::vector<std::vector<Color>> getLayerScreenIn2D(const ILayer* layer, const ve
     for (size_t x = 0; x < size.x; ++x)
         for (size_t y = 0; y < size.y; ++y)
             pixels[x][y] = layer->getPixel(vec2i{static_cast<int>(x), static_cast<int>(y)});
-
 
     return pixels;
 }

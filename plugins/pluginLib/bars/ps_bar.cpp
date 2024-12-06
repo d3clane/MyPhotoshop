@@ -1,4 +1,4 @@
-#include "pluginLib/bars/ps_bar.hpp"
+#include "ps_bar.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -86,12 +86,12 @@ bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& eve
     return clicked || hovered || pressed;
 }
 
-void ABarButton::setPos (vec2i pos)
+void ABarButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
 }
 
-void ABarButton::setSize(vec2u size)
+void ABarButton::setSize(const vec2u& size)
 {
     size_ = size;
 }
@@ -106,17 +106,17 @@ void ASpritedBarButton::draw(IRenderWindow* renderWindow, const IBar* parent)
     static_cast<const IBar*>(parent)->finishButtonDraw(renderWindow, this);
 }
 
-void ASpritedBarButton::setPos(vec2i pos)
+void ASpritedBarButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
     mainSprite_->setPosition(pos.x, pos.y);
 }
 
-void ASpritedBarButton::setSize(vec2u size)
+void ASpritedBarButton::setSize(const vec2u& size)
 {
     size_ = size;
     mainSprite_->setScale(1.f, 1.f);
-    auto spriteSize = mainSprite_->getSize();
+    vec2u spriteSize = mainSprite_->getSize();
 
     mainSprite_->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
@@ -129,12 +129,7 @@ ABar::~ABar() = default;
 void ABar::draw(IRenderWindow* renderWindow)
 {
     if (!isActive_)
-    {
-        //std::cerr << "NOT ACTIVE\n";
         return;
-    }
-
-    //std::cerr << "ACTIVE\n";
 
     if (shape_)
         shape_->draw(renderWindow);
@@ -142,14 +137,14 @@ void ABar::draw(IRenderWindow* renderWindow)
     drawChildren(renderWindow);
 }
 
-void ABar::setPos (vec2i pos)
+void ABar::setPos(const vec2i& pos)
 {
     pos_ = pos;
 
     shape_->setPosition(pos);
 }
 
-void ABar::setSize(vec2u size)
+void ABar::setSize(const vec2u& size)
 {
     size_ = size;
 
@@ -190,6 +185,15 @@ bool ABar::isWindowContainer() const
 {
     return true;
 }
+
+vec2i ABar::calculateMiddleForChild(vec2u childSize)
+{
+    vec2i middle = vec2i(pos_.x + static_cast<int>(size_.x - childSize.x) / 2, 
+                         pos_.y + static_cast<int>(size_.y - childSize.y) / 2);
+
+    return middle;
+}
+
 
 // AShapedButtonsBar implementation
 

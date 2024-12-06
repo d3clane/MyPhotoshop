@@ -2,7 +2,7 @@
 #define PLUGINS_PLUGIN_LIB_INSTRUMENTS_BAR_ACTIONS_HPP
 
 #include "mediator.hpp"
-#include "windows/actions.hpp"
+#include "pluginLib/windows/actions.hpp"
 
 #include <memory>
 
@@ -11,7 +11,7 @@ namespace ps
 
 class ColorButton;
 
-class AChangeColorAction : public IAction
+class AChangeColorAction : public IWindowAction
 {
 public:
     AChangeColorAction(const Color& color);

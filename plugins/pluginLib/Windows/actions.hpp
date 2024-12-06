@@ -4,12 +4,12 @@
 namespace ps
 {
 
-class IAction
+class IWindowAction
 {
 public:
     virtual void operator()() = 0;
 
-    virtual ~IAction() = default;
+    virtual ~IWindowAction() = default;
 };
 
 } // namespace ps

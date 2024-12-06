@@ -9,11 +9,13 @@
 
 #include "pluginLib/bars/ps_bar.hpp"
 
-#include "interpolation/include/interpolator.hpp"
-#include "instrumentBar/mediator.hpp"
-#include "instrumentBar/instrumentBar.hpp"
+#include "pluginLib/interpolation/include/interpolator.hpp"
+#include "pluginLib/instrumentBar/mediator.hpp"
+#include "pluginLib/instrumentBar/instrumentBar.hpp"
 
-#include "toolbar/toolbarButton.hpp"
+#include "pluginLib/toolbar/toolbarButton.hpp"
+
+#include "pluginLib/actions/actions.hpp"
 
 #include <iostream>
 #include <memory>
@@ -34,7 +36,10 @@ public:
     BrushButton() = default;
     BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
+
+    bool update(const IRenderWindow* renderWindow, const Event& event);
     void draw(IRenderWindow* renderWindow) override;
 
 protected:
@@ -50,11 +55,23 @@ BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITextu
     mainTexture_ = std::move(texture);
 }
 
+std::unique_ptr<IAction> BrushButton::createAction(const IRenderWindow* renderWindow, 
+                                                   const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<BrushButton>>(*this, renderWindow, event);
+}
+
 bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updatedState = updateState(renderWindow, event);
 
-    instrument_button_functions::updateInstrumentBar(instrumentBar_.get(), state_, renderWindow, event);
+#if 0
+    getActionController()->execute(
+        instrument_button_functions::createActionInstrumentBar(
+            instrumentBar_.get(), state_, renderWindow, event
+        )
+    );
+#endif
 
     if (state_ != State::Released)
         return updatedState;
@@ -68,7 +85,7 @@ bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
         assert(0);
     }
 
-    if (!canvas->isPressed())
+    if (!canvas->isPressedLeftMouseButton())
     {
         interpolator_.clear();
         return true;
@@ -90,7 +107,7 @@ void BrushButton::draw(IRenderWindow* renderWindow)
 
     ASpritedBarButton::draw(renderWindow, parent_);
 
-    instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
+    //instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
 }
 
 bool drawTrace(ICanvas* canvas, std::shared_ptr<MediatorType> mediator, const Interpolator& interpolator)
@@ -131,13 +148,13 @@ void drawPoint(ILayer* layer, const vec2i& point, std::shared_ptr<MediatorType> 
 
 } // namespace anonymous
 
-bool loadPlugin() // onLoadPlugin
+bool onLoadPlugin()
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<
         BrushButton, MediatorType>("media/textures/paintbrush.png");
 }
 
-void unloadPlugin()
+void onUnloadPlugin()
 {
     return;
 }

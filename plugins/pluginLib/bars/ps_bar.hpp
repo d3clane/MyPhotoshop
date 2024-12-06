@@ -15,14 +15,15 @@ class ABar;
 
 class ABarButton : public IBarButton
 {
-public:
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override = 0;
-    
+public:    
     IWindow* getWindowById(wid_t id) override;
     const IWindow* getWindowById(wid_t id) const override;
 
     vec2i getPos()  const override;
     vec2u getSize() const override;
+    void setPos (const vec2i& pos ) override;
+    void setSize(const vec2u& size) override;
+    
     wid_t getId()   const override;
 
     void forceDeactivate()                override;
@@ -33,9 +34,6 @@ public:
 
     void setState(State state) override;
     State getState() const override;
-
-    virtual void setPos (vec2i pos);
-    virtual void setSize(vec2u size);
 
 protected:
     bool updateState(const IRenderWindow* renderWindow, const Event& event);
@@ -54,8 +52,8 @@ protected:
 class ASpritedBarButton : public ABarButton
 {
 public:
-    void setPos (vec2i pos) override;
-    void setSize(vec2u size) override;
+    void setPos (const vec2i& pos) override;
+    void setSize(const vec2u& size) override;
 
     void draw(IRenderWindow* renderWindow) override = 0;
 
@@ -69,8 +67,8 @@ protected:
 class ANamedBarButton : public ABarButton
 {
 public:
-    void setPos (vec2i pos) override;
-    void setSize(vec2u size) override;
+    void setPos (const vec2i& pos) override;
+    void setSize(const vec2u& size) override;
 
     void draw(IRenderWindow* renderWindow) override = 0;
 
@@ -84,11 +82,6 @@ protected:
 };
 
 // TODO: add to instrument bar / color bar [ create PluginABars ]
-class IPluginsBar : public IBar
-{
-    virtual size_t getNextChildId() const;
-    virtual ChildInfo getChildInfo(size_t childId) const;
-};
 
 class ABar : public IBar
 {
@@ -96,7 +89,6 @@ public:
     ~ABar();
 
     void draw(IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow, const Event& event) override = 0;
 
     vec2i getPos()  const override;
     vec2u getSize() const override;
@@ -108,11 +100,14 @@ public:
     bool isActive() const override;
     bool isWindowContainer() const override;
 
+    void setPos (const vec2i& pos)  override;
+    void setSize(const vec2u& size) override;
+    
 protected:
+    vec2i calculateMiddleForChild(vec2u childSize);
+
     virtual void drawChildren(IRenderWindow* renderWindow) = 0;
     
-    void setPos (vec2i pos);
-    void setSize(vec2u size);
 
 protected:
     wid_t id_ = kInvalidWindowId;
@@ -123,11 +118,6 @@ protected:
     vec2u size_;
 
     std::unique_ptr<IRectangleShape> shape_;
-};
-
-class APluginsBar : public IPluginsBar
-{
-    // TODO: 
 };
 
 class AShapedButtonsBar : public ABar
@@ -156,38 +146,81 @@ class AShapedButtonsPluginsBar : public ABar
     // TODO: 
 };
 
-namespace bar_children_handler_funcs
+template<typename T>
+class BarUpdateChildrenAction : public IAction
 {
+public:
+    BarUpdateChildrenAction(
+        const IRenderWindow* renderWindow, const Event& event,
+        std::vector<T*>& children) 
+        : renderWindow_(renderWindow), event_(event), children_(children) {};
+
+    bool execute(const Key& key) override;
+    bool isUndoable(const Key& /* key */) override { return false; }
+
+private:
+    const IRenderWindow* renderWindow_;
+    Event event_;
+
+    std::vector<T*> children_;
+};
 
 template<typename T>
-bool updateChildren(const IRenderWindow* renderWindow, const Event& event, std::vector<T>& windowVector)
+bool BarUpdateChildrenAction<T>::execute(const Key& /* key */)
 {
+    AActionController* actionController = getActionController();
     bool updatedSomeone = false;
 
     static const size_t invalidPos = static_cast<size_t>(-1);
     size_t lastReleasedButtonPos = invalidPos;
-    size_t windowsSize = windowVector.size();
-    for (size_t i = 0; i < windowsSize; ++i)
+    size_t childrenSize = children_.size();
+    for (size_t i = 0; i < childrenSize; ++i)
     {
-        IBarButton::State state = windowVector[i]->getState();
-        updatedSomeone |= windowVector[i]->update(renderWindow, event);
+        IBarButton::State state = children_[i]->getState();
+        updatedSomeone |= actionController->execute(children_[i]->createAction(renderWindow_, event_));
 
-        if (windowVector[i]->getState() == IBarButton::State::Released && state != IBarButton::State::Released)
+        if (children_[i]->getState() == IBarButton::State::Released && 
+            state != IBarButton::State::Released)
+        {
             lastReleasedButtonPos = i;
+        }
     }
 
     if (lastReleasedButtonPos != invalidPos)
     {
-        for (size_t i = 0; i < windowsSize; ++i)
+        for (size_t i = 0; i < childrenSize; ++i)
         {
             if (i == lastReleasedButtonPos)
                 continue;
-            windowVector[i]->setState(IBarButton::State::Normal);
+            children_[i]->setState(IBarButton::State::Normal);
         }
     }
 
     return updatedSomeone;
 }
+
+namespace bar_children_handler_funcs
+{
+
+template<typename T>
+std::unique_ptr<IAction> createUpdateChildrenAction(const IRenderWindow* renderWindow, const Event& event,
+                                                    std::vector<std::unique_ptr<T>>& windowVector)
+{
+    std::vector<T*> windowVectorPtrs;
+    for (auto& window : windowVector)
+        windowVectorPtrs.push_back(window.get());
+    return std::make_unique<BarUpdateChildrenAction<T>>(renderWindow, event, windowVectorPtrs);
+}
+
+template<typename T>
+bool unPressAllButtons(std::vector<T>& buttons)
+{
+    for (auto& button : buttons)
+        button->setState(IBarButton::State::Normal);
+
+    return true;
+}
+
 
 } // namespace bar_children_handler_funcs
 

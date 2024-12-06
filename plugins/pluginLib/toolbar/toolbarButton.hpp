@@ -3,7 +3,7 @@
 
 #include "api/api_bar.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
-#include "instrumentBar/instrumentBar.hpp"
+#include "pluginLib/instrumentBar/instrumentBar.hpp"
 
 #include <cassert>
 
@@ -32,8 +32,9 @@ namespace instrument_button_functions
 void updateInstrumentBarState(IBar* instrumentBar, IBarButton::State stateNow);
 
 // This two functions have to be called on each update of the instrument button.
-void updateInstrumentBar(IBar* instrumentBar, IBarButton::State stateNow,
-                         const IRenderWindow* renderWindow, const Event& event);
+std::unique_ptr<IAction> createActionInstrumentBar(IBar* instrumentBar, IBarButton::State stateNow,
+                                                   const IRenderWindow* renderWindow, const Event& event);
+
 void drawInstrumentBar(IBar* instrumentBar, IRenderWindow* renderWindow);
 
 template<typename ButtonType, typename MediatorType>
@@ -76,9 +77,7 @@ namespace static_functions
 {
 
 template<typename ButtonType, typename MediatorType>
-std::unique_ptr<ASpritedBarButton> createAInstrumentButton(IBar* toolbar, 
-                                                           std::shared_ptr<MediatorType> mediator,
-                                                           std::unique_ptr<IBar> instrumentBar,
+std::unique_ptr<ASpritedBarButton> createAInstrumentButton(std::shared_ptr<MediatorType> mediator,
                                                            const std::string& fileWithTextureName);
 
 } // namespace static_functions
@@ -92,12 +91,12 @@ bool instrumentButtonOnLoadPlugin(const std::string& fileWithTextureName)
     assert(toolbar);
 
     auto mediator = std::make_shared<MediatorType>();
-    auto instrumentBar = createCommonInstrumentBar(mediator);
+    //auto instrumentBar = createCommonInstrumentBar(mediator);
     auto button = static_functions::createAInstrumentButton<ButtonType, MediatorType>(            
-        toolbar, mediator, std::move(instrumentBar), fileWithTextureName
+        mediator, fileWithTextureName
     );
 
-    assert(instrumentBar.get() == nullptr);
+    //assert(instrumentBar.get() == nullptr);
 
     toolbar->addWindow(std::move(button));
 
@@ -106,8 +105,7 @@ bool instrumentButtonOnLoadPlugin(const std::string& fileWithTextureName)
 
 template<typename ButtonType, typename MediatorType>
 std::unique_ptr<ASpritedBarButton> static_functions::createAInstrumentButton(
-    IBar* toolbar, std::shared_ptr<MediatorType> mediator, std::unique_ptr<IBar> instrumentBar,
-    const std::string& fileWithTextureName
+    std::shared_ptr<MediatorType> mediator, const std::string& fileWithTextureName
 )
 {
     auto buttonSprite  = std::unique_ptr<ISprite>(ISprite::create());
@@ -117,27 +115,10 @@ std::unique_ptr<ASpritedBarButton> static_functions::createAInstrumentButton(
 
     buttonSprite->setTexture(buttonTexture.get());
 
-    auto info = toolbar->getNextChildInfo();
-    auto pos = info.pos;
-    vec2u size = { static_cast<unsigned int>(info.size.x),  
-                   static_cast<unsigned int>(info.size.y) };
-
-    buttonSprite->setPosition(pos.x, pos.y);
-    
-    auto spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
-                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
-
     std::unique_ptr<ButtonType> button{ new ButtonType(std::move(buttonSprite), 
                                                        std::move(buttonTexture)) };
 
-    button->setPos(pos);
-    button->setSize(size);
-
     button->setMediator(mediator);
-    assert(instrumentBar.get());
-    button->setInstrumentBar(std::move(instrumentBar));
-    assert(instrumentBar.get() == nullptr);
 
     return std::unique_ptr<ASpritedBarButton>(button.release());
 }

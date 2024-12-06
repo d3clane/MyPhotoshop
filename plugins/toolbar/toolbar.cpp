@@ -1,4 +1,5 @@
 #include "toolbar.hpp"
+#include "pluginLib/actions/actions.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -9,7 +10,7 @@ using namespace ps;
 extern "C" 
 {
     
-bool loadPlugin() 
+bool onLoadPlugin() 
 {
     vec2i pos  = {0,   0  };
     vec2u size = {0, 0};
@@ -20,7 +21,7 @@ bool loadPlugin()
     return true;
 }
 
-void unloadPlugin() 
+void onUnloadPlugin() 
 {
     getRootWindow()->removeWindow(kToolBarWindowId);
 }
@@ -43,6 +44,13 @@ std::unique_ptr<IRectangleShape> createShape(const vec2u& size,
     return shape;
 }
 
+vec2i calculateChildPosition(size_t childIndex, vec2u childSize, size_t gap, 
+                             vec2i parentPos, vec2i middle)
+{
+    int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize.x + gap) + gap);
+    return vec2i{ middle.x, parentPos.y + shift };
+}
+
 } // namespace anonymous
 
 Toolbar::Toolbar(vec2i pos, vec2u size) 
@@ -58,31 +66,34 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
 
     static const uint8_t shapesCommonAlpha = 100;
 
-    vec2u unsignedChildSize = vec2u{static_cast<unsigned>(childSize_.x), static_cast<unsigned>(childSize_.y)};
 
-    commonOutlineShape_ = createShape(unsignedChildSize, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
+    commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
 
-    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(unsignedChildSize,
+    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
                                                                     Color{120, 120, 120, shapesCommonAlpha}, 
                                                                     Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(unsignedChildSize,
+    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(childSize_,
                                                                     Color{70, 70, 70, shapesCommonAlpha}, 
                                                                     Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(unsignedChildSize,
-                                                                    Color{94 , 125, 147, shapesCommonAlpha}, 
+    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(childSize_,
+                                                                    Color{94 , 125, 147, shapesCommonAlpha},
                                                                     Color{112, 140, 160, 255});
 }
 
-ChildInfo Toolbar::getNextChildInfo() const 
+void Toolbar::setChildrenInfo()
 {
-    vec2i pos = {static_cast<int>(gapSize_), 
-                 static_cast<int>(gapSize_ + (gapSize_ + static_cast<size_t>(childSize_.x)) * nextChildIndex_)};
+    nextChildIndex_ = 0;
 
-    nextChildIndex_++;
-    numChildren_++;
+    for (auto& window : windows_)
+    {
+        window->setPos(calculateChildPosition(nextChildIndex_, childSize_, gapSize_, 
+                                              pos_, calculateMiddleForChild(childSize_)));
 
-    return {pos, childSize_};
+        window->setSize(childSize_);
+        ++nextChildIndex_;
+    }
 }
+
 
 IWindow* Toolbar::getWindowById(wid_t id)
 {
@@ -110,18 +121,10 @@ void Toolbar::drawChildren(IRenderWindow* renderWindow)
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
 {
     ASpritedBarButton* button = nullptr;
-    try
-    {
-        button = static_cast<ASpritedBarButton*>(window.get());
-        assert(button);
-        button->setParent(this);
-    }
-    catch(...)
-    {
-        std::cerr << "Failed to cast window to button\n";
-        assert(false);
-        std::terminate();
-    }
+
+    button = static_cast<ASpritedBarButton*>(window.get());
+    assert(button);
+    button->setParent(this);
 
     windows_.push_back(std::unique_ptr<ASpritedBarButton>(button));
     window.release();
@@ -139,25 +142,31 @@ void Toolbar::removeWindow(wid_t id)
     }
 }
 
+std::unique_ptr<IAction> Toolbar::createAction(const IRenderWindow* renderWindow,
+                                               const sfm::Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<Toolbar>>(*this, renderWindow, event);
+}
+
 bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
 {
-    // TODO: think
-    nextChildIndex_ = 0;
-    numChildren_ = 0;
+    IntRect toolbarRect = getToolbarIntRect();
+    setSize(toolbarRect.size);
+    setPos(toolbarRect.pos);
+    setChildrenInfo();
 
-    vec2u renderWindowSize = renderWindow->getSize();
-    setSize({static_cast<unsigned>(static_cast<float>(renderWindowSize.x) * ToolbarSize.x),
-             static_cast<unsigned>(static_cast<float>(renderWindowSize.y) * ToolbarSize.y)});
-
-    setPos({static_cast<int>(ToolbarTopLeftPos.x * static_cast<float>(renderWindowSize.x)), 
-            static_cast<int>(ToolbarTopLeftPos.y * static_cast<float>(renderWindowSize.y))});
-
-    bool updatedSomeone = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
-
-    return updatedSomeone;
+    return getActionController()->execute(
+        bar_children_handler_funcs::createUpdateChildrenAction(renderWindow, event, windows_)
+    );
 }
 
 void Toolbar::setParent(const IWindow* parent)
 {
     parent_ = parent;
+}
+
+
+bool Toolbar::unPressAllButtons()
+{
+    return bar_children_handler_funcs::unPressAllButtons(windows_);
 }

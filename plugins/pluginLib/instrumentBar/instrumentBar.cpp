@@ -1,4 +1,5 @@
 #include "instrumentBar.hpp" 
+#include "pluginLib/actions/actions.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -60,23 +61,41 @@ void InstrumentBar::setParent(const IWindow* parent)
     parent_ = parent;
 }
 
-ChildInfo InstrumentBar::getNextChildInfo() const
+// creating action
+class InstrumentBarAction : public IAction
 {
-    return ChildInfo{maxChildPosNow_ + vec2i{static_cast<int>(gapSize_), 0}, {0, 0}};
+public:
+    InstrumentBarAction(const IRenderWindow* renderWindow, const Event& event)
+        : renderWindow_(renderWindow), event_(event) {}
+
+    bool execute(const Key& key);
+
+private:
+    const IRenderWindow* renderWindow_;
+    Event event_;
+};
+
+std::unique_ptr<IAction> InstrumentBar::createAction(const IRenderWindow* renderWindow, 
+                                                     const sfm::Event& event) 
+{
+    return std::make_unique<UpdateCallbackAction<InstrumentBar>>(*this, renderWindow, event);
 }
+
 
 bool InstrumentBar::update(const IRenderWindow* renderWindow, const Event& event)
 {
-    vec2u renderWindowSize = renderWindow->getSize();
+    if (!isActive_)
+        return false;
 
-    setPos(vec2i{
-            static_cast<int>(InstrumentOptionsTopLeftPos.x * static_cast<float>(renderWindowSize.x)),
-            static_cast<int>(InstrumentOptionsTopLeftPos.y * static_cast<float>(renderWindowSize.y))});
-    setSize(vec2u{
-            static_cast<unsigned>(InstrumentOptionsSize.x * static_cast<float>(renderWindowSize.x)), 
-            static_cast<unsigned>(InstrumentOptionsSize.y * static_cast<float>(renderWindowSize.y))});
+    IntRect instrumentBarInfo = getInstrumentOptionsIntRect();
+    
+    setPos (instrumentBarInfo.pos);
+    setSize(instrumentBarInfo.size);
 
-    bool updatedChildren = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
+    std::unique_ptr<IAction> updateChildrenAction = 
+        bar_children_handler_funcs::createUpdateChildrenAction(renderWindow, event, windows_);
+    
+    bool updatedChildren = getActionController()->execute(std::move(updateChildrenAction));
 
     if (updatedChildren)
         return true;
@@ -84,11 +103,17 @@ bool InstrumentBar::update(const IRenderWindow* renderWindow, const Event& event
     if (event.type != Event::MouseButtonPressed)
         return false;
 
+    // TODO: ??? I don't remember why did I write this
     // Turn off all buttons if pressed outside 
     for (auto& window : windows_)
         window->setState(ABarButton::State::Normal);
     
     return true;
+}
+
+bool InstrumentBar::unPressAllButtons()
+{
+    return bar_children_handler_funcs::unPressAllButtons(windows_);
 }
 
 void InstrumentBar::drawChildren(IRenderWindow* renderWindow)
@@ -108,35 +133,24 @@ ColorButton::ColorButton(std::shared_ptr<AChangeColorAction> action, size_t inde
 
 void ColorButton::setParent(const IWindow* parent)
 {
-    parent_ = dynamic_cast<const ColorBar*>(parent);
-    assert(parent_);
+    parent_ = parent;
 }
 
 void ColorButton::draw(IRenderWindow* renderWindow)
 {
     shape_->draw(renderWindow);
+}
 
-#if 0
-    std::cerr << "FINISHING BUTTON DRAW\n";
-    parent_->finishButtonDraw(renderWindow, this);
-    std::cerr << "FINISHED BUTTON DRAW\n";
-#endif
+std::unique_ptr<IAction> ColorButton::createAction(const IRenderWindow* renderWindow, 
+                                        const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<ColorButton>>(*this, renderWindow, event);
 }
 
 bool ColorButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     if (!isActive_)
-    {
         return false;
-    }
-
-    assert(parent_);
-    ChildInfo buttonInfo = parent_->getChildInfo(indexInColorBar_);
-
-    setSize(vec2u{static_cast<unsigned>(buttonInfo.size.x),
-                  static_cast<unsigned>(buttonInfo.size.y)});
-
-    setPos(buttonInfo.pos);
 
     State prevState = state_;
     bool stateIsUpdated = updateState(renderWindow, event);
@@ -151,14 +165,14 @@ bool ColorButton::update(const IRenderWindow* renderWindow, const Event& event)
     return true;
 }
 
-void ColorButton::setPos(vec2i pos)
+void ColorButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
 
     shape_->setPosition(pos_);
 }
 
-void ColorButton::setSize(vec2u size)
+void ColorButton::setSize(const vec2u& size)
 {
     size_ = size;
 
@@ -179,21 +193,7 @@ ColorBar::ColorBar(vec2i pos, vec2u size)
 
 void ColorBar::setParent(const IWindow* parent)
 {
-    parent_ = dynamic_cast<const IBar*>(parent);
-    assert(parent_);
-}
-
-void ColorBar::setSize(vec2u size)
-{
-    size_ = size;
-
-    unsigned childOneSideSize =     
-        static_cast<unsigned>(static_cast<float>(std::min(size.x, size.y)) * 2.f / 3.f);
- 
-    childSize_ = vec2u{ childOneSideSize, childOneSideSize };
-    gapSize_ = static_cast<unsigned>(static_cast<float>(std::min(size.x, size.y)) / 6.f);
-
-    shape_->setSize(size);
+    parent_ = parent;
 }
 
 IWindow* ColorBar::getWindowById(wid_t id)
@@ -234,6 +234,7 @@ void ColorBar::removeWindow(wid_t id)
     }
 }
 
+#if 0
 ChildInfo ColorBar::getNextChildInfo() const
 {
     nextChildPos_.y = pos_.y;
@@ -265,21 +266,27 @@ ChildInfo ColorBar::getChildInfo(size_t childIndex) const
 
     return info;
 }
+#endif
 
+std::unique_ptr<IAction> ColorBar::createAction(const IRenderWindow* renderWindow, 
+                                                const sfm::Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<ColorBar>>(*this, renderWindow, event);
+}
 
 bool ColorBar::update(const IRenderWindow* renderWindow, const Event& event)
 {
     if (!isActive_)
         return false;
     
-    setPos(vec2i{
-            static_cast<int>(InstrumentOptionsTopLeftPos.x * static_cast<float>(renderWindow->getSize().x)),
-            static_cast<int>(InstrumentOptionsTopLeftPos.y * static_cast<float>(renderWindow->getSize().y))});
-    setSize(vec2u{
-            static_cast<unsigned>(InstrumentOptionsSize.x * static_cast<float>(renderWindow->getSize().x)), 
-            static_cast<unsigned>(InstrumentOptionsSize.y * static_cast<float>(renderWindow->getSize().y))});
+    IntRect instrumentBarRect = getInstrumentOptionsIntRect();
+    setPos(instrumentBarRect.pos);
+    setSize(instrumentBarRect.size);
 
-    bool updatedChildren = bar_children_handler_funcs::updateChildren(renderWindow, event, windows_);
+    std::unique_ptr<IAction> updateChildrenAction = 
+        bar_children_handler_funcs::createUpdateChildrenAction(renderWindow, event, windows_);
+
+    bool updatedChildren = getActionController()->execute(std::move(updateChildrenAction));
 
     if (updatedChildren)
         return true;
@@ -287,10 +294,20 @@ bool ColorBar::update(const IRenderWindow* renderWindow, const Event& event)
     return false;
 }
 
+bool ColorBar::unPressAllButtons()
+{
+    return bar_children_handler_funcs::unPressAllButtons(windows_);
+}
+
 void ColorBar::drawChildren(IRenderWindow* renderWindow)
 {
     for (auto& window : windows_)
+    {
         window->draw(renderWindow);
+        #if 0
+        finishButtonDraw(renderWindow, window.get());
+        #endif
+    }
 }
 
 } // namespace ps

@@ -6,6 +6,8 @@
 #include "mediator.hpp"
 #include "actions.hpp"
 
+#include <vector>
+
 namespace ps
 {
 
@@ -24,9 +26,12 @@ public:
 
     void setParent(const IWindow* parent) override;
 
-    ChildInfo getNextChildInfo() const override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const sfm::Event& event) override;
 
-    bool update(const IRenderWindow* renderWindow, const sfm::Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const sfm::Event& event);
+
+    bool unPressAllButtons() override;
 
 protected:
     void drawChildren(IRenderWindow* renderWindow) override;
@@ -38,7 +43,7 @@ private:
 
     unsigned gapSize_ = 2;
 
-    mutable vec2i maxChildPosNow_;
+    vec2i maxChildPosNow_;
 };
 
 class ColorBar;
@@ -49,15 +54,18 @@ public:
     ColorButton(std::shared_ptr<AChangeColorAction> action, size_t indexInColorBar);
 
     void draw(IRenderWindow* renderWindow) override;
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
 
-    void setPos (vec2i pos ) override;
-    void setSize(vec2u size) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event);
+
+    void setPos (const vec2i& pos ) override;
+    void setSize(const vec2u& size) override;
 
     void setParent(const IWindow* parent) override;
 
 protected:
-    const ColorBar* parent_;
+    const IWindow* parent_;
 
     std::unique_ptr<IRectangleShape> shape_;
 
@@ -79,19 +87,18 @@ public:
 
     void setParent(const IWindow* parent) override;
 
-    ChildInfo getNextChildInfo() const override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
 
-    // creating this function because getNextChildInfo is dumb.
-    ChildInfo getChildInfo(size_t childIndex) const;
+    bool update(const IRenderWindow* renderWindow, const Event& event);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    bool unPressAllButtons() override;
 
 protected:
     void drawChildren(IRenderWindow* renderWindow) override;
-    void setSize(vec2u size);
     
 private:
-    const IBar* parent_;
+    const IWindow* parent_;
 
     unsigned gapSize_ = 64;
     vec2u childSize_ = {32, 32};
@@ -117,12 +124,11 @@ std::unique_ptr<IBar> createCommonInstrumentBar(std::shared_ptr<MediatorType> me
 
     const size_t nButtons = sizeof(colors) / sizeof(colors[0]);
 
-    vec2u size = {256, 16}; // TODO: CHANGE
-    auto colorBar = std::make_unique<ColorBar>(instrumentBar->getNextChildInfo().pos, size);
+    //vec2u size= {256, 16}; // TODO: CHANGE
+    auto colorBar = std::make_unique<ColorBar>(vec2i{0, 0}, vec2u{0, 0});
 
     for (size_t i = 0; i < nButtons; ++i)
     {
-
         auto action = std::make_shared<ChangeFillColorAction>(colors[i], mediator);
         auto colorButton = std::make_unique<ColorButton>(action, i);
         colorButton->setParent(colorBar.get());

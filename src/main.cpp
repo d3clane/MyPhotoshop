@@ -43,6 +43,7 @@ int main()
     loadPlugin("libs/lib_canvas.dylib");
     loadPlugin("libs/lib_toolbar.dylib");
     loadPlugin("libs/lib_brush.dylib");
+    loadPlugin("libs/lib_eraser.dylib");
     loadPlugin("libs/lib_line.dylib");
     loadPlugin("libs/lib_ellipse.dylib");
     loadPlugin("libs/lib_rectangle.dylib");

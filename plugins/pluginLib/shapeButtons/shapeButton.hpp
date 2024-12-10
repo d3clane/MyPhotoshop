@@ -1,3 +1,6 @@
+#ifndef PLUGINS_PLUGIN_LIB_SHAPE_BUTTONS_SHAPE_BUTTON_HPP
+#define PLUGINS_PLUGIN_LIB_SHAPE_BUTTONS_SHAPE_BUTTON_HPP
+
 #include <string>
 #include <cassert>
 
@@ -192,3 +195,5 @@ void ShapeButton<T>::draw(IRenderWindow* renderWindow)
 }
 
 } // namespace ps
+
+#endif // PLUGINS_PLUGIN_LIB_SHAPE_BUTTONS_SHAPE_BUTTON_HPP

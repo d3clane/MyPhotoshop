@@ -17,12 +17,12 @@
 
 #include "pluginLib/actions/actions.hpp"
 
+#include "pluginLib/splineDraw/splineDrawButton.hpp"
+
 #include <iostream>
 #include <memory>
 
 using namespace ps;
-
-using MediatorType = AFillPropertiesMediator;
 
 namespace
 {
@@ -30,108 +30,23 @@ namespace
 using namespace psapi;
 using namespace psapi::sfm;
 
-class BrushButton : public AInstrumentButton<MediatorType> 
+class BrushButton : public SplineDrawButton
 {
 public:
     BrushButton() = default;
     BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
-                                          const Event& event) override;
-
-    bool update(const IRenderWindow* renderWindow, const Event& event);
-    void draw(IRenderWindow* renderWindow) override;
-
-protected:
-    Interpolator interpolator_;
+    void drawPoint(ICanvas* canvas, ILayer* layer, const vec2i& point) override;
 };
 
-void drawPoint(ILayer* layer, const vec2i& point, std::shared_ptr<MediatorType> mediator);
-bool drawTrace(ICanvas* canvas, std::shared_ptr<MediatorType> mediator, const Interpolator& interpolator);
-
-BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
+BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture) 
+    : SplineDrawButton(std::move(sprite), std::move(texture)) 
 {
-    mainSprite_ = std::move(sprite);
-    mainTexture_ = std::move(texture);
 }
 
-std::unique_ptr<IAction> BrushButton::createAction(const IRenderWindow* renderWindow, 
-                                                   const Event& event)
+void BrushButton::drawPoint(ICanvas* /* canvas */, ILayer* layer, const vec2i& point)
 {
-    return std::make_unique<UpdateCallbackAction<BrushButton>>(*this, renderWindow, event);
-}
-
-bool BrushButton::update(const IRenderWindow* renderWindow, const Event& event)
-{
-    bool updatedState = updateState(renderWindow, event);
-
-#if 0
-    getActionController()->execute(
-        instrument_button_functions::createActionInstrumentBar(
-            instrumentBar_.get(), state_, renderWindow, event
-        )
-    );
-#endif
-
-    if (state_ != State::Released)
-        return updatedState;
-    
-    // TODO: may be really slow
-    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
-
-    if (!canvas)
-    {
-        std::cerr << "CANVAS NOT FOUND!\n";
-        assert(0);
-    }
-
-    if (!canvas->isPressedLeftMouseButton())
-    {
-        interpolator_.clear();
-        return true;
-    }
-
-    if (drawTrace(canvas, mediator_, interpolator_))
-        interpolator_.popFront();
-
-    vec2i mousePos = canvas->getMousePosition();
-    interpolator_.pushBack({mousePos.x, mousePos.y});
-
-    return updatedState;
-}
-
-void BrushButton::draw(IRenderWindow* renderWindow)
-{
-    if (!isActive_)
-        return;
-
-    ASpritedBarButton::draw(renderWindow, parent_);
-
-    //instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
-}
-
-bool drawTrace(ICanvas* canvas, std::shared_ptr<MediatorType> mediator, const Interpolator& interpolator)
-{
-    if (!interpolator.isPossibleToDraw())
-        return false;
-
-    size_t activeLayerIndex = canvas->getActiveLayerIndex();
-    ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
-
-    for (double interpolatedPos = 1; interpolatedPos < 2; interpolatedPos += 0.01)
-    {
-        vec2d interpolatedPoint = interpolator[interpolatedPos];
-        drawPoint(activeLayer, 
-                  vec2i{static_cast<int>(interpolatedPoint.x), static_cast<int>(interpolatedPoint.y)},
-                  mediator);
-    }
-
-    return true;
-}
-
-void drawPoint(ILayer* layer, const vec2i& point, std::shared_ptr<MediatorType> mediator)
-{
-    DrawingProperties properties = mediator->fillProperties();
+    DrawingProperties properties = mediator_->fillProperties();
     unsigned thickness = properties.thickness;
     int drawingRange = static_cast<int>(thickness + 1) / 2;
     Color color = properties.color;

@@ -127,9 +127,9 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
         canvasIsAlreadyPressed_ = true;
     }
 
-    auto line_ = createLineShape(lineBeginPos_, canvas, mediator_);
+    std::unique_ptr<IRectangleShape> line = createLineShape(lineBeginPos_, canvas, mediator_);
     tempLayer->removeAllDrawables();
-    tempLayer->addDrawable(std::move(line_));
+    tempLayer->addDrawable(std::move(line));
     
     return true;
 }

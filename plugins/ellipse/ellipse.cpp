@@ -7,15 +7,16 @@
 #include "api/api_photoshop.hpp"
 #include "api/api_bar.hpp"
 #include "api/api_canvas.hpp"
-#include "canvas/canvas.hpp"
+#include "pluginLib/canvas/canvas.hpp"
 
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/windows/windows.hpp"
 
-#include "instrumentBar/mediator.hpp"
-#include "instrumentBar/instrumentBar.hpp"
+#include "pluginLib/instrumentBar/mediator.hpp"
+#include "pluginLib/instrumentBar/instrumentBar.hpp"
 
-#include "toolbar/toolbarButton.hpp"
+#include "pluginLib/toolbar/toolbarButton.hpp"
+#include "pluginLib/actions/actions.hpp"
 
 #include <iostream>
 
@@ -60,14 +61,13 @@ public:
     EllipseButton() = default;
     EllipseButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event);
     void draw(IRenderWindow* renderWindow) override;
 
 private:
     bool canvasIsAlreadyPressed_ = false;
     vec2i beginEllipsePos_;
-
-    std::unique_ptr<IEllipseShape> ellipse_; // the same crutch
 };
 
 void copyEllipseToLayer(ILayer* layer, const IEllipseShape* ellipse, const vec2i& canvasPos)
@@ -76,7 +76,7 @@ void copyEllipseToLayer(ILayer* layer, const IEllipseShape* ellipse, const vec2i
     if (!image)
         return;
     
-    copyImageToLayer(layer, image, canvasPos, image->getSize());
+    copyImageToLayer(layer, image, canvasPos);
 }
 
 std::unique_ptr<IEllipseShape> createEllipseShape(const vec2i& beginEllipsePos, const ICanvas* canvas,
@@ -114,12 +114,20 @@ EllipseButton::EllipseButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<IT
     mainTexture_ = std::move(texture);
 }
 
+std::unique_ptr<IAction> EllipseButton::createAction(const IRenderWindow* renderWindow, 
+                                                     const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<EllipseButton>>(*this, renderWindow, event);
+}
+
 bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     bool updateStateRes = updateState(renderWindow, event);
 
+#if 0
     instrument_button_functions::updateInstrumentBar(instrumentBar_.get(), state_,
                                                     renderWindow, event);
+#endif
 
     if (state_ != State::Released)
         return updateStateRes;
@@ -133,16 +141,18 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
+    ILayer* tempLayer = canvas->getTempLayer();
 
     vec2i canvasPos = canvas->getPos();
 
-    if (!canvas->isPressed() && canvasIsAlreadyPressed_)
+    if (!canvas->isPressedLeftMouseButton() && canvasIsAlreadyPressed_)
     {
-        copyEllipseToLayer(activeLayer, ellipse_.get(), canvasPos);
-        ellipse_.reset();
+        copyEllipseToLayer(activeLayer, 
+                           createEllipseShape(beginEllipsePos_, canvas, mediator_).get(), 
+                           canvasPos);
     }
     
-    if (!canvas->isPressed())
+    if (!canvas->isPressedLeftMouseButton())
     {
         canvasIsAlreadyPressed_ = false;
         return updateStateRes;
@@ -154,10 +164,9 @@ bool EllipseButton::update(const IRenderWindow* renderWindow, const Event& event
         canvasIsAlreadyPressed_ = true;
     }
 
-    ellipse_ = createEllipseShape(beginEllipsePos_, canvas, mediator_);
-
-    if (ellipse_)
-        const_cast<IRenderWindow*>(renderWindow)->draw(ellipse_.get()); // crutch
+    std::unique_ptr<IEllipseShape> ellipse = createEllipseShape(beginEllipsePos_, canvas, mediator_);
+    tempLayer->removeAllDrawables();
+    tempLayer->addDrawable(std::move(ellipse));
 
     return true;
 }
@@ -166,21 +175,20 @@ void EllipseButton::draw(IRenderWindow* renderWindow)
 {
     ASpritedBarButton::draw(renderWindow, parent_);
 
-    if (ellipse_)
-        renderWindow->draw(ellipse_.get());
-    
+#if 0
     instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
+#endif    
 }
 
 } // namespace anonymous
 
-bool loadPlugin() // onLoadPlugin
+bool onLoadPlugin() // onLoadPlugin
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<
         EllipseButton, MediatorType>("media/textures/paintbrush.png");
 }
 
-void unloadPlugin()
+void onUnloadPlugin()
 {
     return;
 }

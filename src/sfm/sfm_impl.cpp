@@ -583,7 +583,12 @@ void RectangleShape::updateImage() const
 {
     sf::RenderTexture renderTexture;
     
-    bool createResult = renderTexture.create(1920, 1080); // TODO: hardcoded size, unfortunately not fixable
+    sf::FloatRect shapeBounds = shape_.getGlobalBounds();
+    
+    vec2u totalSize = { static_cast<unsigned>(shapeBounds.width  + shapeBounds.left + 1), 
+                        static_cast<unsigned>(shapeBounds.height + shapeBounds.top  + 1) };
+
+    bool createResult = renderTexture.create(totalSize.x, totalSize.y);
     assert(createResult);
 
     renderTexture.clear(sf::Color::Transparent);
@@ -595,6 +600,8 @@ void RectangleShape::updateImage() const
     cachedImage_ = std::make_unique<Image>();
     cachedImage_->create(image.getSize().x, image.getSize().y,
                          reinterpret_cast<const Color*>(image.getPixelsPtr()));
+
+    cachedImage_->setPos(vec2i{0, 0});
 
     imageNeedsUpdate_ = false;
 }
@@ -754,8 +761,13 @@ void EllipseShape::move(const vec2f& offset)
 void EllipseShape::updateImage() const
 {
     sf::RenderTexture renderTexture;
+    
+    sf::FloatRect shapeBounds = shape_.getGlobalBounds();
+    
+    vec2u totalSize = { static_cast<unsigned>(shapeBounds.width  + shapeBounds.left + 1), 
+                        static_cast<unsigned>(shapeBounds.height + shapeBounds.top  + 1) };
 
-    bool createResult = renderTexture.create(1920, 1080); // TODO: hardcoded size, unfortunately not fixable
+    bool createResult = renderTexture.create(totalSize.x, totalSize.y);
     assert(createResult);
 
     renderTexture.clear(sf::Color::Transparent);
@@ -767,6 +779,8 @@ void EllipseShape::updateImage() const
     cachedImage_ = std::make_unique<Image>();
     cachedImage_->create(image.getSize().x, image.getSize().y,
                          reinterpret_cast<const Color*>(image.getPixelsPtr()));
+
+    cachedImage_->setPos(vec2i{0, 0});
 
     imageNeedsUpdate_ = false;
 }

@@ -41,8 +41,6 @@ private:
     bool canvasIsAlreadyPressed_ = false;
 
     vec2i lineBeginPos_;
-
-    std::unique_ptr<IRectangleShape> line_; // crutch to not to copy every time on canvas
 };
 
 void copyLineToLayer(ILayer* layer, const IRectangleShape* line, vec2i canvasPos)
@@ -109,12 +107,12 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
+    ILayer* tempLayer = canvas->getTempLayer();
     vec2i canvasPos = canvas->getPos();
 
     if (!canvas->isPressedLeftMouseButton() && canvasIsAlreadyPressed_)
     {
-        copyLineToLayer(activeLayer, line_.get(), canvasPos);
-        line_.reset();
+        copyLineToLayer(activeLayer, createLineShape(lineBeginPos_, canvas, mediator_).get(), canvasPos);
     }
     
     if (!canvas->isPressedLeftMouseButton())
@@ -129,10 +127,9 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
         canvasIsAlreadyPressed_ = true;
     }
 
-    line_ = createLineShape(lineBeginPos_, canvas, mediator_);
-
-    if (line_)
-        const_cast<IRenderWindow*>(renderWindow)->draw(line_.get()); // crutch
+    auto line_ = createLineShape(lineBeginPos_, canvas, mediator_);
+    tempLayer->removeAllDrawables();
+    tempLayer->addDrawable(std::move(line_));
     
     return true;
 }
@@ -141,9 +138,6 @@ void LineButton::draw(IRenderWindow* renderWindow)
 {
     ASpritedBarButton::draw(renderWindow, parent_);
 
-    if (line_)
-        renderWindow->draw(line_.get());
-    
 #if 0
     instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
 #endif

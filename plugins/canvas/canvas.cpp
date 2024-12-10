@@ -221,6 +221,7 @@ void Canvas::draw(IRenderWindow* renderWindow)
     }
     
     drawLayer(*tempLayer_.get(), renderWindow);
+
 }
 
 std::unique_ptr<IAction> Canvas::createAction(const IRenderWindow* renderWindow, 
@@ -275,8 +276,7 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
     return true;
 }
 
-
-void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow) 
+void Canvas::drawPixels(const Layer& layer, IRenderWindow* renderWindow)
 {
     auto texture = ITexture::create();
     texture->create(size_.x, size_.y);
@@ -290,10 +290,24 @@ void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow)
 
     auto sprite = ISprite::create();
     sprite->setTexture(texture.get());
-    
     sprite->setPosition(pos_.x, pos_.y);
 
     renderWindow->draw(sprite.get());
+}
+
+void Canvas::drawDrawables(const Layer& layer, IRenderWindow* renderWindow)
+{
+    for (const auto& drawable : layer.drawables_) 
+    {
+        assert(drawable.get());
+        drawable->draw(renderWindow);
+    }
+}
+
+void Canvas::drawLayer(const Layer& layer, IRenderWindow* renderWindow) 
+{
+    drawPixels(layer, renderWindow);
+    drawDrawables(layer, renderWindow);
 }
 
 vec2i Canvas::getMousePosition() const

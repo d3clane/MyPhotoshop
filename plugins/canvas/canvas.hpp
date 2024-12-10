@@ -192,6 +192,9 @@ private:
     // private functions
 private:
     void drawLayer(const Layer& layer, IRenderWindow* renderWindow);
+    void drawPixels(const Layer& layer, IRenderWindow* renderWindow);
+    void drawDrawables(const Layer& layer, IRenderWindow* renderWindow);
+    
     uint8_t updatePressType(uint8_t pressType, const Event& event);
 };
 

@@ -1,6 +1,7 @@
 #include "canvas.hpp"
 
 #include <cassert>
+#include <iostream>
 
 using namespace psapi;
 using namespace psapi::sfm;
@@ -19,6 +20,7 @@ void copyLayerToLayer(ILayer* dst, const ILayer* src, const vec2u& size)
             Color color = src->getPixel({static_cast<int>(x), static_cast<int>(y)});
             if (color.a == 0)
                 continue;
+
             dst->setPixel({static_cast<int>(x), static_cast<int>(y)}, color);
         }
     }
@@ -26,21 +28,19 @@ void copyLayerToLayer(ILayer* dst, const ILayer* src, const vec2u& size)
 
 void copyImageToLayer(ILayer* dst, const IImage* src, const vec2i& layerPos)
 {
-    assert(src->getSize().x == 1920 && src->getSize().y == 1080);
-
-    vec2i beginPos = src->getPos() - layerPos;
+    vec2i beginPos = src->getPos();
     vec2u imageSize = src->getSize();
 
-    for (int x = beginPos.x; x < beginPos.x + static_cast<int>(imageSize.x); ++x)
+    for (int x = 0; x < static_cast<int>(imageSize.x); ++x)
     {
-        for (int y = beginPos.y; y < beginPos.y + static_cast<int>(imageSize.y); ++y)
+        for (int y = 0; y < static_cast<int>(imageSize.y); ++y)
         {
-            Color pixel = src->getPixel(static_cast<unsigned>(x - beginPos.x), 
-                                        static_cast<unsigned>(y - beginPos.y));
+            Color pixel = src->getPixel(static_cast<unsigned>(x), 
+                                        static_cast<unsigned>(y));
             if (pixel.a == 0)
                 continue;
 
-            dst->setPixel(vec2i{x, y}, pixel);
+            dst->setPixel(vec2i{x + beginPos.x - layerPos.x, y + beginPos.y - layerPos.y}, pixel);
         }
     }
 }

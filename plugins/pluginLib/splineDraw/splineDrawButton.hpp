@@ -11,7 +11,7 @@
 namespace ps
 {
 
-class SplineDrawButton : public ASpritedBarButton
+class SplineDrawButton : public AInstrumentButton
 {
 public:
     SplineDrawButton() = default;
@@ -28,8 +28,6 @@ public:
 protected:
     const IWindow* parent_;
     Interpolator interpolator_;
-
-    IColorPalette* colorPalette_;
 
 private:
     bool drawTrace(ICanvas* canvas);

@@ -75,7 +75,8 @@ $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.
 $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/splineDraw/splineDrawButton.cpp $(PS_API_LIB)
+	plugins/pluginLib/splineDraw/splineDrawButton.cpp \
+	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_eraser.dylib: plugins/eraser/eraser.cpp \

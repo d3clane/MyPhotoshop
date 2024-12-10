@@ -10,16 +10,16 @@
 namespace ps
 {
 
+class AInstrumentButton : public ASpritedBarButton
+{
+protected:
+    void updateOptionsBar(State stateNow, State prevState);
+    
+    IColorPalette* colorPalette_ = nullptr;
+};
+
 namespace instrument_button_functions
 {
-
-void updateInstrumentBarState(IBar* instrumentBar, IBarButton::State stateNow);
-
-// This two functions have to be called on each update of the instrument button.
-std::unique_ptr<IAction> createActionInstrumentBar(IBar* instrumentBar, IBarButton::State stateNow,
-                                                   const IRenderWindow* renderWindow, const Event& event);
-
-void drawInstrumentBar(IBar* instrumentBar, IRenderWindow* renderWindow);
 
 template<typename ButtonType>
 bool instrumentButtonOnLoadPlugin(const std::string& fileWithTextureName);
@@ -68,7 +68,9 @@ std::unique_ptr<ButtonType> static_functions::createAInstrumentButton(
 
     buttonSprite->setTexture(buttonTexture.get());
 
-    return std::make_unique<ButtonType>(std::move(buttonSprite), std::move(buttonTexture));
+    auto button = std::make_unique<ButtonType>(std::move(buttonSprite), std::move(buttonTexture));
+
+    return button;
 }
 
 } // namespace instrument_button_functions

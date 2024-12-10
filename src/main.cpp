@@ -42,17 +42,13 @@ int main()
     
     loadPlugin("libs/lib_canvas.dylib");
     loadPlugin("libs/lib_toolbar.dylib");
-    std::cerr << "LOADED TOOL BAR\n";
     loadPlugin("libs/lib_optionsBar.dylib");
-    std::cerr << "LOADED OPTIONS BAR\n";
     loadPlugin("libs/lib_brush.dylib");
-    std::cerr << "LOADED BRUSH\n";
     /*
     loadPlugin("libs/lib_eraser.dylib");
     loadPlugin("libs/lib_line.dylib");
     loadPlugin("libs/lib_ellipse.dylib");
     loadPlugin("libs/lib_rectangle.dylib");
-    /*
     loadPlugin("libs/lib_negative_filter.dylib");
     loadPlugin("libs/lib_blur_filter.dylib");
     loadPlugin("libs/lib_spray.dylib");

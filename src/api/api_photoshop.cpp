@@ -185,10 +185,9 @@ IRootWindow* getRootWindow()
     return RootWindow::create(vec2u{0, 0});
 }
 
-vec2i getScreenSize()
+vec2u getScreenSize()
 {
-    vec2u size = getRootWindow()->getSize();
-    return vec2i{static_cast<int>(size.x), static_cast<int>(size.y)};
+    return getRootWindow()->getSize();
 }
 
 sfm::IntRect getCanvasIntRect()

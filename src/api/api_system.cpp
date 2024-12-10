@@ -179,7 +179,7 @@ Color mix(const Color &x, const Color &y)
     return tmp;
 }
 
-Color Color::getStandardColor(Type color) const
+Color Color::getStandardColor(Type color)
 {
     switch (color)
     {

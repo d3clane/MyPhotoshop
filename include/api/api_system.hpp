@@ -24,20 +24,20 @@ struct Vec2D
     Vec2D(T init_x, T init_y)
         :   x(init_x), y(init_y) {}
 
-    template<typename U,
-        std::enable_if<std::is_same<T, int>::value && std::is_same<U, unsigned int>::value>>
-    Vec2D(const Vec2D<U> &vec)
-        :   x(vec.x), y(vec.y) {}
+    template<typename U>
+    Vec2D(const Vec2D<U>& vec,
+          typename std::enable_if<std::is_same<T, int>::value && std::is_same<U, unsigned int>::value>::type* = nullptr)
+        : x(static_cast<T>(vec.x)), y(static_cast<T>(vec.y)) {}
 
-    template<typename U,
-        std::enable_if<std::is_same<T, float>::value && std::is_same<U, double>::value>>
-    Vec2D(const Vec2D<U> &vec)
-        :   x(vec.x), y(vec.y) {}
+    template<typename U>
+    Vec2D(const Vec2D<U>& vec,
+          typename std::enable_if<std::is_same<T, float>::value && std::is_same<U, double>::value>::type* = nullptr)
+        : x(static_cast<T>(vec.x)), y(static_cast<T>(vec.y)) {}
 
-    template<typename U,
-        std::enable_if<std::is_same<T, double>::value && std::is_same<U, float>::value>>
-    Vec2D(const Vec2D<U> &vec)
-        :   x(vec.x), y(vec.y) {}
+    template<typename U>
+    Vec2D(const Vec2D<U>& vec,
+          typename std::enable_if<std::is_same<T, double>::value && std::is_same<U, float>::value>::type* = nullptr)
+        : x(static_cast<T>(vec.x)), y(static_cast<T>(vec.y)) {}
 };
 
 using vec2i = Vec2D<int>;
@@ -171,7 +171,7 @@ struct Color
         Transparent,
     };
 
-    Color getStandardColor(Type color) const;
+    static Color getStandardColor(Type color);
 
     uint8_t r = 0;
     uint8_t g = 0;
@@ -186,6 +186,7 @@ struct Color
     Color &operator-=(const Color &color);
     Color &operator*=(const double cf);
     Color &operator*=(const float cf);
+
 };
 
 

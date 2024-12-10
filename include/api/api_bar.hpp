@@ -8,14 +8,14 @@ namespace psapi
 
 const wid_t kToolBarWindowId    = 101;
 const wid_t kOptionsBarWindowId = 102;
-const wid_t kInstrumentsBarId  = 103;
+const wid_t kMenuBarWindowId  = 103;
 
 // OptionBarConstants
-const wid_t kOptionFileId   = 200;
-const wid_t kOptionFilterId = 201;
-const wid_t kHelpOptionId   = 202;
-const wid_t kOptionLayerId  = 203;
-const wid_t kOptionToolsId  = 204;
+const wid_t kMenuFileId   = 200;
+const wid_t kMenuFilterId = 201;
+const wid_t kMenuHelpId   = 202;
+const wid_t kMenuLayerId  = 203;
+const wid_t kMenuToolsId  = 204;
 
 
 const wid_t kColorPaletteId = 300;
@@ -43,19 +43,19 @@ public:
 };
 
 
-class IOptionButton : public IBarButton
+class IMenuButton : public IBarButton
 {
 public:
     /**
      * @brief Calls addWindow for its bar
      */
-    virtual void addOption(std::unique_ptr<IWindow> option) = 0;
+    virtual void addMenuItem(std::unique_ptr<IWindow> item) = 0;
 
-    virtual void activateBar() = 0;
-    virtual void deactivateBar() = 0;
+    virtual void activateMenu() = 0;
+    virtual void deactivateMenu() = 0;
 
-    virtual IBar *getBar() = 0;
-    virtual const IBar *getBar() const = 0;
+    virtual IBar *getMenu() = 0;
+    virtual const IBar *getMenu() const = 0;
 };
 
 
@@ -75,38 +75,41 @@ class IColorPalette : public IWindow
 {
 public:
     virtual sfm::Color getColor() const = 0;
+    virtual void setColor(const sfm::Color &color) = 0;
 
     static std::unique_ptr<IColorPalette> create();
 };
 
 
-class IOpacityBar : public IWindow
+class IOpacityOption : public IWindow
 {
 public:
     virtual float getOpacity() const = 0;
+    virtual void setOpacity(float opacity) = 0;
 
-    static std::unique_ptr<IOpacityBar> create();
+    static std::unique_ptr<IOpacityOption> create();
 };
 
 
-class IThicknessBar : public IWindow
+class IThicknessOption : public IWindow
 {
 public:
     virtual float getThickness() const = 0;
+    virtual void setThickness(float thickness) = 0;
 
-    static std::unique_ptr<IThicknessBar> create();
+    static std::unique_ptr<IThicknessOption> create();
 };
 
 /**
  * @brief Function add window sets position
  */
-class IInstrumentsBar : public IWindowContainer
+class IOptionsBar : public IWindowContainer
 {
 public:
     /**
      * @brief Sets state not active for color, opacity and thickness buttons and deletes all other buttons
      */
-    virtual void removeAllInstruments() = 0;
+    virtual void removeAllOptions() = 0;
 };
 
 /*

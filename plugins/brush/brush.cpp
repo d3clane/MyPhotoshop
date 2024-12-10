@@ -46,10 +46,10 @@ BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITextu
 
 void BrushButton::drawPoint(ICanvas* /* canvas */, ILayer* layer, const vec2i& point)
 {
-    DrawingProperties properties = mediator_->fillProperties();
-    unsigned thickness = properties.thickness;
+    unsigned thickness = 4;
     int drawingRange = static_cast<int>(thickness + 1) / 2;
-    Color color = properties.color;
+    assert(colorPalette_);
+    Color color = colorPalette_->getColor();
 
     for (int i = -drawingRange; i <= drawingRange; ++i)
     {
@@ -65,8 +65,8 @@ void BrushButton::drawPoint(ICanvas* /* canvas */, ILayer* layer, const vec2i& p
 
 bool onLoadPlugin()
 {
-    return instrument_button_functions::instrumentButtonOnLoadPlugin<
-        BrushButton, MediatorType>("media/textures/paintbrush.png");
+    return instrument_button_functions::instrumentButtonOnLoadPlugin<BrushButton>(
+        "media/textures/paintbrush.png");
 }
 
 void onUnloadPlugin()

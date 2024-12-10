@@ -66,7 +66,6 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
 
     static const uint8_t shapesCommonAlpha = 100;
 
-
     commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
 
     shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
@@ -94,7 +93,6 @@ void Toolbar::setChildrenInfo()
     }
 }
 
-
 IWindow* Toolbar::getWindowById(wid_t id)
 {
     for (auto& window : windows_)
@@ -114,8 +112,11 @@ const IWindow* Toolbar::getWindowById(wid_t id) const
 
 void Toolbar::drawChildren(IRenderWindow* renderWindow)
 {
-    for (auto& window : windows_)
-        window->draw(renderWindow);
+    for (auto& button : windows_)
+    {
+        button->draw(renderWindow);
+        finishButtonDraw(renderWindow, button.get());
+    }
 }
 
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
@@ -151,7 +152,10 @@ std::unique_ptr<IAction> Toolbar::createAction(const IRenderWindow* renderWindow
 bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event) 
 {
     IntRect toolbarRect = getToolbarIntRect();
-    setSize(toolbarRect.size);
+    setSize(toolbarRect.size); 
+    // TODO: could be a problem. SetSize doesn't do anything with children, using setSize from the outside
+    // may ruin everything. Maybe not a problem because update is called every time.
+
     setPos(toolbarRect.pos);
     setChildrenInfo();
 

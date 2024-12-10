@@ -1,12 +1,13 @@
-#ifndef PLUGINS_OPTIONS_BAR_OPTIONS_BAR_HPP
-#define PLUGINS_OPTIONS_BAR_OPTIONS_BAR_HPP
+#ifndef PLUGIN_OPTIONS_BAR_OPTIONS_BAR_HPP
+#define PLUGIN_OPTIONS_BAR_OPTIONS_BAR_HPP
 
 extern "C"
 {
 
-bool loadPlugin();
-void unloadPlugin();
+bool onLoadPlugin();
+void onUnloadPlugin();
 
 }
 
-#endif // PLUGINS_OPTIONS_BAR_OPTIONS_BAR_HPP
+
+#endif // PLUGIN_OPTIONS_BAR_OPTIONS_BAR_HPP

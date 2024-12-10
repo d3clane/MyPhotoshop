@@ -98,14 +98,6 @@ void ABarButton::setSize(const vec2u& size)
 
 // ASpritedBarButton
 
-void ASpritedBarButton::draw(IRenderWindow* renderWindow, const IBar* parent) 
-{
-    renderWindow->draw(mainSprite_.get());
-
-    assert(parent);
-    static_cast<const IBar*>(parent)->finishButtonDraw(renderWindow, this);
-}
-
 void ASpritedBarButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
@@ -120,6 +112,14 @@ void ASpritedBarButton::setSize(const vec2u& size)
 
     mainSprite_->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
+}
+
+void ASpritedBarButton::draw(IRenderWindow* renderWindow)
+{
+    if (!isActive_)
+        return;
+
+    mainSprite_->draw(renderWindow);
 }
 
 // ABar implementation

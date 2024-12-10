@@ -17,15 +17,46 @@ SplineDrawButton::SplineDrawButton(std::unique_ptr<ISprite> sprite, std::unique_
 }
 
 std::unique_ptr<IAction> SplineDrawButton::createAction(const IRenderWindow* renderWindow, 
-                                                   const Event& event)
+                                                        const Event& event)
 {
     return std::make_unique<UpdateCallbackAction<SplineDrawButton>>(*this, renderWindow, event);
 }
 
+static IColorPalette* createColorPalette()
+{
+    IOptionsBar* optionsBar = static_cast<IOptionsBar*>(
+        getRootWindow()->getWindowById(kOptionsBarWindowId));
+    assert(optionsBar);
+
+    optionsBar->removeAllOptions();
+    std::unique_ptr<IColorPalette> colorPalette = IColorPalette::create();
+    
+    IColorPalette* palette = colorPalette.get();
+
+    optionsBar->addWindow(std::move(colorPalette));
+
+    return palette;
+}
+
+static void clearOptions()
+{
+    IOptionsBar* optionsBar = static_cast<IOptionsBar*>(
+        getRootWindow()->getWindowById(kOptionsBarWindowId));
+    assert(optionsBar);
+
+    optionsBar->removeAllOptions();
+}
+
 bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
+    State prevState = state_;
     bool updatedState = updateState(renderWindow, event);
 
+    if (prevState == State::Released && state_ != State::Released)
+    {
+        clearOptions();
+        colorPalette_ = nullptr;
+    }
 #if 0
     getActionController()->execute(
         instrument_button_functions::createActionInstrumentBar(
@@ -37,14 +68,15 @@ bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& ev
     if (state_ != State::Released)
         return updatedState;
     
+    if (/* state_ == State::Released && */ updatedState)
+    {
+        clearOptions();
+        colorPalette_ = createColorPalette();
+    }
+
     // TODO: may be really slow
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
-
-    if (!canvas)
-    {
-        std::cerr << "CANVAS NOT FOUND!\n";
-        assert(0);
-    }
+    assert(canvas);
 
     if (!canvas->isPressedLeftMouseButton())
     {
@@ -61,15 +93,7 @@ bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& ev
     return updatedState;
 }
 
-void SplineDrawButton::draw(IRenderWindow* renderWindow)
-{
-    if (!isActive_)
-        return;
-
-    ASpritedBarButton::draw(renderWindow, parent_);
-
-    //instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
-}
+void SplineDrawButton::setParent(const IWindow* parent) { parent_ = parent; }
 
 bool SplineDrawButton::drawTrace(ICanvas* canvas)
 {

@@ -11,9 +11,7 @@
 namespace ps
 {
 
-using MediatorType = AFillPropertiesMediator;
-
-class SplineDrawButton : public AInstrumentButton<MediatorType> 
+class SplineDrawButton : public ASpritedBarButton
 {
 public:
     SplineDrawButton() = default;
@@ -23,13 +21,17 @@ public:
                                           const Event& event) override;
 
     bool update(const IRenderWindow* renderWindow, const Event& event);
-    void draw(IRenderWindow* renderWindow) override;
+    void setParent(const IWindow* parent) override;
 
     virtual void drawPoint(psapi::ICanvas* canvas, psapi::ILayer* layer, const vec2i& point) = 0;
 
 protected:
+    const IWindow* parent_;
     Interpolator interpolator_;
 
+    IColorPalette* colorPalette_;
+
+private:
     bool drawTrace(ICanvas* canvas);
 };
 

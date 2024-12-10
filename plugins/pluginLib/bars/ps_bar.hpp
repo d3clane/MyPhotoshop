@@ -55,11 +55,9 @@ public:
     void setPos (const vec2i& pos) override;
     void setSize(const vec2u& size) override;
 
-    void draw(IRenderWindow* renderWindow) override = 0;
+    void draw(IRenderWindow* renderWindow) override;
 
 protected:
-    void draw(IRenderWindow* renderWindow, const IBar* parent);
-
     std::unique_ptr<ISprite>  mainSprite_;
     std::unique_ptr<ITexture> mainTexture_;
 };

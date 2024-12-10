@@ -43,8 +43,8 @@ CPPOBJ := $(addprefix $(OUT_O_DIR)/,$(CPPSRC:.cpp=.o))
 DEPS = $(CPPOBJ:.o=.d)
 
 
-DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib \
-			   lib_brush.dylib lib_eraser.dylib \
+DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_optionsBar.dylib \
+			   lib_brush.dylib #lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   #lib_negative_filter.dylib lib_blur_filter.dylib
 DYLIB_DIR = libs
@@ -68,7 +68,8 @@ $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp \
-			   src/api/api_actions.cpp
+			   src/api/api_actions.cpp src/api/api_bar.cpp plugins/pluginLib/bars/ps_bar.cpp \
+			   plugins/pluginLib/windows/windows.cpp
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp \
@@ -89,6 +90,10 @@ $(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp \
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_toolbar.dylib: plugins/toolbar/toolbar.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/windows/windows.cpp $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_optionsBar.dylib: plugins/optionsBar/optionsBar.cpp plugins/pluginLib/bars/ps_bar.cpp \
 	plugins/pluginLib/windows/windows.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 

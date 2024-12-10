@@ -20,8 +20,7 @@ EraserButton::EraserButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITex
 
 void EraserButton::drawPoint(ICanvas* canvas, psapi::ILayer* layer, const vec2i& point)
 {
-    DrawingProperties properties = mediator_->fillProperties();
-    unsigned thickness = properties.thickness;
+    unsigned thickness = 5;
     int drawingRange = static_cast<int>(thickness + 1) / 2;
 
     Color color = canvas->getCanvasBaseColor();
@@ -38,8 +37,9 @@ void EraserButton::drawPoint(ICanvas* canvas, psapi::ILayer* layer, const vec2i&
 
 bool onLoadPlugin()
 {
-    return instrument_button_functions::instrumentButtonOnLoadPlugin<
-        EraserButton, MediatorType>("media/textures/paintbrush.png");
+    return instrument_button_functions::instrumentButtonOnLoadPlugin<EraserButton>(
+        "media/textures/paintbrush.png"
+    );
 }
 
 void onUnloadPlugin()

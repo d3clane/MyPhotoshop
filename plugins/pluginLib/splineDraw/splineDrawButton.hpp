@@ -21,12 +21,10 @@ public:
                                           const Event& event) override;
 
     bool update(const IRenderWindow* renderWindow, const Event& event);
-    void setParent(const IWindow* parent) override;
 
     virtual void drawPoint(psapi::ICanvas* canvas, psapi::ILayer* layer, const vec2i& point) = 0;
 
 protected:
-    const IWindow* parent_;
     Interpolator interpolator_;
 
 private:

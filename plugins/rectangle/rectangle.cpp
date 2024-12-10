@@ -5,7 +5,7 @@
 bool onLoadPlugin() // onLoadPlugin
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<
-        ShapeButton<IRectangleShape>, MediatorType>("media/textures/paintbrush.png");
+        ShapeButton<IRectangleShape>>("media/textures/paintbrush.png");
 }
 
 void onUnloadPlugin()

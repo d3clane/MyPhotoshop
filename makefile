@@ -12,7 +12,7 @@ CFLAGS = -D _DEBUG -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs 			  \
 		   -Wstack-protector -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
 		   -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-protector  						  \
-		   -fPIE -Werror=vla #-fsanitize=address				  
+		   -fPIE -Werror=vla -fsanitize=address				  
 
 OUT_O_DIR := build
 COMMONINC := -I./include -I./ -I./plugins
@@ -44,7 +44,7 @@ DEPS = $(CPPOBJ:.o=.d)
 
 
 DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib lib_toolbar.dylib lib_optionsBar.dylib \
-			   lib_brush.dylib #lib_eraser.dylib \
+			   lib_brush.dylib lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   #lib_negative_filter.dylib lib_blur_filter.dylib
 DYLIB_DIR = libs
@@ -82,7 +82,8 @@ $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp \
 $(DYLIB_DIR)/lib_eraser.dylib: plugins/eraser/eraser.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/splineDraw/splineDrawButton.cpp $(PS_API_LIB)
+	plugins/pluginLib/splineDraw/splineDrawButton.cpp \
+	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp \
@@ -104,19 +105,22 @@ $(DYLIB_DIR)/lib_spray.dylib: plugins/spray/spray.cpp $(PLUGIN_LIB) $(PS_API_LIB
 $(DYLIB_DIR)/lib_line.dylib: plugins/line/line.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
+	plugins/pluginLib/canvas/canvas.cpp \
+	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_ellipse.dylib: plugins/ellipse/ellipse.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
+	plugins/pluginLib/canvas/canvas.cpp \
+	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_rectangle.dylib: plugins/rectangle/rectangle.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
+	plugins/pluginLib/canvas/canvas.cpp \
+	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp $(PLUGIN_LIB) $(PS_API_LIB)

@@ -8,15 +8,9 @@
 #include "api/api_canvas.hpp"
 
 #include "pluginLib/bars/ps_bar.hpp"
-
 #include "pluginLib/interpolation/include/interpolator.hpp"
-#include "pluginLib/instrumentBar/mediator.hpp"
-#include "pluginLib/instrumentBar/instrumentBar.hpp"
-
 #include "pluginLib/toolbar/toolbarButton.hpp"
-
 #include "pluginLib/actions/actions.hpp"
-
 #include "pluginLib/splineDraw/splineDrawButton.hpp"
 
 #include <iostream>

@@ -51,8 +51,6 @@ bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& ev
     return updatedState;
 }
 
-void SplineDrawButton::setParent(const IWindow* parent) { parent_ = parent; }
-
 bool SplineDrawButton::drawTrace(ICanvas* canvas)
 {
     if (!interpolator_.isPossibleToDraw())

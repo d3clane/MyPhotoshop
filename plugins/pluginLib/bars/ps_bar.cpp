@@ -96,6 +96,11 @@ void ABarButton::setSize(const vec2u& size)
     size_ = size;
 }
 
+void ABarButton::setParent(const IWindow* parent)
+{
+    parent_ = parent;
+}
+
 // ASpritedBarButton
 
 void ASpritedBarButton::setPos(const vec2i& pos)

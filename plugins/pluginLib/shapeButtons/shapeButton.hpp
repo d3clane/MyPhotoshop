@@ -13,9 +13,6 @@
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/windows/windows.hpp"
 
-#include "pluginLib/instrumentBar/mediator.hpp"
-#include "pluginLib/instrumentBar/instrumentBar.hpp"
-
 #include "pluginLib/toolbar/toolbarButton.hpp"
 #include "pluginLib/actions/actions.hpp"
 
@@ -30,8 +27,6 @@ namespace ps
 
 namespace
 {
-
-using MediatorType = APropertiesMediator;
 
 struct ShapeBounds
 {
@@ -72,7 +67,7 @@ void copyShapeToLayer(ILayer* layer, const T* shape, const vec2i& canvasPos)
 } // namespace anonymous
 
 template<typename T>
-class ShapeButton : public AInstrumentButton<MediatorType>
+class ShapeButton : public AInstrumentButton
 {
 public:
     ShapeButton() = default;
@@ -83,13 +78,14 @@ public:
     void draw(IRenderWindow* renderWindow) override;
 
 private:
+    std::unique_ptr<T> createShape(const vec2i& beginShapePos, const ICanvas* canvas);
+private:
     bool canvasIsAlreadyPressed_ = false;
     vec2i beginShapePos_;
 };
 
 template<typename T>
-std::unique_ptr<T> createShape(const vec2i& beginShapePos, const ICanvas* canvas,
-                               std::shared_ptr<MediatorType> mediator)
+std::unique_ptr<T> ShapeButton<T>::createShape(const vec2i& beginShapePos, const ICanvas* canvas)
 {
     vec2i canvasPos  = canvas->getPos();
     vec2i mousePos = canvas->getMousePosition() + canvasPos;
@@ -107,8 +103,8 @@ std::unique_ptr<T> createShape(const vec2i& beginShapePos, const ICanvas* canvas
     std::unique_ptr<T> shape = T::create(shapeXSize, shapeYSize);
     assert(shape);
 
-    DrawingProperties fillProperties = mediator->fillProperties();
-    Color color = fillProperties.color;
+    assert(colorPalette_);
+    Color color = colorPalette_->getColor();
 
     shape->setFillColor(color);
     shape->setOutlineThickness(0);
@@ -134,22 +130,16 @@ std::unique_ptr<IAction> ShapeButton<T>::createAction(const IRenderWindow* rende
 template<typename T>
 bool ShapeButton<T>::update(const IRenderWindow* renderWindow, const Event& event)
 {
+    State prevState = state_;
     bool updateStateRes = updateState(renderWindow, event);
 
-#if 0
-    instrument_button_functions::updateInstrumentBar(instrumentBar_.get(), state_,
-                                                    renderWindow, event);
-#endif
-
+    updateOptionsBar(state_, prevState);
+    
     if (state_ != State::Released)
         return updateStateRes;
 
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
-    if (!canvas)
-    {
-        std::cerr << "CANVAS NOT FOUND!\n";
-        assert(0);
-    }
+    assert(canvas);
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
@@ -160,7 +150,7 @@ bool ShapeButton<T>::update(const IRenderWindow* renderWindow, const Event& even
     if (!canvas->isPressedLeftMouseButton() && canvasIsAlreadyPressed_)
     {
         copyShapeToLayer(activeLayer, 
-                         createShape<T>(beginShapePos_, canvas, mediator_).get(), 
+                         createShape(beginShapePos_, canvas).get(), 
                          canvasPos);
         tempLayer->removeAllDrawables();
     }
@@ -177,7 +167,7 @@ bool ShapeButton<T>::update(const IRenderWindow* renderWindow, const Event& even
         canvasIsAlreadyPressed_ = true;
     }
 
-    std::unique_ptr<T> shape = createShape<T>(beginShapePos_, canvas, mediator_);
+    std::unique_ptr<T> shape = createShape(beginShapePos_, canvas);
     tempLayer->removeAllDrawables();
     tempLayer->addDrawable(std::move(shape));
 
@@ -187,11 +177,7 @@ bool ShapeButton<T>::update(const IRenderWindow* renderWindow, const Event& even
 template<typename T>
 void ShapeButton<T>::draw(IRenderWindow* renderWindow)
 {
-    ASpritedBarButton::draw(renderWindow, parent_);
-
-#if 0
-    instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
-#endif    
+    ASpritedBarButton::draw(renderWindow);
 }
 
 } // namespace ps

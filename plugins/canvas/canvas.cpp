@@ -270,7 +270,7 @@ bool Canvas::update(const IRenderWindow* renderWindow, const Event& event)
 
     if (!isPressed)
         pressType_ = 0;
-    else if (pressType_ == 0 /* && isPressed */)
+    else if (event.type == Event::MouseButtonPressed)
         pressType_ = updatePressType(pressType_, event);
 
     return true;

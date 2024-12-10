@@ -113,6 +113,7 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     if (!canvas->isPressedLeftMouseButton() && canvasIsAlreadyPressed_)
     {
         copyLineToLayer(activeLayer, createLineShape(lineBeginPos_, canvas, mediator_).get(), canvasPos);
+        tempLayer->removeAllDrawables();
     }
     
     if (!canvas->isPressedLeftMouseButton())

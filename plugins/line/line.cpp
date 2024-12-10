@@ -85,8 +85,11 @@ std::unique_ptr<IAction> LineButton::createAction(const IRenderWindow* renderWin
 
 bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
+    State prevState_ = state_;
     bool updateStateRes = updateState(renderWindow, event);
 
+    updateOptionsBar(state_, prevState_);
+    
     if (state_ != State::Released)
         return updateStateRes;
 

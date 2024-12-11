@@ -46,12 +46,9 @@ private:
     const IWindow* parent_;
 
     size_t gapSize_ = 16;
-
-    size_t nextChildIndex_ = 0;
-
     vec2u childSize_ = {64, 64};
 
-    std::vector<std::unique_ptr<ASpritedBarButton>> windows_;
+    std::vector<std::unique_ptr<ASpritedBarButton>> buttons_;
 };
 
 } // namespace

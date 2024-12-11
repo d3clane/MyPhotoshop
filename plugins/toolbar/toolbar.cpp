@@ -12,7 +12,7 @@ extern "C"
     
 bool onLoadPlugin() 
 {
-    vec2i pos  = {0,   0  };
+    vec2i pos  = {0, 0};
     vec2u size = {0, 0};
     auto toolbar = std::make_unique<Toolbar>(pos, size);
 
@@ -47,7 +47,7 @@ std::unique_ptr<IRectangleShape> createShape(const vec2u& size,
 vec2i calculateChildPosition(size_t childIndex, vec2u childSize, size_t gap, 
                              vec2i parentPos, vec2i middle)
 {
-    int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize.x + gap) + gap);
+    int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize.y + gap) + gap);
     return vec2i{ middle.x, parentPos.y + shift };
 }
 
@@ -81,21 +81,21 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
 
 void Toolbar::setChildrenInfo()
 {
-    nextChildIndex_ = 0;
+    size_t childIndex = 0;
 
-    for (auto& window : windows_)
+    for (auto& window : buttons_)
     {
-        window->setPos(calculateChildPosition(nextChildIndex_, childSize_, gapSize_, 
+        window->setPos(calculateChildPosition(childIndex, childSize_, gapSize_, 
                                               pos_, calculateMiddleForChild(childSize_)));
 
         window->setSize(childSize_);
-        ++nextChildIndex_;
+        ++childIndex;
     }
 }
 
 IWindow* Toolbar::getWindowById(wid_t id)
 {
-    for (auto& window : windows_)
+    for (auto& window : buttons_)
         if (window->getId() == id)
             return window.get();
         
@@ -112,7 +112,7 @@ const IWindow* Toolbar::getWindowById(wid_t id) const
 
 void Toolbar::drawChildren(IRenderWindow* renderWindow)
 {
-    for (auto& button : windows_)
+    for (auto& button : buttons_)
     {
         button->draw(renderWindow);
         finishButtonDraw(renderWindow, button.get());
@@ -127,17 +127,17 @@ void Toolbar::addWindow(std::unique_ptr<IWindow> window)
     assert(button);
     button->setParent(this);
 
-    windows_.push_back(std::unique_ptr<ASpritedBarButton>(button));
+    buttons_.push_back(std::unique_ptr<ASpritedBarButton>(button));
     window.release();
 }
 
 void Toolbar::removeWindow(wid_t id)
 {
-    for (auto it = windows_.begin(); it != windows_.end(); it++) 
+    for (auto it = buttons_.begin(); it != buttons_.end(); it++) 
     {
         if ((*it)->getId() == id) 
         {
-            windows_.erase(it);
+            buttons_.erase(it);
             return;
         }
     }
@@ -160,7 +160,7 @@ bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event)
     setChildrenInfo();
 
     return getActionController()->execute(
-        bar_children_handler_funcs::createUpdateChildrenAction(renderWindow, event, windows_)
+        bar_children_handler_funcs::createUpdateChildrenAction(renderWindow, event, buttons_)
     );
 }
 
@@ -172,5 +172,5 @@ void Toolbar::setParent(const IWindow* parent)
 
 bool Toolbar::unPressAllButtons()
 {
-    return bar_children_handler_funcs::unPressAllButtons(windows_);
+    return bar_children_handler_funcs::unPressAllButtons(buttons_);
 }

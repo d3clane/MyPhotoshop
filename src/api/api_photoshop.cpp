@@ -221,8 +221,10 @@ sfm::IntRect getOptionsBarIntRect()
 
     sfm::IntRect rect;
 
-    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.93f), 0};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.07f), size.y};
+    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.93f),
+                 static_cast<int>     (static_cast<float>(size.y) * 0.055f)};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.07f), 
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.945f)};
     
     return rect;
 }

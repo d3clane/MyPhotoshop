@@ -103,10 +103,10 @@ public:
 
     void setPos (const vec2i& pos)  override;
     void setSize(const vec2u& size) override;
+    void setParent(const IWindow* parent) override;
     
 protected:
     vec2i calculateMiddleForChild(vec2u childSize);
-
     virtual void drawChildren(IRenderWindow* renderWindow) = 0;
     
 
@@ -117,6 +117,7 @@ protected:
 
     vec2i pos_;
     vec2u size_;
+    const IWindow* parent_;
 
     std::unique_ptr<IRectangleShape> shape_;
 };

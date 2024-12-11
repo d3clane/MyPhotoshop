@@ -156,6 +156,11 @@ void ABar::setSize(const vec2u& size)
     shape_->setSize(size);
 }
 
+void ABar::setParent(const IWindow* parent) 
+{
+    parent_ = parent;
+}
+
 vec2i ABar::getPos()  const 
 {
     return pos_;

@@ -209,7 +209,6 @@ bool ColorPalette::update(const IRenderWindow* renderWindow, const sfm::Event& e
         }
     }
 
-
     if (lastReleasedButtonPos != invalidPos)
     {
         activatedColor_ = colors_[lastReleasedButtonPos]->getColor();

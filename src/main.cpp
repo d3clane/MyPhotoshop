@@ -49,8 +49,8 @@ int main()
     loadPlugin("libs/lib_line.dylib");
     loadPlugin("libs/lib_ellipse.dylib");
     loadPlugin("libs/lib_rectangle.dylib");
-    /*
     loadPlugin("libs/lib_negative_filter.dylib");
+    /*
     loadPlugin("libs/lib_blur_filter.dylib");
     loadPlugin("libs/lib_spray.dylib");
     */

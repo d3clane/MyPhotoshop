@@ -191,7 +191,7 @@ bool onLoadPlugin()
     auto menu = std::make_unique<MenuBar>();
 
     std::unique_ptr<IText> text = IText::create();
-    std::shared_ptr<IFont> font = IFont::create();
+    std::unique_ptr<IFont> font = IFont::create();
     font->loadFromFile("media/fonts/arial.ttf");
 
     text->setFont(font.get());
@@ -199,7 +199,7 @@ bool onLoadPlugin()
 
     auto subMenuBar = std::make_unique<SubMenuBar>();
     auto menuButton = std::make_unique<MenuButton>(kMenuFilterId, 
-                                                   std::move(text), font, 
+                                                   std::move(text), std::move(font), 
                                                    std::move(subMenuBar));
 
     menu->addWindow(std::move(menuButton));

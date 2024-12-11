@@ -7,6 +7,25 @@
 namespace ps
 {
 
+namespace 
+{
+
+// TODO: copypaste, create another file for this function
+std::unique_ptr<IRectangleShape> createShape(const vec2u& size, 
+                                             const Color& color = {}, const Color& outlineColor = {}, 
+                                             const float outlineThickness = 1)
+{
+    auto shape = IRectangleShape::create(size.x, size.y);
+
+    shape->setFillColor(color);
+    shape->setOutlineThickness(outlineThickness);
+    shape->setOutlineColor(outlineColor);
+
+    return shape;
+}
+
+} // namespace anonymous
+
 IWindow* SubMenuBar::getWindowById(wid_t id)
 {
     if (id_ == id)
@@ -27,25 +46,6 @@ const IWindow* SubMenuBar::getWindowById(wid_t id) const
 {
     return const_cast<SubMenuBar*>(this)->getWindowById(id);
 }
-
-namespace 
-{
-
-// TODO: copypaste, create another file for this function
-std::unique_ptr<IRectangleShape> createShape(const vec2u& size, 
-                                             const Color& color = {}, const Color& outlineColor = {}, 
-                                             const float outlineThickness = 1)
-{
-    auto shape = IRectangleShape::create(size.x, size.y);
-
-    shape->setFillColor(color);
-    shape->setOutlineThickness(outlineThickness);
-    shape->setOutlineColor(outlineColor);
-
-    return shape;
-}
-
-} // namespace anonymous
 
 SubMenuBar::SubMenuBar()
 {
@@ -90,6 +90,8 @@ void SubMenuBar::addWindow(std::unique_ptr<IWindow> window)
     window.release();
 
     size_.y += (childSize_.y + gapSize_);
+    
+    setChildrenInfo(); // TODO: slow, can change only last added son
 }
 
 void SubMenuBar::removeWindow(wid_t id)
@@ -156,14 +158,48 @@ void SubMenuBar::drawChildren(IRenderWindow* renderWindow)
 
 // Menu button implementation
 
+namespace
+{
+
+vec2i calculateSubMenuPos(const vec2i& pos, const vec2u& size, 
+                          MenuButton::SubMenuSpawningDirection spawnPosition)
+{
+    static const int gap = 8;
+    switch (spawnPosition)
+    {
+        case MenuButton::SubMenuSpawningDirection::Down:
+            return {pos.x, pos.y + static_cast<int>(size.y) + gap};
+        case MenuButton::SubMenuSpawningDirection::Right:
+            return {pos.x + static_cast<int>(size.x) + gap, pos.y};
+        default:
+            assert(false);
+            return {0, 0};
+    }
+    
+    assert(false);
+    return {0, 0};
+}
+
+
+} // namespace anonymous
+
 MenuButton::MenuButton(wid_t id, 
-                       std::unique_ptr<IText> name, std::shared_ptr<IFont> font,
-                       std::unique_ptr<SubMenuBar> subMenu)
+                       std::unique_ptr<IText> name, std::unique_ptr<IFont> font,
+                       std::unique_ptr<SubMenuBar> subMenu,
+                       SubMenuSpawningDirection spawnDirection)
+    :  menu_(std::move(subMenu)), spawnDirection_(spawnDirection)
 {
     id_ = id;
-    font_ = font;
+    font_ = std::move(font);
     name_ = std::move(name);
-    menu_ = std::move(subMenu);
+}
+
+void MenuButton::draw(IRenderWindow* renderWindow)
+{
+    AMenuBarButton::draw(renderWindow);
+    
+    if (menu_)
+        menu_->draw(renderWindow);
 }
 
 std::unique_ptr<IAction> MenuButton::createAction(const IRenderWindow* renderWindow,
@@ -179,7 +215,12 @@ bool MenuButton::update(const IRenderWindow* renderWindow, const Event& event)
     if (state_ == State::Released)
         menu_->forceActivate();
     else
-        menu_->forceDeactivate();  
+        menu_->forceDeactivate(); 
+
+    AActionController* actionController = getActionController();
+    assert(actionController);
+
+    updatedState |= actionController->execute(menu_->createAction(renderWindow, event));
 
     return updatedState;
 }
@@ -220,6 +261,17 @@ IBar* MenuButton::getMenu()
 const IBar* MenuButton::getMenu() const
 {
     return const_cast<MenuButton*>(this)->getMenu();
+}
+
+void MenuButton::setPos(const vec2i& pos)
+{
+    AMenuBarButton::setPos(pos);
+    menu_->setPos(calculateSubMenuPos(pos, size_, spawnDirection_));
+}
+
+void MenuButton::setSize(const vec2u& size)
+{
+    AMenuBarButton::setSize(size);
 }
 
 } // namespace ps

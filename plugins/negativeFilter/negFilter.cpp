@@ -10,11 +10,13 @@
 #include "api/api_photoshop.hpp"
 #include "api/api_bar.hpp"
 #include "api/api_canvas.hpp"
-#include "canvas/canvas.hpp"
 
+#include "pluginLib/canvas/canvas.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/windows/windows.hpp"
-#include "filters/filters.hpp"
+#include "pluginLib/filters/filters.hpp"
+#include "pluginLib/actions/actions.hpp"
+#include "pluginLib/bars/menu.hpp"
 
 #include <iostream>
 
@@ -25,25 +27,26 @@ using namespace psapi::sfm;
 namespace
 {
 
-class NegativeFilterButton : public ASpritedBarButton 
+class NegativeFilterButton : public ANamedBarButton 
 {
 public:
     NegativeFilterButton() = default;
-    NegativeFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
+    NegativeFilterButton(std::unique_ptr<IText> text, std::unique_ptr<IFont> font);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
-    void draw(IRenderWindow *window) override;
-
-    void setParent(const IWindow* parent) override;
-
-private:
-    const IBar* parent_;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event);
 };
 
-NegativeFilterButton::NegativeFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
+NegativeFilterButton::NegativeFilterButton(std::unique_ptr<IText> text, std::unique_ptr<IFont> font)
 {
-    mainSprite_ = std::move(sprite);
-    mainTexture_ = std::move(texture);
+    name_ = std::move(text);
+    font_ = std::move(font);
+}
+
+std::unique_ptr<IAction> NegativeFilterButton::createAction(const IRenderWindow* renderWindow, 
+                                                            const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<NegativeFilterButton>>(*this, renderWindow, event);
 }
 
 bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event& event)
@@ -54,11 +57,7 @@ bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event
         return updateStateRes;
 
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
-    if (!canvas)
-    {
-        std::cerr << "CANVAS NOT FOUND!\n";
-        assert(0);
-    }
+    assert(canvas);
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
@@ -76,56 +75,29 @@ bool NegativeFilterButton::update(const IRenderWindow* renderWindow, const Event
     return true;
 }
 
-void NegativeFilterButton::draw(IRenderWindow *window) 
-{
-    ASpritedBarButton::draw(window, parent_);
 }
 
-void NegativeFilterButton::setParent(const IWindow* parent)
+bool onLoadPlugin()
 {
-    parent_ = dynamic_cast<const IBar*>(parent);
-    assert(parent_);
-}
-
-}
-
-bool loadPlugin() // onLoadPlugin
-{
-    auto buttonSprite  = ISprite::create();
-    auto buttonTexture = ITexture::create();
-
-    buttonTexture.get()->loadFromFile("media/textures/paintbrush.png");
-
-    buttonSprite->setTexture(buttonTexture.get());
+    std::unique_ptr<IText> text = IText::create();
+    std::unique_ptr<IFont> font = IFont::create();
+    font->loadFromFile("media/fonts/arial.ttf");
+    text->setFont(font.get());
+    text->setString("Negative");
+    
+    auto button = std::make_unique<NegativeFilterButton>(std::move(text), std::move(font));
 
     IWindowContainer* rootWindow = getRootWindow();
     assert(rootWindow);
-    auto toolBar = static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId));
-    assert(toolBar);
+    auto filterMenu = dynamic_cast<MenuButton*>(rootWindow->getWindowById(kMenuFilterId));
+    assert(filterMenu);
 
-    auto info = toolBar->getNextChildInfo();
-    vec2i pos = info.pos;
-    vec2u size = { static_cast<unsigned int>(info.size.x),  
-                   static_cast<unsigned int>(info.size.y) };
-
-    buttonSprite->setPosition(pos.x, pos.y);
-    
-    vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
-    std::unique_ptr<ps::ASpritedBarButton> button{ new NegativeFilterButton(std::move(buttonSprite), std::move(buttonTexture)) };
-
-    button->setPos(pos);
-    button->setSize(size);
-
-    assert(rootWindow->getWindowById(kToolBarWindowId));
-    
-    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->
-        addWindow(std::unique_ptr<ps::IBarButton>(button.release()));
+    filterMenu->addMenuItem(std::move(button));
 
     return true;
 }
 
-void unloadPlugin()
+void onUnloadPlugin()
 {
     return;
 }

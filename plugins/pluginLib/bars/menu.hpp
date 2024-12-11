@@ -44,9 +44,19 @@ private:
 class MenuButton : public AMenuBarButton
 {
 public:
+    enum class SubMenuSpawningDirection
+    {
+        Down,
+        Right,
+    };
+
+public:
     MenuButton(wid_t id, 
-               std::unique_ptr<IText> text, std::shared_ptr<IFont> font,
-               std::unique_ptr<SubMenuBar> subMenu);
+               std::unique_ptr<IText> text, std::unique_ptr<IFont> font,
+               std::unique_ptr<SubMenuBar> subMenu, 
+               SubMenuSpawningDirection spawnDirection = SubMenuSpawningDirection::Down);
+
+    void draw(IRenderWindow* renderWindow) override;
 
     std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow,
                                           const sfm::Event& event) override;
@@ -64,8 +74,12 @@ public:
     IBar *getMenu() override;
     const IBar *getMenu() const override;
 
+    void setPos(const vec2i& pos) override;
+    void setSize(const vec2u& size) override;
+
 private:
     std::unique_ptr<SubMenuBar> menu_;
+    SubMenuSpawningDirection spawnDirection_;
 };
 
 } // namespace ps

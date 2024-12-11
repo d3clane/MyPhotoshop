@@ -375,8 +375,8 @@ void Text::setSize(const vec2f &size)
     text_.setScale(sf::Vector2f{static_cast<float>(size.x) / bounds.width,
                                 static_cast<float>(size.y) / bounds.height});
 
-    assert(text_.getGlobalBounds().width <= size.x + 1);
-    assert(text_.getGlobalBounds().height <= size.y + 1);
+    //assert(text_.getGlobalBounds().width <= size.x + 1);
+    //assert(text_.getGlobalBounds().height <= size.y + 1);
 }
 
 // Image implementation

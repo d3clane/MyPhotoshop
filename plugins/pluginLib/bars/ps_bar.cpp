@@ -129,18 +129,25 @@ void ASpritedBarButton::draw(IRenderWindow* renderWindow)
 
 // ANamedBarButton implementation
 
+static const float textShiftFromOneSide = 0.1f;
+
+// TODO: copypaste with AMenuBarButton
 void ANamedBarButton::setPos (const vec2i& pos)
 {
     pos_ = pos;
 
-    name_->setPos(vec2f{static_cast<float>(pos.x), static_cast<float>(pos.y)});
+    name_->setPos({static_cast<float>(pos.x) + static_cast<float>(size_.x * textShiftFromOneSide), 
+                   static_cast<float>(pos.y) + static_cast<float>(size_.y * textShiftFromOneSide)});
 }
 
 void ANamedBarButton::setSize(const vec2u& size)
 {
     size_ = size;
 
-    name_->setSize({static_cast<float>(size.x), static_cast<float>(size.y)});
+    static const float textSizeRatio = 1.f - 2.f * textShiftFromOneSide;
+    name_->setSize(textSizeRatio * vec2f{static_cast<float>(size.x), static_cast<float>(size.y)});
+
+    setPos(pos_);
 }
 
 void ANamedBarButton::draw(IRenderWindow* renderWindow)
@@ -154,24 +161,19 @@ vec2i AMenuBarButton::getPos() const { return pos_; }
 
 vec2u AMenuBarButton::getSize() const { return size_; }
 
-// pretty coeff between menu
-
-static const float shiftFromOneSide = 0.1f;
-
-
 void AMenuBarButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
 
-    name_->setPos({static_cast<float>(pos.x) + static_cast<float>(size_.x * shiftFromOneSide), 
-                   static_cast<float>(pos.y) + static_cast<float>(size_.y * shiftFromOneSide)});
+    name_->setPos({static_cast<float>(pos.x) + static_cast<float>(size_.x * textShiftFromOneSide), 
+                   static_cast<float>(pos.y) + static_cast<float>(size_.y * textShiftFromOneSide)});
 }
 
 void AMenuBarButton::setSize(const vec2u& size)
 {
     size_ = size;
 
-    static const float textSizeRatio = 1.f - 2.f * shiftFromOneSide;
+    static const float textSizeRatio = 1.f - 2.f * textShiftFromOneSide;
     name_->setSize(textSizeRatio * vec2f{static_cast<float>(size.x), static_cast<float>(size.y)});
 
     setPos(pos_);

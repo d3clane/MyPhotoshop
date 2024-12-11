@@ -47,7 +47,7 @@ DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib \
 			   lib_toolbar.dylib lib_optionsBar.dylib lib_menuBar.dylib \
 			   lib_brush.dylib lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
-			   #lib_negative_filter.dylib lib_blur_filter.dylib
+			   lib_negative_filter.dylib #lib_blur_filter.dylib
 DYLIB_DIR = libs
 DYLIBS := $(addprefix $(DYLIB_DIR)/,$(DYLIBS_NAMES))
 PS_API_LIB := $(DYLIB_DIR)/libapi_photoshop.dylib
@@ -128,7 +128,10 @@ $(DYLIB_DIR)/lib_rectangle.dylib: plugins/rectangle/rectangle.cpp \
 	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
-$(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp $(PLUGIN_LIB) $(PS_API_LIB)
+$(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp \
+	plugins/pluginLib/filters/filters.cpp plugins/pluginLib/windows/windows.cpp \
+	plugins/pluginLib/bars/ps_bar.cpp plugins/pluginLib/bars/menu.cpp  \
+	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_blur_filter.dylib : plugins/blurFilter/blurFilter.cpp $(PLUGIN_LIB) $(PS_API_LIB)

@@ -75,7 +75,7 @@ public:
 
 protected:
     std::unique_ptr<IText> name_;
-    std::shared_ptr<IFont> font_;
+    std::unique_ptr<IFont> font_;
 };
 
 class AMenuBarButton : public IMenuButton
@@ -116,7 +116,7 @@ protected:
     State state_ = State::Normal;
 
     std::unique_ptr<IText> name_;
-    std::shared_ptr<IFont> font_;
+    std::unique_ptr<IFont> font_;
 };
 
 // TODO: add to instrument bar / color bar [ create PluginABars ]

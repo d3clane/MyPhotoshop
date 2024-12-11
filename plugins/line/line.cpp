@@ -140,7 +140,7 @@ void LineButton::draw(IRenderWindow* renderWindow)
 bool onLoadPlugin()
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<LineButton>(
-        "media/textures/paintbrush.png");
+        "media/textures/line.png");
 }
 
 void onUnloadPlugin()

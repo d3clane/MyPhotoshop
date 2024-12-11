@@ -22,6 +22,9 @@ private:
 
 bool ActionController::execute(std::unique_ptr<IAction> action)
 {
+    if (!action)
+        return false;
+
     if (!actionExecute(action.get()))
         return false;
 

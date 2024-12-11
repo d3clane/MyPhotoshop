@@ -361,7 +361,10 @@ IntRect Text::getGlobalBounds() const
 
 void Text::setPos(const vec2f &pos)
 {
-    text_.setPosition(pos.x, pos.y);
+    text_.setPosition(0.f, 0.f);
+    sf::FloatRect globalBounds = text_.getGlobalBounds();
+
+    text_.setPosition(pos.x - globalBounds.left, pos.y - globalBounds.top);
 }
 
 void Text::setSize(const vec2f &size)
@@ -371,6 +374,9 @@ void Text::setSize(const vec2f &size)
     sf::FloatRect bounds = text_.getGlobalBounds();
     text_.setScale(sf::Vector2f{static_cast<float>(size.x) / bounds.width,
                                 static_cast<float>(size.y) / bounds.height});
+
+    assert(text_.getGlobalBounds().width <= size.x);
+    assert(text_.getGlobalBounds().height <= size.y);
 }
 
 // Image implementation

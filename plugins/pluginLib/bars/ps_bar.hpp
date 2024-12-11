@@ -98,7 +98,7 @@ public:
     void setState(State state) override;
     State getState() const override;
 
-    //void draw(IRenderWindow* renderWindow) override;
+    void draw(IRenderWindow* renderWindow) override;
 
 protected:
     bool updateState(const IRenderWindow* renderWindow, const Event& event);
@@ -178,11 +178,6 @@ protected:
 protected:
     std::unique_ptr<IRectangleShape> commonOutlineShape_;
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
-};
-
-class AShapedButtonsPluginsBar : public ABar
-{
-    // TODO: 
 };
 
 template<typename T>

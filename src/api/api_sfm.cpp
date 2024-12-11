@@ -19,6 +19,16 @@ std::unique_ptr<ISprite> ISprite::create()
     return std::make_unique<Sprite>();
 }
 
+std::unique_ptr<IFont> IFont::create()
+{
+    return std::make_unique<Font>();
+}
+
+std::unique_ptr<IText> IText::create()
+{
+    return std::make_unique<Text>();
+}
+
 std::unique_ptr<IRenderWindow> IRenderWindow::create(unsigned int width, unsigned int height, 
                                                      const std::string& name)
 {

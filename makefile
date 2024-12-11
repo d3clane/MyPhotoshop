@@ -101,7 +101,7 @@ $(DYLIB_DIR)/lib_optionsBar.dylib: plugins/optionsBar/optionsBar.cpp plugins/plu
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_menuBar.dylib: plugins/menuBar/menuBar.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/windows/windows.cpp $(PS_API_LIB)
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/menu.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_spray.dylib: plugins/spray/spray.cpp $(PLUGIN_LIB) $(PS_API_LIB)

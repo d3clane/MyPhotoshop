@@ -2,6 +2,7 @@
 
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/actions/actions.hpp"
+#include "pluginLib/bars/menu.hpp"
 
 #include <vector>
 #include <memory>
@@ -32,7 +33,7 @@ protected:
 
     void setChildrenInfo();
 
-    vec2u childSize_ = {64, 16};
+    vec2u childSize_ = {64, 32};
     size_t gapSize_ = 16;
 
 private:
@@ -105,12 +106,12 @@ void MenuBar::setChildrenInfo()
 {
     size_t childIndex = 0;
 
-    for (auto& window : buttons_)
+    for (auto& button : buttons_)
     {
-        window->setPos(calculateChildPosition(childIndex, childSize_, gapSize_, 
+        button->setPos(calculateChildPosition(childIndex, childSize_, gapSize_, 
                                               pos_, calculateMiddleForChild(childSize_)));
 
-        window->setSize(childSize_);
+        button->setSize(childSize_);
         ++childIndex;
     }
 }
@@ -186,7 +187,24 @@ void MenuBar::drawChildren(IRenderWindow* renderWindow)
 
 bool onLoadPlugin()
 {
-    getRootWindow()->addWindow(std::make_unique<MenuBar>());
+    IRootWindow* rootWindow = getRootWindow();
+    auto menu = std::make_unique<MenuBar>();
+
+    std::unique_ptr<IText> text = IText::create();
+    std::shared_ptr<IFont> font = IFont::create();
+    font->loadFromFile("media/fonts/arial.ttf");
+
+    text->setFont(font.get());
+    text->setString("Filters");
+
+    auto subMenuBar = std::make_unique<SubMenuBar>();
+    auto menuButton = std::make_unique<MenuButton>(kMenuFilterId, 
+                                                   std::move(text), font, 
+                                                   std::move(subMenuBar));
+
+    menu->addWindow(std::move(menuButton));
+
+    rootWindow->addWindow(std::move(menu));
     
     return true;
 }

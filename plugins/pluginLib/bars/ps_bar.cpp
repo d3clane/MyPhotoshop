@@ -150,6 +150,19 @@ void ANamedBarButton::draw(IRenderWindow* renderWindow)
 
 // AMenuBarButton
 
+namespace
+{
+
+vec2f calculateTextPos(IText* text, vec2i expectedPos)
+{
+    IntRect textRect = text->getGlobalBounds();
+
+    return vec2f{static_cast<float>(expectedPos.x), 
+                 static_cast<float>(expectedPos.y) - static_cast<float>(textRect.size.y) / 2.f};
+}
+
+} // namespace anonymous
+
 vec2i AMenuBarButton::getPos() const { return pos_; }
 
 vec2u AMenuBarButton::getSize() const { return size_; }
@@ -157,13 +170,19 @@ vec2u AMenuBarButton::getSize() const { return size_; }
 void AMenuBarButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
+
     name_->setPos(vec2f{static_cast<float>(pos.x), static_cast<float>(pos.y)});
 }
 
 void AMenuBarButton::setSize(const vec2u& size)
 {
     size_ = size;
-    name_->setSize({static_cast<float>(size.x), static_cast<float>(size.y)});
+
+    static const float prettyCoeff = 1.f;
+
+    name_->setSize(prettyCoeff * vec2f{static_cast<float>(size.x), static_cast<float>(size.y)});
+
+    setPos(pos_);
 }
 
 void AMenuBarButton::setParent(const IWindow* parent) { parent_ = parent; }
@@ -183,9 +202,39 @@ void AMenuBarButton::setState(State state)
 
 AMenuBarButton::State AMenuBarButton::getState() const { return state_; }
 
-//void draw(IRenderWindow* renderWindow) override;
+void AMenuBarButton::draw(IRenderWindow* renderWindow)
+{
+    if (!isActive_)
+        return;
 
-bool updateState(const IRenderWindow* renderWindow, const Event& event);
+    name_->draw(renderWindow);
+}
+
+// TODO: copypaste
+bool AMenuBarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
+{
+    vec2i mousePos = Mouse::getPosition(renderWindow);
+    bool hovered = checkIsHovered(mousePos, pos_, size_);
+    bool pressed = updateIsPressed(event, state_ == State::Press, hovered);
+    bool clicked = checkIsClicked(event, hovered);
+
+    if (clicked)
+    {
+        if (state_ != State::Released)
+            state_ = State::Released;
+        else
+            state_ = State::Normal;
+    }
+    
+    if (state_ != State::Released)
+    {
+        state_ = State::Normal;
+        if (hovered) state_ = State::Hover;
+        if (pressed) state_ = State::Press;
+    }
+
+    return clicked || hovered || pressed;
+}
 
 // ABar implementation
 

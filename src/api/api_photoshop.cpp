@@ -237,7 +237,7 @@ sfm::IntRect getMenuBarIntRect()
     rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.055f), 0};
     rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.945f), 
                  static_cast<unsigned>(static_cast<float>(size.y) * 0.055f)};
-    
+
     return rect;
 }
 

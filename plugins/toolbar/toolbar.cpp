@@ -121,13 +121,13 @@ void Toolbar::drawChildren(IRenderWindow* renderWindow)
 
 void Toolbar::addWindow(std::unique_ptr<IWindow> window)
 {
-    ASpritedBarButton* button = nullptr;
+    IBarButton* button = nullptr;
 
-    button = static_cast<ASpritedBarButton*>(window.get());
+    button = static_cast<IBarButton*>(window.get());
     assert(button);
     button->setParent(this);
 
-    buttons_.push_back(std::unique_ptr<ASpritedBarButton>(button));
+    buttons_.push_back(std::unique_ptr<IBarButton>(button));
     window.release();
 }
 
@@ -163,12 +163,6 @@ bool Toolbar::update(const IRenderWindow* renderWindow, const sfm::Event& event)
         bar_children_handler_funcs::createUpdateChildrenAction(renderWindow, event, buttons_)
     );
 }
-
-void Toolbar::setParent(const IWindow* parent)
-{
-    parent_ = parent;
-}
-
 
 bool Toolbar::unPressAllButtons()
 {

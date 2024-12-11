@@ -71,13 +71,50 @@ public:
     void setPos (const vec2i& pos) override;
     void setSize(const vec2u& size) override;
 
-    void draw(IRenderWindow* renderWindow) override = 0;
+    void draw(IRenderWindow* renderWindow) override;
 
 protected:
-    void draw(IRenderWindow* renderWindow, const IBar* parent);
-    void rescaleNameToFit();  
+    std::unique_ptr<IText> name_;
+    std::shared_ptr<IFont> font_;
+};
+
+class AMenuBarButton : public IMenuButton
+{
+public:
+    vec2i getPos()  const override;
+    vec2u getSize() const override;
+    void setPos (const vec2i& pos ) override;
+    void setSize(const vec2u& size) override;
+    void setParent(const IWindow* parent) override;
+    
+    wid_t getId()   const override;
+
+    void forceDeactivate()                override;
+    void forceActivate()                  override; 
+
+    bool isActive() const override;
+    bool isWindowContainer() const override;
+
+    void setState(State state) override;
+    State getState() const override;
+
+    //void draw(IRenderWindow* renderWindow) override;
 
 protected:
+    bool updateState(const IRenderWindow* renderWindow, const Event& event);
+
+protected:
+    wid_t id_ = kInvalidWindowId;
+
+    vec2i pos_;
+    vec2u size_;
+
+    const IWindow* parent_ = nullptr;
+
+    bool isActive_ = true;
+
+    State state_ = State::Normal;
+
     std::unique_ptr<IText> name_;
     std::shared_ptr<IFont> font_;
 };

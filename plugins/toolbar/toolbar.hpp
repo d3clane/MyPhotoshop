@@ -33,7 +33,6 @@ public:
 
     bool update(const IRenderWindow* renderWindow, const sfm::Event& event);
 
-    void setParent(const IWindow* parent) override;
     bool unPressAllButtons() override;
 
 protected:
@@ -43,12 +42,10 @@ private:
     void setChildrenInfo();
 
 private:
-    const IWindow* parent_;
-
     size_t gapSize_ = 16;
     vec2u childSize_ = {64, 64};
 
-    std::vector<std::unique_ptr<ASpritedBarButton>> buttons_;
+    std::vector<std::unique_ptr<IBarButton>> buttons_;
 };
 
 } // namespace

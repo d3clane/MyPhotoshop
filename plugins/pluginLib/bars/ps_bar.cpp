@@ -127,6 +127,66 @@ void ASpritedBarButton::draw(IRenderWindow* renderWindow)
     mainSprite_->draw(renderWindow);
 }
 
+// ANamedBarButton implementation
+
+void ANamedBarButton::setPos (const vec2i& pos)
+{
+    pos_ = pos;
+
+    name_->setPos(vec2f{static_cast<float>(pos.x), static_cast<float>(pos.y)});
+}
+
+void ANamedBarButton::setSize(const vec2u& size)
+{
+    size_ = size;
+
+    name_->setSize({static_cast<float>(size.x), static_cast<float>(size.y)});
+}
+
+void ANamedBarButton::draw(IRenderWindow* renderWindow)
+{
+    name_->draw(renderWindow);
+}
+
+// AMenuBarButton
+
+vec2i AMenuBarButton::getPos() const { return pos_; }
+
+vec2u AMenuBarButton::getSize() const { return size_; }
+
+void AMenuBarButton::setPos(const vec2i& pos)
+{
+    pos_ = pos;
+    name_->setPos(vec2f{static_cast<float>(pos.x), static_cast<float>(pos.y)});
+}
+
+void AMenuBarButton::setSize(const vec2u& size)
+{
+    size_ = size;
+    name_->setSize({static_cast<float>(size.x), static_cast<float>(size.y)});
+}
+
+void AMenuBarButton::setParent(const IWindow* parent) { parent_ = parent; }
+
+wid_t AMenuBarButton::getId() const { return id_; }
+
+void AMenuBarButton::forceDeactivate() { isActive_ = true; }
+void AMenuBarButton::forceActivate() { isActive_ = false; }
+
+bool AMenuBarButton::isActive() const { return isActive_; }
+bool AMenuBarButton::isWindowContainer() const { return false; } 
+
+void AMenuBarButton::setState(State state)
+{
+    state_ = state;
+}
+
+AMenuBarButton::State AMenuBarButton::getState() const { return state_; }
+
+//void draw(IRenderWindow* renderWindow) override;
+
+bool updateState(const IRenderWindow* renderWindow, const Event& event);
+
 // ABar implementation
 
 ABar::~ABar() = default;

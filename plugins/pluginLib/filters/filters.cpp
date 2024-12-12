@@ -72,13 +72,12 @@ static Color boxBlurPixel(const std::vector<std::vector<Color>>& pixels, int x0,
     assert(x0 < static_cast<int>(pixels[(size_t)x0].size()));
 
     int range = 1;
-
-    int resultR = 0, resultB = 0, resultG = 0;
-
+    int resultR = 0, resultB = 0, resultG = 0, resultA = 0;
     int divider = 0;
-    for (int y = y0 - range; y < y0 + range; ++y)
+
+    for (int y = y0 - range; y <= y0 + range; ++y)
     {
-        for (int x = x0 - range; x < x0 + range; ++x)
+        for (int x = x0 - range; x <= x0 + range; ++x)
         {
             if (!valueInBoundaries(y, -1, static_cast<int>(pixels           .size())) || 
                 !valueInBoundaries(x, -1, static_cast<int>(pixels[(size_t)y].size())))
@@ -89,6 +88,7 @@ static Color boxBlurPixel(const std::vector<std::vector<Color>>& pixels, int x0,
             resultR += static_cast<int>(pixels[(size_t)y][(size_t)x].r);
             resultB += static_cast<int>(pixels[(size_t)y][(size_t)x].b);
             resultG += static_cast<int>(pixels[(size_t)y][(size_t)x].g);
+            resultA += static_cast<int>(pixels[(size_t)y][(size_t)x].a);
         }
     }
 
@@ -97,7 +97,7 @@ static Color boxBlurPixel(const std::vector<std::vector<Color>>& pixels, int x0,
     return Color{static_cast<uint8_t>(resultR / divider), 
                  static_cast<uint8_t>(resultG / divider), 
                  static_cast<uint8_t>(resultB / divider), 
-                 pixels[(size_t)y0][(size_t)x0].a};
+                 static_cast<uint8_t>(resultA / divider)};
 }
 
 std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color>>& pixels)

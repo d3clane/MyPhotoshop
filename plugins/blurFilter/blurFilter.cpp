@@ -15,6 +15,8 @@
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/windows/windows.hpp"
 
+#include "pluginLib/filters/filters.hpp"
+
 #include <iostream>
 
 using namespace ps;
@@ -65,39 +67,10 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
 
     vec2u canvasSize = canvas->getSize();
 
-    std::vector<std::vector<Color>> colors(canvasSize.x, std::vector<Color>(canvasSize.y, Color{0, 0, 0, 0}));
-
-    for (int x = 0; x < static_cast<int>(canvasSize.x); ++x)
-    {
-        for (int y = 0; y < static_cast<int>(canvasSize.y); ++y)
-        {
-            int r = 0, g = 0, b = 0, a = 0;
-            Color newColor = {0, 0, 0, 0};
-
-            for (int deltaX = -1; deltaX <= 1; ++deltaX)
-            {
-                for (int deltaY = -1; deltaY <= 1; ++deltaY)
-                {
-                    Color pixelColor = activeLayer->getPixel(vec2i{x + deltaX, y + deltaY});
-                    r += pixelColor.r; g += pixelColor.g; b += pixelColor.b; a += pixelColor.a;
-                }
-            }
-
-            r /= 9; g /= 9; b /= 9; a /= 9;
-
-            newColor = {static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), static_cast<uint8_t>(a)};
-
-            colors[static_cast<size_t>(x)][static_cast<size_t>(y)] = newColor;
-        }
-    }
-
-    for (size_t x = 0; x < canvasSize.x; ++x)
-    {
-        for (size_t y = 0; y < canvasSize.y; ++y)
-        {
-            activeLayer->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}, colors[x][y]);
-        }
-    }
+    std::vector<std::vector<Color>> pixels = getLayerScreenIn2D(activeLayer, canvasSize);
+    std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
+    
+    copyPixelsToLayer(activeLayer, blured);
     
     state_ = State::Normal;
 

@@ -136,7 +136,7 @@ $(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp \
 
 $(DYLIB_DIR)/lib_blur_filter.dylib : plugins/blurFilter/blurFilter.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
+	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

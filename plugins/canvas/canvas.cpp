@@ -550,7 +550,9 @@ vec2u Canvas::getFullSize()
 
 Color Canvas::getCanvasBaseColor() const
 {
-    return Color{}.getStandardColor(Color::Type::White);
+    Color color = Color::getStandardColor(Color::Type::White);
+    color.a = 0;
+    return color;
 }
 
 std::unique_ptr<ICanvasSnapshot> Canvas::save()

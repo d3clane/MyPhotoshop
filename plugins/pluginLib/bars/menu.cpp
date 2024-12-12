@@ -56,10 +56,9 @@ SubMenuBar::SubMenuBar()
     id_ = kInvalidWindowId;
     
     pos_ = {0, 0};
-    size_ = childSize_;
+    size_ = {childSize_.x, 0};
 
     shape_ = createShape(size_, Color{120, 120, 120, 255}, Color{}, 0);
-
     shape_->setPosition(pos_);
 
     static const uint8_t shapesCommonAlpha = 100;
@@ -90,6 +89,7 @@ void SubMenuBar::addWindow(std::unique_ptr<IWindow> window)
     window.release();
 
     size_.y += (childSize_.y + gapSize_);
+    shape_->setSize(size_);
     
     setChildrenInfo(); // TODO: slow, can change only last added son
 }
@@ -132,6 +132,7 @@ void SubMenuBar::setChildrenInfo()
                              pos_.y + static_cast<int>(gapSize_ + (gapSize_ + childSize_.y) * childIndex)});
 
         button->setSize(childSize_);
+        ++childIndex;
     }
 }
 
@@ -152,6 +153,7 @@ void SubMenuBar::drawChildren(IRenderWindow* renderWindow)
     for (auto& button : buttons_)
     {
         button->draw(renderWindow);
+
         finishButtonDraw(renderWindow, button.get());
     }
 }

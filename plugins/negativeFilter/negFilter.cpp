@@ -89,7 +89,7 @@ bool onLoadPlugin()
 
     IWindowContainer* rootWindow = getRootWindow();
     assert(rootWindow);
-    auto filterMenu = dynamic_cast<MenuButton*>(rootWindow->getWindowById(kMenuFilterId));
+    auto filterMenu = dynamic_cast<IMenuButton*>(rootWindow->getWindowById(kMenuFilterId));
     assert(filterMenu);
 
     filterMenu->addMenuItem(std::move(button));

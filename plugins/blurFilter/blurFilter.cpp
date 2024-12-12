@@ -9,8 +9,9 @@
 #include "api/api_photoshop.hpp"
 #include "api/api_bar.hpp"
 #include "api/api_canvas.hpp"
-#include "canvas/canvas.hpp"
 
+#include "pluginLib/actions/actions.hpp"
+#include "pluginLib/canvas/canvas.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/windows/windows.hpp"
 
@@ -23,25 +24,30 @@ using namespace psapi::sfm;
 namespace
 {
 
-class BlurFilterButton : public ASpritedBarButton 
+class BlurFilterButton : public ANamedBarButton 
 {
 public:
     BlurFilterButton() = default;
-    BlurFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture);
+    BlurFilterButton(std::unique_ptr<IText> name, std::unique_ptr<IFont> font);
 
-    bool update(const IRenderWindow* renderWindow, const Event& event) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
+                                          const Event& event) override;
+    
+    bool update(const IRenderWindow* renderWindow, const Event& event);
+
     void draw(IRenderWindow* renderWindow) override;
-
-    void setParent(const IWindow* parent) override;
-
-private:
-    const IBar* parent_;
 };
 
-BlurFilterButton::BlurFilterButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture> texture)
+BlurFilterButton::BlurFilterButton(std::unique_ptr<IText> name, std::unique_ptr<IFont> font)
 {
-    mainSprite_ = std::move(sprite);
-    mainTexture_ = std::move(texture);
+    name_ = std::move(name);
+    font_ = std::move(font);
+}
+
+std::unique_ptr<IAction> BlurFilterButton::createAction(const IRenderWindow* renderWindow, 
+                                                        const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<BlurFilterButton>>(*this, renderWindow, event);
 }
 
 bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& event)
@@ -52,11 +58,7 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
         return updateStateRes;
 
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
-    if (!canvas)
-    {
-        std::cerr << "CANVAS NOT FOUND!\n";
-        assert(0);
-    }
+    assert(canvas);
     
     size_t activeLayerIndex = canvas->getActiveLayerIndex();
     ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
@@ -83,16 +85,6 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
 
             r /= 9; g /= 9; b /= 9; a /= 9;
 
-#if 0
-            if (r != 0 && g != 0)
-            {
-                std::cout << pr << " " << pg << " " << pb << " " << pa << "\n";
-                std::cout << r << " " << g << " " << b << " " << a << "\n";
-            }
-            r = pr + (pr - r) * 2; g = pg + (pg - g) * 2; b = pb + (pb - b) * 2; a = s;
-            r = std::clamp(r, 0, 255); g = std::clamp(g, 0, 255); b = std::clamp(b, 0, 255); a = std::clamp(a, 0, 255);
-#endif
-
             newColor = {static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), static_cast<uint8_t>(a)};
 
             colors[static_cast<size_t>(x)][static_cast<size_t>(y)] = newColor;
@@ -114,55 +106,33 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
 
 void BlurFilterButton::draw(IRenderWindow* renderWindow)
 {
-    ASpritedBarButton::draw(renderWindow, parent_);
+    ANamedBarButton::draw(renderWindow);
 }
 
-void BlurFilterButton::setParent(const IWindow* parent)
+} // namespace anonymous
+
+bool onLoadPlugin()
 {
-    parent_ = dynamic_cast<const IBar*>(parent);
-    assert(parent_);
-}
-
-}
-
-bool loadPlugin() // onLoadPlugin
-{
-    auto buttonSprite  = ISprite::create();
-    auto buttonTexture = ITexture::create();
-
-    buttonTexture.get()->loadFromFile("media/textures/paintbrush.png");
-
-    buttonSprite->setTexture(buttonTexture.get());
+    std::unique_ptr<IText> text = IText::create();
+    std::unique_ptr<IFont> font = IFont::create();
+    font->loadFromFile("media/fonts/arial.ttf");
+    text->setFont(font.get());
+    text->setString("Box blur");
+    
+    auto button = std::make_unique<BlurFilterButton>(std::move(text), std::move(font));
 
     IWindowContainer* rootWindow = getRootWindow();
     assert(rootWindow);
-    auto toolBar = static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId));
-    assert(toolBar);
+    auto filterMenu = dynamic_cast<IMenuButton*>(rootWindow->getWindowById(kMenuFilterId));
+    assert(filterMenu);
 
-    auto info = toolBar->getNextChildInfo();
-    vec2i pos = info.pos;
-    vec2u size = { static_cast<unsigned int>(info.size.x),  
-                   static_cast<unsigned int>(info.size.y) };
-
-    buttonSprite->setPosition(pos.x, pos.y);
-    
-    vec2u spriteSize = buttonSprite->getSize();
-    buttonSprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x), 
-                           static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
-    std::unique_ptr<ps::ASpritedBarButton> button{ new BlurFilterButton(std::move(buttonSprite), std::move(buttonTexture)) };
-
-    button->setPos(pos);
-    button->setSize(size);
-
-    assert(rootWindow->getWindowById(kToolBarWindowId));
-    
-    static_cast<IBar*>(rootWindow->getWindowById(kToolBarWindowId))->
-        addWindow(std::unique_ptr<ps::IBarButton>(button.release()));
+    filterMenu->addMenuItem(std::move(button));
 
     return true;
 }
 
-void unloadPlugin()
+void onUnloadPlugin()
 {
     return;
 }
+

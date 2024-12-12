@@ -314,7 +314,9 @@ void AShapedButtonsBar::finishButtonDraw(IRenderWindow* renderWindow, const IBar
 {
     commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
     for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
+    {
         shapes_[i]->setPosition(vec2i{button->getPos().x, button->getPos().y});
+    }
 
     switch (button->getState()) 
     {

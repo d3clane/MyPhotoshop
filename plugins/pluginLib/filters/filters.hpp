@@ -16,6 +16,8 @@ std::vector<std::vector<Color>> getNegative (const std::vector<std::vector<Color
 std::vector<std::vector<Color>> getBasRelief(const std::vector<std::vector<Color>>& pixels, 
                                              const std::vector<std::vector<Color>>& negative);
 
+std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color>>& pixels);
+
 } // namespace ps
 
 #endif // PLUGINS_PLUGIN_LIB_FILTERS_FILTERS_HPP

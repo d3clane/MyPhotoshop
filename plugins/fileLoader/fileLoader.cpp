@@ -42,7 +42,9 @@ private:
     std::string filename_;
 };
 
-// TODO: copypaste, move on actions given in ctor.
+// TODO: I probably have copypaste in many places where I want to create an Action that to do something
+// on different states of the button. Could simply create actions for each state and call them. That's all.
+
 class FileSaveButton : public ANamedBarButton
 {
 public:
@@ -181,7 +183,7 @@ bool saveToFile(const std::string& filename, const IImage* sfmImage)
 {
     sf::Image image = copyIImageToSfImage(sfmImage);
 
-    return image.saveToFile("tmp.png");
+    return image.saveToFile(filename);
 }
 
 } // namespace anonymous

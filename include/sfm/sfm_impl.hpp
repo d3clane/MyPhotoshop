@@ -116,7 +116,7 @@ public:
     vec2i getPos() const override;
     void setPos(const vec2i &pos) override;
 private:
-    vec2i pos_;
+    vec2i pos_ = {0, 0};
     sf::Image image_;
 
     friend class Texture;

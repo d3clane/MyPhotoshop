@@ -190,19 +190,26 @@ bool onLoadPlugin()
     IRootWindow* rootWindow = getRootWindow();
     auto menu = std::make_unique<MenuBar>();
 
-    std::unique_ptr<IText> text = IText::create();
-    std::unique_ptr<IFont> font = IFont::create();
-    font->loadFromFile("media/fonts/arial.ttf");
+    const char* menuButtonsNames[] = {"File", "Tools", "Layer", "Filters", "Help"};
+    const int menuButtonsIds[] = {kMenuFileId, kMenuToolsId, kMenuLayerId, kMenuFilterId, kMenuHelpId};
+    static const size_t menuButtonsCount = sizeof(menuButtonsNames) / sizeof(char*);
 
-    text->setFont(font.get());
-    text->setString("Filters");
+    for (size_t i = 0; i < menuButtonsCount; ++i)
+    {
+        std::unique_ptr<IText> text = IText::create();
+        std::unique_ptr<IFont> font = IFont::create();
+        font->loadFromFile("media/fonts/arial.ttf");
 
-    auto subMenuBar = std::make_unique<SubMenuBar>();
-    auto menuButton = std::make_unique<MenuButton>(kMenuFilterId, 
-                                                   std::move(text), std::move(font), 
-                                                   std::move(subMenuBar));
+        text->setFont(font.get());
+        text->setString(menuButtonsNames[i]);
 
-    menu->addWindow(std::move(menuButton));
+        auto subMenuBar = std::make_unique<SubMenuBar>();
+        auto menuButton = std::make_unique<MenuButton>(menuButtonsIds[i], 
+                                                       std::move(text), std::move(font), 
+                                                       std::move(subMenuBar));
+
+        menu->addWindow(std::move(menuButton));
+    }
 
     rootWindow->addWindow(std::move(menu));
     

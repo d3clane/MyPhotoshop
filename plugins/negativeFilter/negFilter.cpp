@@ -30,7 +30,6 @@ namespace
 class NegativeFilterButton : public ANamedBarButton 
 {
 public:
-    NegativeFilterButton() = default;
     NegativeFilterButton(std::unique_ptr<IText> text, std::unique_ptr<IFont> font);
 
     std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) override;

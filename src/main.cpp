@@ -51,10 +51,7 @@ int main()
     loadPlugin("libs/lib_rectangle.dylib");
     loadPlugin("libs/lib_negative_filter.dylib");
     loadPlugin("libs/lib_blur_filter.dylib");
-    /*
-    loadPlugin("libs/lib_spray.dylib");
-    */
-
+    loadPlugin("libs/lib_file_loader.dylib");
 
     IRenderWindow* renderWindow = rootWindow->getRenderWindow();
     assert(renderWindow);

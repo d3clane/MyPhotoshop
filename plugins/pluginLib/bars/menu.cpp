@@ -89,7 +89,7 @@ void SubMenuBar::addWindow(std::unique_ptr<IWindow> window)
     window.release();
 
     size_.y += (childSize_.y + gapSize_);
-    shape_->setSize(size_);
+    setSize(size_);
     
     setChildrenInfo(); // TODO: slow, can change only last added son
 }
@@ -101,11 +101,12 @@ void SubMenuBar::removeWindow(wid_t id)
         if ((*it)->getId() == id)
         {
             buttons_.erase(it);
-            return;
+            break;
         }
     }
 
     size_.y -= (childSize_.y + gapSize_);
+    setSize(size_);
 }
 
 std::unique_ptr<IAction> SubMenuBar::createAction(const IRenderWindow* renderWindow,

@@ -29,6 +29,7 @@ protected:
 
 private:
     bool drawTrace(ICanvas* canvas);
+    bool canvasIsAlreadyPressed_ = false;
 };
 
 } // namespace ps

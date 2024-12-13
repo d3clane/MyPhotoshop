@@ -19,7 +19,10 @@ SplineDrawButton::SplineDrawButton(std::unique_ptr<ISprite> sprite, std::unique_
 std::unique_ptr<IAction> SplineDrawButton::createAction(const IRenderWindow* renderWindow, 
                                                         const Event& event)
 {
-    return std::make_unique<UpdateCallbackAction<SplineDrawButton>>(*this, renderWindow, event);
+    if (canvasSaver_.isSavingComplete())
+        return canvasSaver_.flushCanvasSaving();
+    else 
+        return std::make_unique<UpdateCallbackAction<SplineDrawButton>>(*this, renderWindow, event);
 }
 
 bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& event)
@@ -38,9 +41,19 @@ bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& ev
 
     if (!canvas->isPressedLeftMouseButton())
     {
+        if (canvasIsAlreadyPressed_)
+            canvasSaver_.canvasSaveEnd();
+
         interpolator_.clear();
+
+        canvasIsAlreadyPressed_ = false;
         return true;
     }
+
+    if (!canvasIsAlreadyPressed_)
+        canvasSaver_.canvasSaveBegin();
+
+    canvasIsAlreadyPressed_ = true;
 
     if (drawTrace(canvas))
         interpolator_.popFront();

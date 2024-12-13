@@ -124,7 +124,10 @@ template<typename T>
 std::unique_ptr<IAction> ShapeButton<T>::createAction(const IRenderWindow* renderWindow, 
                                                       const Event& event)
 {
-    return std::make_unique<UpdateCallbackAction<ShapeButton>>(*this, renderWindow, event);
+    if (canvasSaver_.isSavingComplete())
+        return canvasSaver_.flushCanvasSaving();
+    else
+        return std::make_unique<UpdateCallbackAction<ShapeButton>>(*this, renderWindow, event);
 }
 
 template<typename T>
@@ -147,24 +150,27 @@ bool ShapeButton<T>::update(const IRenderWindow* renderWindow, const Event& even
 
     vec2i canvasPos = canvas->getPos();
 
+    if (!canvas->isPressedLeftMouseButton() && !canvasIsAlreadyPressed_)
+        return updateStateRes;
+
     if (!canvas->isPressedLeftMouseButton() && canvasIsAlreadyPressed_)
     {
         copyShapeToLayer(activeLayer, 
                          createShape(beginShapePos_, canvas).get(), 
                          canvasPos);
         tempLayer->removeAllDrawables();
-    }
-    
-    if (!canvas->isPressedLeftMouseButton())
-    {
         canvasIsAlreadyPressed_ = false;
+
+        canvasSaver_.canvasSaveEnd();
+
         return updateStateRes;
     }
-
+    
     if (!canvasIsAlreadyPressed_)
     {
         beginShapePos_ = canvas->getMousePosition() + canvasPos;
         canvasIsAlreadyPressed_ = true;
+        canvasSaver_.canvasSaveBegin();
     }
 
     std::unique_ptr<T> shape = createShape(beginShapePos_, canvas);

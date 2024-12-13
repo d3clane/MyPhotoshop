@@ -45,14 +45,21 @@ void copyImageToLayer(ILayer* dst, const IImage* src, const vec2i& layerPos)
     }
 }
 
+std::unique_ptr<IImage> copyLayerToImage(const ILayer* src, const vec2u& size)
+{
+    std::unique_ptr<IImage> image = IImage::create();
+    image->create(size, getLayerScreenIn1D(src, size).data());
+
+    return image;
+}
 
 std::vector<std::vector<Color>> getLayerScreenIn2D(const ILayer* layer, const vec2u& size)
 {
-    std::vector<std::vector<Color>> pixels(size.x, std::vector<Color>(size.y));
+    std::vector<std::vector<Color>> pixels(size.y, std::vector<Color>(size.x));
 
     for (size_t x = 0; x < size.x; ++x)
         for (size_t y = 0; y < size.y; ++y)
-            pixels[x][y] = layer->getPixel(vec2i{static_cast<int>(x), static_cast<int>(y)});
+            pixels[y][x] = layer->getPixel(vec2i{static_cast<int>(x), static_cast<int>(y)});
 
     return pixels;
 }
@@ -61,8 +68,8 @@ std::vector<Color> getLayerScreenIn1D(const ILayer* layer, const vec2u& size)
 {
     std::vector<Color> pixels;
 
-    for (unsigned x = 0; x < size.x; ++x)
-        for (unsigned y = 0; y < size.y; ++y)
+    for (unsigned y = 0; y < size.y; ++y)
+        for (unsigned x = 0; x < size.x; ++x)
             pixels.push_back(layer->getPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}));
 
     return pixels;
@@ -70,9 +77,9 @@ std::vector<Color> getLayerScreenIn1D(const ILayer* layer, const vec2u& size)
 
 void copyPixelsToLayer(ILayer* layer, const std::vector<std::vector<Color>>& pixels)
 {
-    for (size_t x = 0; x < pixels.size(); ++x)
-        for (size_t y = 0; y < pixels[x].size(); ++y)
-            layer->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}, pixels[x][y]);
+    for (size_t y = 0; y < pixels.size(); ++y)
+        for (size_t x = 0; x < pixels[y].size(); ++x)
+            layer->setPixel(vec2i{static_cast<int>(x), static_cast<int>(y)}, pixels[y][x]);
 }
 
 } // namespace ps

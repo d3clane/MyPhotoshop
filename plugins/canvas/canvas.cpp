@@ -433,6 +433,7 @@ void Canvas::setSize(const vec2u& size)
     {
         layer->changeArea(cutRectangle);
         layer->changeFullSize(fullSize_);
+        layer->size_ = size;
     }
 }
 

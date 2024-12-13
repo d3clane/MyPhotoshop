@@ -48,7 +48,7 @@ DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib \
 			   lib_brush.dylib lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   lib_negative_filter.dylib lib_blur_filter.dylib \
-			   lib_file_loader.dylib
+			   lib_file_loader.dylib lib_edit_settings.dylib
 
 DYLIB_DIR = libs
 DYLIBS := $(addprefix $(DYLIB_DIR)/,$(DYLIBS_NAMES))
@@ -144,6 +144,11 @@ $(DYLIB_DIR)/lib_blur_filter.dylib : plugins/blurFilter/blurFilter.cpp \
 $(DYLIB_DIR)/lib_file_loader.dylib : plugins/fileLoader/fileLoader.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
 	plugins/pluginLib/bars/menu.cpp plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_edit_settings.dylib : plugins/editSettings/editSettings.cpp \
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/bars/menu.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

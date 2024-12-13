@@ -48,7 +48,7 @@ bool ActionController::execute(std::unique_ptr<IAction> action)
 
 bool ActionController::undo()
 {
-    assert(static_cast<size_t>(currentPos_) < actions_.size());
+    assert(currentPos_ < static_cast<int>(actions_.size()));
 
     if (currentPos_ < 0)
         return false;

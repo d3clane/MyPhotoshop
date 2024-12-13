@@ -52,7 +52,8 @@ int main()
     loadPlugin("libs/lib_negative_filter.dylib");
     loadPlugin("libs/lib_blur_filter.dylib");
     loadPlugin("libs/lib_file_loader.dylib");
-
+    loadPlugin("libs/lib_edit_settings.dylib");
+    
     IRenderWindow* renderWindow = rootWindow->getRenderWindow();
     assert(renderWindow);
     while (renderWindow->isOpen())

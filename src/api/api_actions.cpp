@@ -28,20 +28,20 @@ bool ActionController::execute(std::unique_ptr<IAction> action)
     if (!actionExecute(action.get()))
         return false;
 
+    if (!isUndoableAction(action.get()))
+        return true;
+
     auto beginEraseIt = actions_.begin() + (currentPos_ + 1);
     if (beginEraseIt != actions_.end())
     {
         actions_.erase(beginEraseIt, actions_.end());
     }
 
-    if (isUndoableAction(action.get()))
-    {
-        actions_.push_back(std::unique_ptr<IUndoableAction>(
-            static_cast<IUndoableAction*>(action.release())
-        ));
+    actions_.push_back(std::unique_ptr<IUndoableAction>(
+        static_cast<IUndoableAction*>(action.release())
+    ));
 
-        currentPos_++;
-    }
+    currentPos_++;
 
     return true;
 }
@@ -62,7 +62,7 @@ bool ActionController::undo()
 
 bool ActionController::redo()
 {
-    if (static_cast<size_t>(currentPos_) == actions_.size() - 1)
+    if (currentPos_ == static_cast<int>(actions_.size()) - 1)
         return false;
     
     currentPos_++;

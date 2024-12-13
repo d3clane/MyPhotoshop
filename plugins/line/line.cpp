@@ -80,19 +80,22 @@ LineButton::LineButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITexture
 
 std::unique_ptr<IAction> LineButton::createAction(const IRenderWindow* renderWindow, const Event& event)
 {
-    return std::make_unique<UpdateCallbackAction<LineButton>>(*this, renderWindow, event);
+    if (canvasSaver_.isSavingComplete())
+        return canvasSaver_.flushCanvasSaving();
+    else
+        return std::make_unique<UpdateCallbackAction<LineButton>>(*this, renderWindow, event);
 }
 
 bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 {
     State prevState_ = state_;
     bool updateStateRes = updateState(renderWindow, event);
-
-    updateOptionsBar(state_, prevState_);
     
     if (state_ != State::Released)
         return updateStateRes;
 
+    updateOptionsBar(state_, prevState_);
+    
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
     assert(canvas);
     
@@ -101,22 +104,24 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
     ILayer* tempLayer = canvas->getTempLayer();
     vec2i canvasPos = canvas->getPos();
 
+    if (!canvas->isPressedLeftMouseButton() && !canvasIsAlreadyPressed_)
+        return updateStateRes;
+
     if (!canvas->isPressedLeftMouseButton() && canvasIsAlreadyPressed_)
     {
         copyLineToLayer(activeLayer, createLineShape(lineBeginPos_, canvas).get(), canvasPos);
         tempLayer->removeAllDrawables();
-    }
-    
-    if (!canvas->isPressedLeftMouseButton())
-    {
+        canvasSaver_.canvasSaveEnd();
         canvasIsAlreadyPressed_ = false;
+        
         return updateStateRes;
     }
-
+    
     if (!canvasIsAlreadyPressed_)
     {
         lineBeginPos_ = canvas->getMousePosition() + canvasPos;
         canvasIsAlreadyPressed_ = true;
+        canvasSaver_.canvasSaveBegin();
     }
 
     std::unique_ptr<IRectangleShape> line = createLineShape(lineBeginPos_, canvas);
@@ -129,10 +134,6 @@ bool LineButton::update(const IRenderWindow* renderWindow, const Event& event)
 void LineButton::draw(IRenderWindow* renderWindow)
 {
     ASpritedBarButton::draw(renderWindow);
-
-#if 0
-    instrument_button_functions::drawInstrumentBar(instrumentBar_.get(), renderWindow);
-#endif
 }
 
 } // namespace anonymous

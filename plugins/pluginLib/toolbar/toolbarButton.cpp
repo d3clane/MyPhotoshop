@@ -50,4 +50,42 @@ void AInstrumentButton::updateOptionsBar(State stateNow, State prevState)
     } 
 }
 
+// Canvas saver procedure implementation
+
+CanvasSaverProcedure::CanvasSaverProcedure()
+{
+    canvasSaving_ = std::make_unique<CanvasSaverAction>();
+}
+
+bool CanvasSaverProcedure::isSavingComplete() const
+{
+    return savingIsComplete_;
+}
+
+std::unique_ptr<CanvasSaverAction> CanvasSaverProcedure::flushCanvasSaving()
+{
+    std::unique_ptr<CanvasSaverAction> savingAction = std::move(canvasSaving_); 
+    canvasSaving_ = std::make_unique<CanvasSaverAction>();
+    savingIsComplete_ = false;
+
+    return savingAction;
+}
+
+void CanvasSaverProcedure::canvasSaveBegin()
+{
+    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
+    assert(canvas);
+
+    canvasSaving_->setPastSnapshot(canvas->save());
+}
+
+void CanvasSaverProcedure::canvasSaveEnd()
+{
+    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
+    assert(canvas);
+
+    canvasSaving_->setFutureSnapshot(canvas->save());
+    savingIsComplete_ = true;
+}
+
 } // namespace ps

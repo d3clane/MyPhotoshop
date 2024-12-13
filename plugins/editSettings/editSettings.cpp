@@ -17,12 +17,12 @@ public:
     virtual std::unique_ptr<IAction> clone() const = 0;
 };
 
-class DoLastAction : public IClonableAction
+class RedoLastAction : public IClonableAction
 {
 public:
     bool isUndoable(const Key& /* key */) override { return false; }
     bool execute(const Key& /* key */) override { return getActionController()->redo(); }
-    std::unique_ptr<IAction> clone() const override { return std::make_unique<DoLastAction>(); }
+    std::unique_ptr<IAction> clone() const override { return std::make_unique<RedoLastAction>(); }
 };
 
 class UndoLastAction : public IClonableAction
@@ -84,7 +84,7 @@ bool onLoadPlugin()
 
 
     tools->addMenuItem(createCommonButton("Undo", std::make_unique<UndoLastAction>()));
-    tools->addMenuItem(createCommonButton("Redo", std::make_unique<DoLastAction>()));
+    tools->addMenuItem(createCommonButton("Redo", std::make_unique<RedoLastAction>()));
 
     return true;
 }

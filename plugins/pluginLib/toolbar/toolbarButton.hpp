@@ -2,20 +2,40 @@
 #define PLUGINS_PLUGIN_LIB_TOOLBAR_BUTTON_HPP
 
 #include "api/api_bar.hpp"
+
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/instrumentBar/instrumentBar.hpp"
+#include "pluginLib/canvas/canvas.hpp"
 
 #include <cassert>
 
 namespace ps
 {
 
+class CanvasSaverProcedure
+{
+public:
+    CanvasSaverProcedure();
+
+    void canvasSaveBegin();
+    void canvasSaveEnd();
+    bool isSavingComplete() const;
+    std::unique_ptr<CanvasSaverAction> flushCanvasSaving();
+
+private:
+    bool savingIsComplete_ = false;
+    std::unique_ptr<CanvasSaverAction> canvasSaving_;
+};
+
 class AInstrumentButton : public ASpritedBarButton
 {
 protected:
     void updateOptionsBar(State stateNow, State prevState);
-    
+
+protected:
     IColorPalette* colorPalette_ = nullptr;
+
+    CanvasSaverProcedure canvasSaver_;
 };
 
 namespace instrument_button_functions

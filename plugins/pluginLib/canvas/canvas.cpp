@@ -9,6 +9,56 @@ using namespace psapi::sfm;
 namespace ps
 {
 
+// canvas saver action implementation
+
+CanvasSaverAction::CanvasSaverAction(std::unique_ptr<ICanvasSnapshot> pastSnapshot,
+                                     std::unique_ptr<ICanvasSnapshot> futureSnapshot)
+    : pastSnapshot_(std::move(pastSnapshot)), futureSnapshot_(std::move(futureSnapshot))
+{
+}
+
+bool CanvasSaverAction::isUndoable(const Key& /* key */)
+{
+    return true;
+}
+
+bool CanvasSaverAction::execute(const Key& /* key */)
+{
+    return true;
+}
+
+bool CanvasSaverAction::undo(const Key& /* key */)
+{
+    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
+    assert(canvas);
+
+    canvas->restore(pastSnapshot_.get());
+
+    return true;
+}
+
+bool CanvasSaverAction::redo(const Key& /* key */)
+{
+    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
+    assert(canvas);
+
+    canvas->restore(futureSnapshot_.get());
+
+    return true;
+}
+
+void CanvasSaverAction::setPastSnapshot(std::unique_ptr<ICanvasSnapshot> snapshot)
+{
+    pastSnapshot_ = std::move(snapshot);
+}
+
+void CanvasSaverAction::setFutureSnapshot(std::unique_ptr<ICanvasSnapshot> snapshot)
+{
+    futureSnapshot_ = std::move(snapshot);
+}
+
+// functions
+
 void copyLayerToLayer(ILayer* dst, const ILayer* src, const vec2u& size)
 {
     // TODO: maybe unzoom layer, because need to copy fullSize, not only part of the size? 

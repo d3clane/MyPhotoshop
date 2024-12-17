@@ -368,4 +368,46 @@ void AShapedButtonsBar::setShape(std::unique_ptr<IRectangleShape> shape, SpriteT
     shapes_[static_cast<size_t>(pos)] = std::move(shape);
 }
 
+// ASpritedButtonsBar implementation
+
+void ASpritedButtonsBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
+{
+    for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
+    {    
+        sprites_[i].sprite->setPosition(vec2f{button->getPos().x, button->getPos().y});
+
+        sprites_[i].sprite->setScale(1.f, 1.f);
+        vec2u spriteSize = sprites_[i].sprite->getSize();
+        sprites_[i].sprite->setScale(static_cast<float>(button->getSize().x) / static_cast<float>(spriteSize.x),
+                              static_cast<float>(button->getSize().y) / static_cast<float>(spriteSize.y));
+    }
+    
+    switch (button->getState()) 
+    {
+        case IBarButton::State::Normal:
+            break;
+        case IBarButton::State::Hover:
+            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Hover)].sprite.get());
+            break;
+        case IBarButton::State::Press:
+            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Press)].sprite.get());
+            break;
+        case IBarButton::State::Released:
+            renderWindow->draw(sprites_[static_cast<size_t>(SpriteType::Release)].sprite.get());
+            break;
+
+        default:
+            assert(false);
+            std::terminate();
+            break;
+    }
+}
+
+void ASpritedButtonsBar::setSprite(SpriteInfo spriteInfo, SpriteType pos)
+{
+    assert(static_cast<int>(pos) >= 0 && static_cast<int>(pos) < static_cast<int>(SpriteType::Count));
+
+    sprites_[static_cast<size_t>(pos)] = std::move(spriteInfo);
+}
+
 } // namespace ps

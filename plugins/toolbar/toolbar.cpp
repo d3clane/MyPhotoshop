@@ -31,6 +31,21 @@ void onUnloadPlugin()
 namespace
 {
 
+ASpritedButtonsBar::SpriteInfo createSprite(const vec2u& size, const char* filename)
+{
+    ASpritedButtonsBar::SpriteInfo info;
+    info.sprite = ISprite::create();
+    info.texture = ITexture::create();
+
+    info.texture->loadFromFile(filename);
+    info.sprite->setTexture(info.texture.get());
+
+    info.sprite->setScale(static_cast<float>(size.x) / static_cast<float>(info.texture->getSize().x), 
+                          static_cast<float>(size.y) / static_cast<float>(info.texture->getSize().y));
+
+    return info;
+}
+
 std::unique_ptr<IRectangleShape> createShape(const vec2u& size, 
                                              const Color& color = {}, const Color& outlineColor = {}, 
                                              const float outlineThickness = 1)
@@ -60,23 +75,20 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
     pos_ = pos;
     size_ = size;
 
-    shape_ = createShape(size, Color{120, 120, 120, 255}, Color{}, 0);
+    shape_ = createShape(size, Color{72, 72, 72, 255}, Color{}, 0);
 
     shape_->setPosition(pos_);
 
     static const uint8_t shapesCommonAlpha = 100;
 
-    commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
+    sprites_[static_cast<size_t>(SpriteType::Hover  )] = 
+        createSprite(childSize_, "media/textures/ToolbarOnHover.png");
 
-    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
-                                                                    Color{120, 120, 120, shapesCommonAlpha}, 
-                                                                    Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(childSize_,
-                                                                    Color{70, 70, 70, shapesCommonAlpha}, 
-                                                                    Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(childSize_,
-                                                                    Color{94 , 125, 147, shapesCommonAlpha},
-                                                                    Color{112, 140, 160, 255});
+    sprites_[static_cast<size_t>(SpriteType::Press  )] = 
+        createSprite(childSize_, "media/textures/ToolbarOnPress.png");
+    
+    sprites_[static_cast<size_t>(SpriteType::Release)] = 
+        createSprite(childSize_, "media/textures/ToolbarOnRelease.png");
 }
 
 void Toolbar::setChildrenInfo()

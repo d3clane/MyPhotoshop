@@ -16,7 +16,7 @@ namespace ps
 using namespace psapi;
 using namespace psapi::sfm;
 
-class Toolbar : public AShapedButtonsBar 
+class Toolbar : public ASpritedButtonsBar 
 {
 public:
     Toolbar(vec2i pos, vec2u size);

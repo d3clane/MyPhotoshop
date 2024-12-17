@@ -182,6 +182,32 @@ protected:
     std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(SpriteType::Count)];
 };
 
+class ASpritedButtonsBar : public ABar
+{
+public:
+    struct SpriteInfo
+    {
+        std::unique_ptr<ISprite> sprite;
+        std::unique_ptr<ITexture> texture;
+    };
+public:
+    void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
+
+protected:
+    enum class SpriteType
+    {
+        Hover = 0,
+        Press,
+        Release,
+        Count, // count of elements
+    };
+
+    void setSprite(SpriteInfo spriteInfo, SpriteType pos);
+
+protected:
+    SpriteInfo sprites_[static_cast<size_t>(SpriteType::Count)];
+};
+
 template<typename T>
 class BarUpdateChildrenAction : public IAction
 {

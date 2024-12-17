@@ -1,9 +1,56 @@
 #include "filters.hpp"
 
+#include "api/api_canvas.hpp"
+
+#include "pluginLib/actions/actions.hpp"
+#include "pluginLib/canvas/canvas.hpp"
+
 #include <cassert>
 
 namespace ps
 {
+
+// Filter button implementation
+
+// krita, фильтр яркости со сплайном 
+// baseline шрифта 
+// фильтры настройки
+
+#if 0
+
+std::unique_ptr<IAction> FilterButton::createAction(const IRenderWindow* renderWindow, 
+                                                    const Event& event)
+{
+    return std::make_unique<UpdateCallbackAction<FilterButton>>(*this, renderWindow, event);
+}
+
+bool FilterButton::update(const IRenderWindow* renderWindow, const Event& event)
+{
+    bool updateStateRes = updateState(renderWindow, event);
+
+    if (state_ != State::Released)
+        return updateStateRes;
+
+    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
+    assert(canvas);
+    
+    size_t activeLayerIndex = canvas->getActiveLayerIndex();
+    ILayer* activeLayer = canvas->getLayer(activeLayerIndex);
+
+    vec2u canvasSize = canvas->getSize();
+
+    filterAction_->execute()
+    std::vector<std::vector<Color>> pixels = getLayerScreenIn2D(activeLayer, canvasSize);
+    std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
+    
+    copyPixelsToLayer(activeLayer, blured);
+    
+    state_ = State::Normal;
+
+    return true;
+}
+
+#endif
 
 std::vector<std::vector<Color>> getNegative(const std::vector<std::vector<Color>>& pixels)
 {
@@ -109,6 +156,38 @@ std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color
         for (size_t x = 0; x < pixels[y].size(); ++x)    
         {
             result[y][x] = boxBlurPixel(pixels, static_cast<int>(x), static_cast<int>(y));
+        }
+    }
+
+    return result;
+}
+
+std::vector<std::vector<Color>> getUnsharpMasked(const std::vector<std::vector<Color>>& pixels)
+{
+    std::vector<std::vector<Color>> result = pixels;
+    std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
+
+    for (size_t y = 0; y < pixels.size(); ++y)
+    {
+        for (size_t x = 0; x < pixels[y].size(); ++x)
+        {
+            int red = 0, green = 0, blue = 0, alpha = 0;
+
+            Color bluredColor = blured[y][x];
+            Color sourceColor = pixels[y][x];
+            Color resultColor{};
+
+            red   = 3 * (int)sourceColor.r - 2 * (int)bluredColor.r;
+            green = 3 * (int)sourceColor.g - 2 * (int)bluredColor.g;
+            blue  = 3 * (int)sourceColor.b - 2 * (int)bluredColor.b;
+            alpha = 3 * (int)sourceColor.a - 2 * (int)bluredColor.a;
+
+            resultColor.r = (uint8_t)std::clamp(red, 0, 255);
+            resultColor.b = (uint8_t)std::clamp(blue, 0, 255);
+            resultColor.g = (uint8_t)std::clamp(green, 0, 255);
+            resultColor.a = (uint8_t)std::clamp(alpha, 0, 255);
+
+            result[y][x] = resultColor;
         }
     }
 

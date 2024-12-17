@@ -30,12 +30,11 @@ bool SplineDrawButton::update(const IRenderWindow* renderWindow, const Event& ev
     State prevState = state_;
     bool updatedState = updateState(renderWindow, event);
 
-    updateOptionsBar(state_, prevState);
-
     if (state_ != State::Released)
         return updatedState;
     
-    // TODO: may be really slow
+    updateOptionsBar(state_, prevState);
+
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
     assert(canvas);
 

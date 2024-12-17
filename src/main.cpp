@@ -53,7 +53,9 @@ int main()
     loadPlugin("libs/lib_blur_filter.dylib");
     loadPlugin("libs/lib_file_loader.dylib");
     loadPlugin("libs/lib_edit_settings.dylib");
-    
+    loadPlugin("libs/lib_bas_relief.dylib");
+    loadPlugin("libs/lib_unsharp_mask.dylib");
+
     IRenderWindow* renderWindow = rootWindow->getRenderWindow();
     assert(renderWindow);
     while (renderWindow->isOpen())

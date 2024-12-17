@@ -48,7 +48,8 @@ DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib \
 			   lib_brush.dylib lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   lib_negative_filter.dylib lib_blur_filter.dylib \
-			   lib_file_loader.dylib lib_edit_settings.dylib
+			   lib_file_loader.dylib lib_edit_settings.dylib \
+			   lib_bas_relief.dylib lib_unsharp_mask.dylib 
 
 DYLIB_DIR = libs
 DYLIBS := $(addprefix $(DYLIB_DIR)/,$(DYLIBS_NAMES))
@@ -139,6 +140,16 @@ $(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp \
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_blur_filter.dylib : plugins/blurFilter/blurFilter.cpp \
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_bas_relief.dylib : plugins/basReliefFilter/basReliefFilter.cpp \
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_unsharp_mask.dylib : plugins/unsharpMaskFilter/unsharpMaskFilter.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
 	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)

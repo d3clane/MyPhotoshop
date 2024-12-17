@@ -1,4 +1,5 @@
 #include "menuBar.hpp"
+#include "interfaceInfo/interfaceInfo.hpp"
 
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/actions/actions.hpp"
@@ -12,7 +13,7 @@ using namespace ps;
 using namespace psapi;
 using namespace psapi::sfm;
 
-class MenuBar : public AShapedButtonsBar
+class MenuBar : public ASpritedButtonsBar
 {
 public:
     MenuBar();
@@ -40,6 +41,21 @@ private:
 namespace
 {
 
+ASpritedButtonsBar::SpriteInfo createSprite(const vec2u& size, const char* filename)
+{
+    ASpritedButtonsBar::SpriteInfo info;
+    info.sprite = ISprite::create();
+    info.texture = ITexture::create();
+
+    info.texture->loadFromFile(filename);
+    info.sprite->setTexture(info.texture.get());
+
+    info.sprite->setScale(static_cast<float>(size.x) / static_cast<float>(info.texture->getSize().x), 
+                          static_cast<float>(size.y) / static_cast<float>(info.texture->getSize().y));
+
+    return info;
+}
+
 std::unique_ptr<IRectangleShape> createShape(const vec2u& size, 
                                              const Color& color = {}, const Color& outlineColor = {}, 
                                              const float outlineThickness = 1)
@@ -64,22 +80,14 @@ MenuBar::MenuBar()
     
     // TODO: more pretty colors
 
-    shape_ = createShape(size_, Color{120, 120, 120, 255}, Color{}, 0);
+    shape_ = createShape(size_, getCommonBarColor(), Color{}, 0);
     shape_->setPosition(pos_);
 
-    static const uint8_t shapesCommonAlpha = 100;
+    shape_->setPosition(pos_);
 
-    commonOutlineShape_ = createShape(size_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
-
-    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(size_,
-                                                                    Color{120, 120, 120, shapesCommonAlpha}, 
-                                                                    Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(size_,
-                                                                    Color{70, 70, 70, shapesCommonAlpha}, 
-                                                                    Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(size_,
-                                                                    Color{94 , 125, 147, shapesCommonAlpha},
-                                                                    Color{112, 140, 160, 255});
+    sprites_[static_cast<size_t>(SpriteType::Hover  )] = createSprite(size_, getCommonHoverTexturePath());
+    sprites_[static_cast<size_t>(SpriteType::Press  )] = createSprite(size_, getCommonPressTexturePath());
+    sprites_[static_cast<size_t>(SpriteType::Release)] = createSprite(size_, getCommonReleaseTexturePath());
 }
 
 bool MenuBar::unPressAllButtons()

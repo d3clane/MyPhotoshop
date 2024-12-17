@@ -72,14 +72,9 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
 
     shape_->setPosition(pos_);
 
-    sprites_[static_cast<size_t>(SpriteType::Hover  )] = 
-        createSprite(size, getCommonHoverTexturePath());
-
-    sprites_[static_cast<size_t>(SpriteType::Press  )] = 
-        createSprite(size, getCommonPressTexturePath());
-    
-    sprites_[static_cast<size_t>(SpriteType::Release)] = 
-        createSprite(size, getCommonReleaseTexturePath());
+    sprites_[static_cast<size_t>(SpriteType::Hover  )] = createSprite(size_, getCommonHoverTexturePath());
+    sprites_[static_cast<size_t>(SpriteType::Press  )] = createSprite(size_, getCommonPressTexturePath());
+    sprites_[static_cast<size_t>(SpriteType::Release)] = createSprite(size_, getCommonReleaseTexturePath());
 
     delimeterSprite_ = createSprite(size, "media/textures/ToolbarDelimeter.png");
 }

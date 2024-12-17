@@ -59,13 +59,6 @@ std::unique_ptr<IRectangleShape> createShape(const vec2u& size,
     return shape;
 }
 
-vec2i calculateChildPosition(size_t childIndex, vec2u childSize, size_t gap, 
-                             vec2i parentPos, vec2i middle)
-{
-    int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize.y + gap) + gap);
-    return vec2i{ middle.x, parentPos.y + shift };
-}
-
 } // namespace anonymous
 
 Toolbar::Toolbar(vec2i pos, vec2u size) 
@@ -75,33 +68,48 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
     pos_ = pos;
     size_ = size;
 
-    shape_ = createShape(size, Color{72, 72, 72, 255}, Color{}, 0);
+    shape_ = createShape(size, getCommonBarColor(), Color{}, 0);
 
     shape_->setPosition(pos_);
 
-    static const uint8_t shapesCommonAlpha = 100;
-
     sprites_[static_cast<size_t>(SpriteType::Hover  )] = 
-        createSprite(childSize_, "media/textures/ToolbarOnHover.png");
+        createSprite(size, getCommonHoverTexturePath());
 
     sprites_[static_cast<size_t>(SpriteType::Press  )] = 
-        createSprite(childSize_, "media/textures/ToolbarOnPress.png");
+        createSprite(size, getCommonPressTexturePath());
     
     sprites_[static_cast<size_t>(SpriteType::Release)] = 
-        createSprite(childSize_, "media/textures/ToolbarOnRelease.png");
+        createSprite(size, getCommonReleaseTexturePath());
+
+    delimeterSprite_ = createSprite(size, "media/textures/ToolbarDelimeter.png");
 }
 
 void Toolbar::setChildrenInfo()
 {
-    size_t childIndex = 0;
+    static const int gapSize = 6;
+    vec2u childSize = vec2u{64, 64};
+    
+    vec2u delimeterSpriteSize = vec2u{64, 16};
+
+    int xMiddle = calculateMiddleForChild(childSize).x;
+    delimeterSprite_.sprite->setPosition(static_cast<float>(pos_.x + xMiddle), 
+                                         static_cast<float>(pos_.y));
+
+    delimeterSprite_.sprite->setScale(1.f, 1.f);
+    delimeterSprite_.sprite->setScale(
+        static_cast<float>(delimeterSpriteSize.x) / static_cast<float>(delimeterSprite_.sprite->getSize().x), 
+        static_cast<float>(delimeterSpriteSize.y) / static_cast<float>(delimeterSprite_.sprite->getSize().y));
+
+    vec2i childPos;
+    childPos.y = pos_.y + static_cast<int>(delimeterSprite_.sprite->getSize().y) + gapSize;
+    childPos.x = xMiddle;
 
     for (auto& window : buttons_)
     {
-        window->setPos(calculateChildPosition(childIndex, childSize_, gapSize_, 
-                                              pos_, calculateMiddleForChild(childSize_)));
+        window->setPos(childPos);
+        window->setSize(childSize);
 
-        window->setSize(childSize_);
-        ++childIndex;
+        childPos.y += static_cast<int>(childSize.y + gapSize);        
     }
 }
 
@@ -124,6 +132,8 @@ const IWindow* Toolbar::getWindowById(wid_t id) const
 
 void Toolbar::drawChildren(IRenderWindow* renderWindow)
 {
+    delimeterSprite_.sprite->draw(renderWindow);
+
     for (auto& button : buttons_)
     {
         button->draw(renderWindow);

@@ -195,10 +195,10 @@ sfm::IntRect getCanvasIntRect()
     vec2u size = getScreenSize();
     
     sfm::IntRect rect;
-    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.1f),
-                 static_cast<int>     (static_cast<float>(size.y) * 0.15f)};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.8f),
-                 static_cast<unsigned>(static_cast<float>(size.y) * 0.7f)};
+    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.045f),
+                 static_cast<int>     (static_cast<float>(size.y) * 0.08f)};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.895f),
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.9f)};
     
     return rect;
 }
@@ -208,9 +208,10 @@ sfm::IntRect getToolbarIntRect()
     vec2u size = getScreenSize();
 
     sfm::IntRect rect;
-    rect.pos  = {0, 0};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.055f), 
-                 static_cast<unsigned>(size.y)};
+    // 0.035f (menu bar) + 0.045f (bar below, probably options)
+    rect.pos  = {0, static_cast<int>(static_cast<float>(size.y) * 0.08f)};
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.045f), 
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.92f)};
     
     return rect;
 }
@@ -222,9 +223,9 @@ sfm::IntRect getOptionsBarIntRect()
     sfm::IntRect rect;
 
     rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.93f),
-                 static_cast<int>     (static_cast<float>(size.y) * 0.055f)};
+                 static_cast<int>     (static_cast<float>(size.y) * 0.08f)};
     rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.07f), 
-                 static_cast<unsigned>(static_cast<float>(size.y) * 0.945f)};
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.92f)};
     
     return rect;
 }
@@ -234,9 +235,9 @@ sfm::IntRect getMenuBarIntRect()
     vec2u size = getScreenSize();
 
     sfm::IntRect rect;
-    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.055f), 0};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.945f), 
-                 static_cast<unsigned>(static_cast<float>(size.y) * 0.055f)};
+    rect.pos  = {0, 0};
+    rect.size = {size.x, 
+                 static_cast<unsigned>(static_cast<float>(size.y) * 0.035f)};
 
     return rect;
 }

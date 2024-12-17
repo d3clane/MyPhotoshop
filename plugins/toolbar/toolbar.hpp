@@ -2,6 +2,8 @@
 #define PS_TOOLBAR_TOOLBAR_HPP
 
 #include "pluginLib/bars/ps_bar.hpp"
+#include "interfaceInfo/interfaceInfo.hpp"
+
 #include <vector>
 
 extern "C" 
@@ -42,10 +44,9 @@ private:
     void setChildrenInfo();
 
 private:
-    size_t gapSize_ = 16;
-    vec2u childSize_ = {64, 64};
-
     std::vector<std::unique_ptr<IBarButton>> buttons_;
+
+    SpriteInfo delimeterSprite_; 
 };
 
 } // namespace

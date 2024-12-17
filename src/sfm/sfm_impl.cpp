@@ -361,10 +361,14 @@ IntRect Text::getGlobalBounds() const
 
 void Text::setPos(const vec2f &pos)
 {
+    text_.setPosition(pos.x, pos.y);
+
+#if 0
     text_.setPosition(0.f, 0.f);
     sf::FloatRect globalBounds = text_.getGlobalBounds();
 
     text_.setPosition(pos.x - globalBounds.left, pos.y - globalBounds.top);
+#endif
 }
 
 void Text::setSize(const vec2f &size)

@@ -144,8 +144,8 @@ void ANamedBarButton::setSize(const vec2u& size)
 {
     size_ = size;
 
-    static const float textSizeRatio = 1.f - 2.f * textShiftFromOneSide;
-    name_->setSize(textSizeRatio * vec2f{static_cast<float>(size.x), static_cast<float>(size.y)});
+    static const size_t textCharSize = 18;
+    name_->setCharacterSize(textCharSize);
 
     setPos(pos_);
 }
@@ -165,18 +165,35 @@ void AMenuBarButton::setPos(const vec2i& pos)
 {
     pos_ = pos;
 
-    name_->setPos({static_cast<float>(pos.x) + static_cast<float>(size_.x * textShiftFromOneSide), 
-                   static_cast<float>(pos.y) + static_cast<float>(size_.y * textShiftFromOneSide)});
+    static const float shiftFromBoundaryY = 2.f;
+    static const float shiftFromBoundaryX = 8.f;
+
+    name_->setPos({static_cast<float>(pos.x) + shiftFromBoundaryX,
+                   static_cast<float>(pos.y) + shiftFromBoundaryY});
 }
 
 void AMenuBarButton::setSize(const vec2u& size)
 {
     size_ = size;
 
+    static const size_t textCharSize = 18;
+    name_->setCharacterSize(textCharSize);
+#if 0
+    assert(name_->getGlobalBounds().size.x < size.x);
+    assert(name_->getGlobalBounds().size.y < size.y);
+#endif
+
+#if 0
     static const float textSizeRatio = 1.f - 2.f * textShiftFromOneSide;
     name_->setSize(textSizeRatio * vec2f{static_cast<float>(size.x), static_cast<float>(size.y)});
+#endif
 
     setPos(pos_);
+}
+
+vec2u AMenuBarButton::getTextSize() const
+{
+    return name_->getGlobalBounds().size;
 }
 
 void AMenuBarButton::setParent(const IWindow* parent) { parent_ = parent; }
@@ -313,9 +330,11 @@ vec2i ABar::calculateMiddleForChild(vec2u childSize)
 void AShapedButtonsBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {
     commonOutlineShape_->setPosition(vec2i{button->getPos().x, button->getPos().y});
+    commonOutlineShape_->setSize(button->getSize());
     for (size_t i = 0; i < static_cast<size_t>(SpriteType::Count); ++i)
     {
         shapes_[i]->setPosition(vec2i{button->getPos().x, button->getPos().y});
+        shapes_[i]->setSize(button->getSize());
     }
 
     switch (button->getState()) 

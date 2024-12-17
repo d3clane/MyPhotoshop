@@ -100,6 +100,8 @@ public:
 
     void draw(IRenderWindow* renderWindow) override;
 
+    vec2u getTextSize() const;
+
 protected:
     bool updateState(const IRenderWindow* renderWindow, const Event& event);
 

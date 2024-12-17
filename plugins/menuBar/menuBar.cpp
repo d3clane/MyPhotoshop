@@ -33,9 +33,6 @@ protected:
 
     void setChildrenInfo();
 
-    vec2u childSize_ = {64, 32};
-    size_t gapSize_ = 16;
-
 private:
     std::vector<std::unique_ptr<IMenuButton>> buttons_;
 };
@@ -56,13 +53,6 @@ std::unique_ptr<IRectangleShape> createShape(const vec2u& size,
     return shape;
 }
 
-vec2i calculateChildPosition(size_t childIndex, vec2u childSize, size_t gap, 
-                             vec2i parentPos, vec2i middle)
-{
-    int shift = static_cast<int>(static_cast<unsigned>(childIndex) * (childSize.x + gap) + gap);
-    return vec2i{ parentPos.x + shift, middle.y };
-}
-
 } // namespace anonymous
 
 MenuBar::MenuBar()
@@ -79,15 +69,15 @@ MenuBar::MenuBar()
 
     static const uint8_t shapesCommonAlpha = 100;
 
-    commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
+    commonOutlineShape_ = createShape(size_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
 
-    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
+    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(size_,
                                                                     Color{120, 120, 120, shapesCommonAlpha}, 
                                                                     Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(childSize_,
+    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(size_,
                                                                     Color{70, 70, 70, shapesCommonAlpha}, 
                                                                     Color{100, 100, 100, 255});
-    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(childSize_,
+    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(size_,
                                                                     Color{94 , 125, 147, shapesCommonAlpha},
                                                                     Color{112, 140, 160, 255});
 }
@@ -104,15 +94,24 @@ std::unique_ptr<IAction> MenuBar::createAction(const IRenderWindow* renderWindow
 
 void MenuBar::setChildrenInfo()
 {
-    size_t childIndex = 0;
+    static const size_t deltaSizeButton = 16;
 
-    for (auto& button : buttons_)
+    static const int gapSize = 1;
+    vec2i childPos = pos_ + vec2i{gapSize, gapSize};
+
+    static const size_t buttonYSize = 18 + 4 + 4;
+
+    for (auto& buttonAbstract : buttons_)
     {
-        button->setPos(calculateChildPosition(childIndex, childSize_, gapSize_, 
-                                              pos_, calculateMiddleForChild(childSize_)));
+        MenuButton* button = dynamic_cast<MenuButton*>(buttonAbstract.get());
+        assert(button);
 
-        button->setSize(childSize_);
-        ++childIndex;
+        vec2u textSize_ = button->getTextSize();
+        vec2u buttonSize = vec2u{ textSize_.x + deltaSizeButton, buttonYSize };
+        button->setPos(childPos);
+        childPos += vec2i{static_cast<int>(buttonSize.x + gapSize), 0};
+
+        button->setSize(buttonSize);
     }
 }
 

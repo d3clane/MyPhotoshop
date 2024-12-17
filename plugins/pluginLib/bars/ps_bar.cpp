@@ -129,15 +129,16 @@ void ASpritedBarButton::draw(IRenderWindow* renderWindow)
 
 // ANamedBarButton implementation
 
-static const float textShiftFromOneSide = 0.1f;
-
 // TODO: copypaste with AMenuBarButton
 void ANamedBarButton::setPos (const vec2i& pos)
 {
     pos_ = pos;
 
-    name_->setPos({static_cast<float>(pos.x) + static_cast<float>(size_.x * textShiftFromOneSide), 
-                   static_cast<float>(pos.y) + static_cast<float>(size_.y * textShiftFromOneSide)});
+    static const float shiftFromBoundaryY = 2.f;
+    static const float shiftFromBoundaryX = 8.f;
+
+    name_->setPos({static_cast<float>(pos.x) + shiftFromBoundaryX,
+                   static_cast<float>(pos.y) + shiftFromBoundaryY});
 }
 
 void ANamedBarButton::setSize(const vec2u& size)
@@ -178,15 +179,8 @@ void AMenuBarButton::setSize(const vec2u& size)
 
     static const size_t textCharSize = 18;
     name_->setCharacterSize(textCharSize);
-#if 0
     assert(name_->getGlobalBounds().size.x < size.x);
     assert(name_->getGlobalBounds().size.y < size.y);
-#endif
-
-#if 0
-    static const float textSizeRatio = 1.f - 2.f * textShiftFromOneSide;
-    name_->setSize(textSizeRatio * vec2f{static_cast<float>(size.x), static_cast<float>(size.y)});
-#endif
 
     setPos(pos_);
 }
@@ -369,6 +363,25 @@ void AShapedButtonsBar::setShape(std::unique_ptr<IRectangleShape> shape, SpriteT
 }
 
 // ASpritedButtonsBar implementation
+
+ASpritedButtonsBar::ASpritedButtonsBar(vec2i pos, vec2u size, wid_t id, 
+                                       Color barColor,
+                                       const char* hoverSpriteFilename, 
+                                       const char* pressSpriteFilename,
+                                       const char* releaseSpriteFilename)
+{
+    assert(hoverSpriteFilename && pressSpriteFilename && releaseSpriteFilename);
+
+    id_ = id;
+    pos_ = pos;
+    size_ = size;
+    
+    shape_ = createShape(barColor, size);
+
+    sprites_[static_cast<size_t>(SpriteType::Hover  )] = createSprite(size_, hoverSpriteFilename);
+    sprites_[static_cast<size_t>(SpriteType::Press  )] = createSprite(size_, pressSpriteFilename);
+    sprites_[static_cast<size_t>(SpriteType::Release)] = createSprite(size_, releaseSpriteFilename);
+}
 
 void ASpritedButtonsBar::finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const
 {

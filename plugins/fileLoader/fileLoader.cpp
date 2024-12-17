@@ -20,6 +20,9 @@ using namespace psapi::sfm;
 namespace
 {
 
+// TODO: buttons can't be pressed (like pressed is always flushed) because file names are always dying and
+// creating again. On each update scanning dir for files and deleting old ones -> all buttons dies every cycle.
+
 template<typename SubButtonsType>
 class FilesList : public SubMenuBar
 {

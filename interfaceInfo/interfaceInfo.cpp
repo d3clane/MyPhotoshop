@@ -31,7 +31,7 @@ const char* getCommonReleaseTexturePath()
 IntRect getLayersIntRect()
 {
     IntRect rect;
-    vec2i size = getScreenSize();
+    vec2u size = getScreenSize();
 
     rect.pos = vec2i{static_cast<int>(static_cast<float>(size.x) * 0.93f), 
                      static_cast<int>(static_cast<float>(size.y) * 0.45f)};
@@ -45,7 +45,7 @@ IntRect getLayersIntRect()
 IntRect getToolOptionsRightIntRect()
 {
     IntRect rect;
-    vec2i size = getScreenSize();
+    vec2u size = getScreenSize();
 
     rect.pos = vec2i{static_cast<int>(static_cast<float>(size.x) * 0.93f), 
                      static_cast<int>(static_cast<float>(size.y) * 0.08f)};
@@ -59,10 +59,12 @@ IntRect getToolOptionsRightIntRect()
 IntRect getUpperToolOptionsIntRect()
 {
     IntRect rect;
-    vec2i size = getScreenSize();
+    vec2u size = getScreenSize();
 
     rect.pos = vec2i{0, static_cast<int>(static_cast<float>(size.y) * 0.035f)};
     rect.size = vec2u{size.x, static_cast<unsigned>(static_cast<float>(size.y) * 0.045f)};
+
+    return rect;
 }
 
 } // namespace ps

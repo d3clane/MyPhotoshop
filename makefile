@@ -75,12 +75,14 @@ $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 
 $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp \
 			   src/api/api_actions.cpp src/api/api_bar.cpp plugins/pluginLib/bars/ps_bar.cpp \
-			   plugins/pluginLib/windows/windows.cpp interfaceInfo/interfaceInfo.cpp
+			   plugins/pluginLib/windows/windows.cpp interfaceInfo/interfaceInfo.cpp \
+			   plugins/pluginLib/sfmHelpful/sfmHelpful.cpp
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/splineDraw/splineDrawButton.cpp \
 	plugins/pluginLib/toolbar/toolbarButton.cpp \
 	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
@@ -89,6 +91,7 @@ $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp \
 $(DYLIB_DIR)/lib_eraser.dylib: plugins/eraser/eraser.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/splineDraw/splineDrawButton.cpp \
 	plugins/pluginLib/toolbar/toolbarButton.cpp \
 	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
@@ -100,15 +103,16 @@ $(DYLIB_DIR)/lib_canvas.dylib: plugins/canvas/canvas.cpp \
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_toolbar.dylib: plugins/toolbar/toolbar.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/windows/windows.cpp $(PS_API_LIB)
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/sfmHelpful/sfmHelpful.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_optionsBar.dylib: plugins/optionsBar/optionsBar.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/windows/windows.cpp $(PS_API_LIB)
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/sfmHelpful/sfmHelpful.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_menuBar.dylib: plugins/menuBar/menuBar.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/menu.cpp $(PS_API_LIB)
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/menu.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_spray.dylib: plugins/spray/spray.cpp $(PLUGIN_LIB) $(PS_API_LIB)
@@ -118,7 +122,8 @@ $(DYLIB_DIR)/lib_line.dylib: plugins/line/line.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
 	plugins/pluginLib/canvas/canvas.cpp \
-	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
+	plugins/pluginLib/toolbar/toolbarButton.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_ellipse.dylib: plugins/ellipse/ellipse.cpp \
@@ -131,6 +136,7 @@ $(DYLIB_DIR)/lib_ellipse.dylib: plugins/ellipse/ellipse.cpp \
 $(DYLIB_DIR)/lib_rectangle.dylib: plugins/rectangle/rectangle.cpp \
 	plugins/pluginLib/interpolation/src/catmullRom.cpp plugins/pluginLib/interpolation/src/interpolator.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/canvas/canvas.cpp \
 	plugins/pluginLib/toolbar/toolbarButton.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
@@ -138,32 +144,37 @@ $(DYLIB_DIR)/lib_rectangle.dylib: plugins/rectangle/rectangle.cpp \
 $(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp \
 	plugins/pluginLib/filters/filters.cpp plugins/pluginLib/windows/windows.cpp \
 	plugins/pluginLib/bars/ps_bar.cpp plugins/pluginLib/bars/menu.cpp  \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_blur_filter.dylib : plugins/blurFilter/blurFilter.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_bas_relief.dylib : plugins/basReliefFilter/basReliefFilter.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_unsharp_mask.dylib : plugins/unsharpMaskFilter/unsharpMaskFilter.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_file_loader.dylib : plugins/fileLoader/fileLoader.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/bars/menu.cpp plugins/pluginLib/canvas/canvas.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_edit_settings.dylib : plugins/editSettings/editSettings.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
-	plugins/pluginLib/bars/menu.cpp $(PS_API_LIB)
+	plugins/pluginLib/bars/menu.cpp plugins/pluginLib/sfmHelpful/sfmHelpful.cpp $(PS_API_LIB)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 #

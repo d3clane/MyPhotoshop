@@ -1,30 +1,12 @@
 #include "menu.hpp"
 
 #include "pluginLib/actions/actions.hpp"
+#include "interfaceInfo/interfaceInfo.hpp"
 
 #include <cassert>
 
 namespace ps
 {
-
-namespace 
-{
-
-// TODO: copypaste, create another file for this function
-std::unique_ptr<IRectangleShape> createShape(const vec2u& size, 
-                                             const Color& color = {}, const Color& outlineColor = {}, 
-                                             const float outlineThickness = 1)
-{
-    auto shape = IRectangleShape::create(size.x, size.y);
-
-    shape->setFillColor(color);
-    shape->setOutlineThickness(outlineThickness);
-    shape->setOutlineColor(outlineColor);
-
-    return shape;
-}
-
-} // namespace anonymous
 
 IWindow* SubMenuBar::getWindowById(wid_t id)
 {
@@ -47,37 +29,15 @@ const IWindow* SubMenuBar::getWindowById(wid_t id) const
     return const_cast<SubMenuBar*>(this)->getWindowById(id);
 }
 
-SubMenuBar::SubMenuBar()
+static const vec2u SubMenuChildSize = {256, 32};
+
+SubMenuBar::SubMenuBar() 
+    : ASpritedButtonsBar(vec2i{0, 0}, vec2u{SubMenuChildSize.x, 0}, kInvalidWindowId, Color{60, 60, 60, 255},
+                         "media/textures/SubMenuButtonOnHover.png", 
+                         "media/textures/SubMenuButtonOnPress.png", 
+                         "media/textures/SubMenuButtonOnRelease.png")
 {
-    // TODO: move this data to the constructor params
-    // create something like "create common sub menu bar" 
-    // to create bar with concrete colors
-
-    id_ = kInvalidWindowId;
-    
-    pos_ = {0, 0};
-    size_ = {childSize_.x, 0};
-
-    shape_ = createShape(size_, Color{120, 120, 120, 255}, Color{}, 0);
-    shape_->setPosition(pos_);
-
-    static const uint8_t shapesCommonAlpha = 100;
-
-    commonOutlineShape_ = createShape(childSize_, Color{0, 0, 0, 0}, Color{51, 51, 51, 255});
-
-    shapes_[static_cast<size_t>(SpriteType::Hover  )] = createShape(childSize_,
-                                                                    Color{30, 144, 255, shapesCommonAlpha}, 
-                                                                    Color{}, 0);
-
-    shapes_[static_cast<size_t>(SpriteType::Press  )] = createShape(childSize_,
-                                                                    Color{65, 105, 255, shapesCommonAlpha}, 
-                                                                    Color{}, 0);
-
-    // TODO: Don't need release in this kind of menu's. Simply have to do some action on release and undo
-
-    shapes_[static_cast<size_t>(SpriteType::Release)] = createShape(childSize_,
-                                                                    Color{0, 0, 139, shapesCommonAlpha},
-                                                                    Color{}, 0);
+    childSize_ = SubMenuChildSize;
 }
 
 void SubMenuBar::addWindow(std::unique_ptr<IWindow> window)
@@ -139,13 +99,13 @@ void SubMenuBar::setChildrenInfo()
 
 void SubMenuBar::setSize(const vec2u& size)
 {
-    AShapedButtonsBar::setSize(size);
+    ASpritedButtonsBar::setSize(size);
     setChildrenInfo();
 }
 
 void SubMenuBar::setPos(const vec2i& pos)
 {
-    AShapedButtonsBar::setPos(pos);
+    ASpritedButtonsBar::setPos(pos);
     setChildrenInfo();
 }
 
@@ -167,13 +127,14 @@ namespace
 vec2i calculateSubMenuPos(const vec2i& pos, const vec2u& size, 
                           MenuButton::SubMenuSpawningDirection spawnPosition)
 {
-    static const int gap = 8;
+    static const int gapDown = 8;
+    static const int gapRight = 0;
     switch (spawnPosition)
     {
         case MenuButton::SubMenuSpawningDirection::Down:
-            return {pos.x, pos.y + static_cast<int>(size.y) + gap};
+            return {pos.x, pos.y + static_cast<int>(size.y) + gapDown};
         case MenuButton::SubMenuSpawningDirection::Right:
-            return {pos.x + static_cast<int>(size.x) + gap, pos.y};
+            return {pos.x + static_cast<int>(size.x) + gapRight, pos.y};
         default:
             assert(false);
             return {0, 0};

@@ -4,6 +4,7 @@
 #include "api/api_bar.hpp"
 #include "api/api_sfm.hpp"
 #include "pluginLib/windows/windows.hpp"
+#include "pluginLib/sfmHelpful/sfmHelpful.hpp"
 
 using namespace psapi;
 using namespace sfm;
@@ -185,12 +186,12 @@ protected:
 class ASpritedButtonsBar : public ABar
 {
 public:
-    struct SpriteInfo
-    {
-        std::unique_ptr<ISprite> sprite;
-        std::unique_ptr<ITexture> texture;
-    };
-public:
+    ASpritedButtonsBar(vec2i pos, vec2u size, wid_t id, 
+                       Color barColor,
+                       const char* hoverSpriteFilename, 
+                       const char* pressSpriteFilename,
+                       const char* releaseSpriteFilename);
+
     void finishButtonDraw(IRenderWindow* renderWindow, const IBarButton* button) const override;
 
 protected:

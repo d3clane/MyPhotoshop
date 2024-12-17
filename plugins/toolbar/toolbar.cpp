@@ -31,52 +31,14 @@ void onUnloadPlugin()
 namespace
 {
 
-ASpritedButtonsBar::SpriteInfo createSprite(const vec2u& size, const char* filename)
-{
-    ASpritedButtonsBar::SpriteInfo info;
-    info.sprite = ISprite::create();
-    info.texture = ITexture::create();
-
-    info.texture->loadFromFile(filename);
-    info.sprite->setTexture(info.texture.get());
-
-    info.sprite->setScale(static_cast<float>(size.x) / static_cast<float>(info.texture->getSize().x), 
-                          static_cast<float>(size.y) / static_cast<float>(info.texture->getSize().y));
-
-    return info;
-}
-
-std::unique_ptr<IRectangleShape> createShape(const vec2u& size, 
-                                             const Color& color = {}, const Color& outlineColor = {}, 
-                                             const float outlineThickness = 1)
-{
-    auto shape = IRectangleShape::create(size.x, size.y);
-
-    shape->setFillColor(color);
-    shape->setOutlineThickness(outlineThickness);
-    shape->setOutlineColor(outlineColor);
-
-    return shape;
-}
-
 } // namespace anonymous
 
 Toolbar::Toolbar(vec2i pos, vec2u size) 
+    : ASpritedButtonsBar(pos, size, kToolBarWindowId, getCommonBarColor(),
+                         getCommonHoverTexturePath(), getCommonPressTexturePath(), 
+                         getCommonReleaseTexturePath())
 {
-    id_ = kToolBarWindowId;
-    
-    pos_ = pos;
-    size_ = size;
-
-    shape_ = createShape(size, getCommonBarColor(), Color{}, 0);
-
-    shape_->setPosition(pos_);
-
-    sprites_[static_cast<size_t>(SpriteType::Hover  )] = createSprite(size_, getCommonHoverTexturePath());
-    sprites_[static_cast<size_t>(SpriteType::Press  )] = createSprite(size_, getCommonPressTexturePath());
-    sprites_[static_cast<size_t>(SpriteType::Release)] = createSprite(size_, getCommonReleaseTexturePath());
-
-    delimeterSprite_ = createSprite(size, "media/textures/ToolbarDelimeter.png");
+    delimeterSprite_ = createSprite(size, "media/textures/toolbarDelimeter.png");
 }
 
 void Toolbar::setChildrenInfo()

@@ -9,7 +9,7 @@
 namespace ps
 {
 
-class SubMenuBar : public AShapedButtonsBar
+class SubMenuBar : public ASpritedButtonsBar
 {
 public:
     SubMenuBar();
@@ -36,7 +36,7 @@ private:
 
 private:
     size_t gapSize_ = 1;
-    vec2u childSize_ = {128, 16};
+    vec2u childSize_ = {256, 32};
 
     std::vector<std::unique_ptr<IBarButton>> buttons_;
 };

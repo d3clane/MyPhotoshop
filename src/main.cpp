@@ -37,7 +37,7 @@ void loadPlugin(const char* libName)
 
 int main()
 {
-    RootWindow* rootWindow = RootWindow::create(vec2u{1920, 1080});
+    RootWindow* rootWindow = RootWindow::create(vec2u{1728, 1080});
     AActionController* actionController = getActionController();
     
     loadPlugin("libs/lib_canvas.dylib");

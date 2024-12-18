@@ -34,10 +34,10 @@ IntRect getLayersIntRect()
     IntRect rect;
     vec2u size = getScreenSize();
 
-    rect.pos = vec2i{static_cast<int>(static_cast<float>(size.x) * 0.93f), 
+    rect.pos = vec2i{static_cast<int>(static_cast<float>(size.x) * 0.85f), 
                      static_cast<int>(static_cast<float>(size.y) * 0.45f)};
 
-    rect.size = vec2u{static_cast<unsigned>(static_cast<float>(size.x) * 0.07f), 
+    rect.size = vec2u{static_cast<unsigned>(static_cast<float>(size.x) * 0.15f), 
                       static_cast<unsigned>(static_cast<float>(size.y) * 0.55f)};
 
     return rect;
@@ -48,10 +48,10 @@ IntRect getToolOptionsRightIntRect()
     IntRect rect;
     vec2u size = getScreenSize();
 
-    rect.pos = vec2i{static_cast<int>(static_cast<float>(size.x) * 0.93f), 
+    rect.pos = vec2i{static_cast<int>(static_cast<float>(size.x) * 0.85f), 
                      static_cast<int>(static_cast<float>(size.y) * 0.08f)};
 
-    rect.size = vec2u{static_cast<unsigned>(static_cast<float>(size.x) * 0.07f), 
+    rect.size = vec2u{static_cast<unsigned>(static_cast<float>(size.x) * 0.15f), 
                       static_cast<unsigned>(static_cast<float>(size.y) * 0.92f)};
 
     return rect;

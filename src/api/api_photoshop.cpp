@@ -197,7 +197,7 @@ sfm::IntRect getCanvasIntRect()
     sfm::IntRect rect;
     rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.045f),
                  static_cast<int>     (static_cast<float>(size.y) * 0.08f)};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.895f),
+    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.81f),
                  static_cast<unsigned>(static_cast<float>(size.y) * 0.9f)};
     
     return rect;

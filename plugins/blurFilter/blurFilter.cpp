@@ -17,6 +17,8 @@
 
 #include "pluginLib/filters/filters.hpp"
 
+#include "pluginLib/filters/filterWindows.hpp"
+
 #include <iostream>
 
 using namespace ps;
@@ -35,6 +37,10 @@ public:
                                           const Event& event) override;
     
     bool update(const IRenderWindow* renderWindow, const Event& event);
+    void draw(IRenderWindow* renderWindow) override;
+
+private:
+    std::unique_ptr<FilterWindow> filterWindow_;
 };
 
 BlurFilterButton::BlurFilterButton(std::unique_ptr<IText> name, std::unique_ptr<IFont> font)
@@ -54,8 +60,25 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
     bool updateStateRes = updateState(renderWindow, event);
 
     if (state_ != State::Released)
-        return updateStateRes;
+    {
+        if (filterWindow_)
+            filterWindow_.reset();
 
+        return updateStateRes;
+    }
+
+    if (updateStateRes)
+        filterWindow_ = std::make_unique<FilterWindow>(kInvalidWindowId, "Box Blur");
+
+    AActionController* actionController = getActionController();
+
+    if (!actionController->execute(filterWindow_->createAction(renderWindow, event)))
+    {
+        state_ = State::Normal;
+        return false;
+    }
+
+#if 0
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
     assert(canvas);
     
@@ -68,12 +91,18 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
     std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
     
     copyPixelsToLayer(activeLayer, blured);
-    
-    state_ = State::Normal;
+#endif
 
     return true;
 }
 
+void BlurFilterButton::draw(IRenderWindow* renderWindow)
+{
+    ANamedBarButton::draw(renderWindow);
+
+    if (filterWindow_)
+        filterWindow_->draw(renderWindow);
+}
 } // namespace anonymous
 
 bool onLoadPlugin()

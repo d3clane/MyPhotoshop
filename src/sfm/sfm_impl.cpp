@@ -777,7 +777,7 @@ void EllipseShape::updateImage() const
     vec2u totalSize = { static_cast<unsigned>(shapeBounds.width  + shapeBounds.left + 1), 
                         static_cast<unsigned>(shapeBounds.height + shapeBounds.top  + 1) };
 
-    bool createResult = renderTexture.create(totalSize.x, totalSize.y);
+    bool createResult = renderTexture.create(totalSize.x + 1, totalSize.y + 1);
     assert(createResult);
 
     renderTexture.clear(sf::Color::Transparent);

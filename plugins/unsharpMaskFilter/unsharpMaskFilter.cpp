@@ -64,7 +64,6 @@ bool BasReliefButton::update(const IRenderWindow* renderWindow, const Event& eve
 
     vec2u canvasSize = canvas->getSize();
 
-
     std::vector<std::vector<Color>> pixels = getLayerScreenIn2D(activeLayer, canvasSize);
     std::vector<std::vector<Color>> masked = getUnsharpMasked(pixels);
     

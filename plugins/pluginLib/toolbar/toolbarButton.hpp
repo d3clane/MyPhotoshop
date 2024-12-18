@@ -34,7 +34,8 @@ protected:
 
 protected:
     IColorPalette* colorPalette_ = nullptr;
-
+    IThicknessOption* thicknessOption_ = nullptr;
+    
     CanvasSaverProcedure canvasSaver_;
 };
 

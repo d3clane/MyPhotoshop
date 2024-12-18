@@ -68,4 +68,9 @@ IntRect getToolOptionsUpIntRect()
     return rect;
 }
 
+unsigned getCommonTextCharacterSize()
+{
+    return 18;
+}
+
 } // namespace ps

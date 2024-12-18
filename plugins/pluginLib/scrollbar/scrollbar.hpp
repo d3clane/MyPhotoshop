@@ -160,6 +160,7 @@ class ScrollBarX : public AScrollBar
 {
 public:
     ScrollBarX(vec2i pos, vec2u size, wid_t id);
+
 protected:
     void updatePos () override;
     void updateSize() override;
@@ -169,6 +170,7 @@ class ScrollBarY : public AScrollBar
 {
 public:
     ScrollBarY(vec2i pos, vec2u size, wid_t id);
+
 protected:
     void updatePos () override;
     void updateSize() override;
@@ -244,6 +246,7 @@ private:
     
     std::unique_ptr<ICanScrollAction> canScrollAction_;
 };
+
 } // namespace ps
 
 #endif // PLUGINS_CANVAS_SCROLLBAR_HPP

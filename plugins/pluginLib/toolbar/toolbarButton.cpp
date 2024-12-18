@@ -14,7 +14,6 @@ IColorPalette* createInstrumentColorPalette()
         getRootWindow()->getWindowById(kOptionsBarWindowId));
     assert(optionsBar);
 
-    optionsBar->removeAllOptions();
     std::unique_ptr<IColorPalette> colorPalette = IColorPalette::create();
     
     IColorPalette* palette = colorPalette.get();
@@ -22,6 +21,20 @@ IColorPalette* createInstrumentColorPalette()
     optionsBar->addWindow(std::move(colorPalette));
 
     return palette;
+}
+
+IThicknessOption* createThicknessOption()
+{
+    IOptionsBar* optionsBar = static_cast<IOptionsBar*>(
+        getRootWindow()->getWindowById(kOptionsBarWindowId));
+    assert(optionsBar);
+
+    std::unique_ptr<IThicknessOption> thicknessOption = IThicknessOption::create();
+    IThicknessOption* option = thicknessOption.get();
+
+    optionsBar->addWindow(std::move(thicknessOption));
+
+    return option;
 }
 
 void clearInstrumentOptions()
@@ -41,12 +54,14 @@ void AInstrumentButton::updateOptionsBar(State stateNow, State prevState)
     {
         clearInstrumentOptions();
         colorPalette_ = nullptr;
+        thicknessOption_ = nullptr;
     }
 
     if (stateNow == State::Released && prevState != State::Released)
     {
         clearInstrumentOptions();
         colorPalette_ = createInstrumentColorPalette();
+        thicknessOption_ = createThicknessOption();
     } 
 }
 

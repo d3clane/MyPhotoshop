@@ -4,7 +4,7 @@
 #include "pluginLib/actions/actions.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/sfmHelpful/sfmHelpful.hpp"
-#include "pluginLib/scrollbar/scrollbar.hpp"
+#include "pluginLib/slider/slider.hpp"
 
 #include <vector>
 #include <memory>
@@ -300,16 +300,16 @@ void ColorPalette::setColor(const Color& color)
 
 // Size palette implementation
 
-#if 0
 class ThicknessOption : public IThicknessOption
 {
 public:
+    ThicknessOption();
 
     float getThickness() const override;
     void setThickness(float thickness) override;
-void draw(IRenderWindow* renderWindow) override;
+    void draw(IRenderWindow* renderWindow) override;
+
     std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) override;
-    bool update(const IRenderWindow* renderWindow, const Event& event);
 
     wid_t getId() const override;
 
@@ -329,20 +329,97 @@ void draw(IRenderWindow* renderWindow) override;
     bool isActive() const override;
     bool isWindowContainer() const override;
 
-    Color getColor() const override;
-    void setColor(const Color &color) override;
+private:
+    wid_t id_ = kThicknessBarId;
 
-    void setChildrenInfo();
+    SliderX slider_;
+};
+
+class SliderPxTitleAction : public ISliderTitleAction
+{
+public:
+    SliderPxTitleAction(ThicknessOption* thicknessOption) : thicknessOption_(thicknessOption) {}
+    std::string getSliderTitle() const override;
 
 private:
-    std::vector<std::unique_ptr<ColorButton>> colors_;
-
-    Color activatedColor_;
-
-    wid_t id_ = kColorPaletteId;
-    vec2i pos_ = {0, 0};
-    vec2u size_ = {0, 0};
-    bool isActive_ = true;
-    const IWindow* parent_ = nullptr;
+    ThicknessOption* thicknessOption_;
 };
-#endif
+
+std::string SliderPxTitleAction::getSliderTitle() const
+{
+    float thickness = thicknessOption_->getThickness();
+
+    return "Size: " + std::to_string(static_cast<int>(thickness)) + " px";
+}
+
+
+ThicknessOption::ThicknessOption()
+{
+    SpriteInfo slideNormal = createSprite("media/textures/sliderNormal.png");
+    SpriteInfo slidePress = createSprite("media/textures/sliderPress.png");
+
+    assert(slideNormal.sprite->getSize().x == slidePress.sprite->getSize().x);
+    assert(slideNormal.sprite->getSize().y == slidePress.sprite->getSize().y);
+
+    Color blueSliderColor = Color{74, 115, 145, 255};
+    vec2u spritesOutlineWidth = {3, 2};
+    vec2u maxFillColorSize = slideNormal.sprite->getSize() - 2 * spritesOutlineWidth;
+    maxFillColorSize.x = 157;
+
+    slider_ = SliderX{{0, 0}, slideNormal.sprite->getSize(), kInvalidWindowId, 
+                      createShape(blueSliderColor, {1, 1}), 
+                      std::move(slideNormal), std::move(slidePress),
+                      maxFillColorSize, spritesOutlineWidth,
+                      std::make_unique<SliderPxTitleAction>(this)};
+}
+
+float ThicknessOption::getThickness() const 
+{ 
+    const float maxThickness = 40;
+
+    return slider_.getCurrentFullness() * maxThickness; 
+}
+
+void ThicknessOption::setThickness(float thickness) { assert(0); }
+
+void ThicknessOption::draw(IRenderWindow* renderWindow)
+{
+    slider_.draw(renderWindow);
+}
+
+std::unique_ptr<IAction> ThicknessOption::createAction(const IRenderWindow* renderWindow, const Event& event)
+{
+    return slider_.createAction(renderWindow, event);
+}
+
+wid_t ThicknessOption::getId() const { return id_; }
+
+IWindow* ThicknessOption::getWindowById(wid_t id)
+{
+    if (id_ == id)
+        return this;
+
+    return slider_.getWindowById(id);
+}
+
+const IWindow* ThicknessOption::getWindowById(wid_t id) const
+{
+    return const_cast<ThicknessOption*>(this)->getWindowById(id);
+}
+
+vec2i ThicknessOption::getPos() const { return slider_.getPos(); }
+vec2u ThicknessOption::getSize() const { return slider_.getSize(); }
+
+void ThicknessOption::setSize(const vec2u& size) { slider_.setSize(size); }
+void ThicknessOption::setPos(const vec2i& pos) { slider_.setPos(pos); }
+void ThicknessOption::setParent(const IWindow* parent) { slider_.setParent(parent); }
+
+void ThicknessOption::forceActivate() { slider_.forceActivate(); }
+void ThicknessOption::forceDeactivate() { slider_.forceDeactivate(); }
+bool ThicknessOption::isActive() const { return slider_.isActive(); }
+bool ThicknessOption::isWindowContainer() const { return false; }
+
+std::unique_ptr<IThicknessOption> IThicknessOption::create()
+{
+    return std::make_unique<ThicknessOption>();
+}

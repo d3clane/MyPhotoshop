@@ -6,6 +6,8 @@
 namespace ps
 {
 
+unsigned getCommonTextCharacterSize();
+
 psapi::sfm::Color getCommonBarColor();
 
 const char* getCommonHoverTexturePath  ();

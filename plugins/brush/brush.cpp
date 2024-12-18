@@ -40,10 +40,11 @@ BrushButton::BrushButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITextu
 
 void BrushButton::drawPoint(ICanvas* /* canvas */, ILayer* layer, const vec2i& point)
 {
-    unsigned thickness = 4;
-    int drawingRange = static_cast<int>(thickness + 1) / 2;
     assert(colorPalette_);
+    assert(thicknessOption_);
     Color color = colorPalette_->getColor();
+    float thickness = thicknessOption_->getThickness();
+    int drawingRange = static_cast<int>((thickness + 1) / 2);
 
     for (int i = -drawingRange; i <= drawingRange; ++i)
     {

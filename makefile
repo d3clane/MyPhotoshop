@@ -45,7 +45,7 @@ DEPS = $(CPPOBJ:.o=.d)
 
 DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib \
 			   lib_toolbar.dylib lib_optionsBar.dylib lib_menuBar.dylib \
-			   lib_brush.dylib lib_eraser.dylib \
+			   lib_brush.dylib #lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   lib_negative_filter.dylib lib_blur_filter.dylib \
 			   lib_file_loader.dylib lib_edit_settings.dylib \
@@ -76,7 +76,7 @@ $(CPPOBJ) : $(OUT_O_DIR)/%.o : %.cpp
 $(PS_API_LIB): src/api/api_photoshop.cpp src/api/api_sfm.cpp src/api/api_system.cpp src/sfm/sfm_impl.cpp \
 			   src/api/api_actions.cpp src/api/api_bar.cpp plugins/pluginLib/bars/ps_bar.cpp \
 			   plugins/pluginLib/windows/windows.cpp interfaceInfo/interfaceInfo.cpp \
-			   plugins/pluginLib/sfmHelpful/sfmHelpful.cpp
+			   plugins/pluginLib/sfmHelpful/sfmHelpful.cpp plugins/pluginLib/slider/slider.cpp
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_brush.dylib: plugins/brush/brush.cpp \

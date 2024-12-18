@@ -28,8 +28,8 @@ public:
     
     wid_t getId()   const override;
 
-    void forceDeactivate()                override;
-    void forceActivate()                  override; 
+    void forceDeactivate() override;
+    void forceActivate() override; 
 
     bool isActive() const override;
     bool isWindowContainer() const override;

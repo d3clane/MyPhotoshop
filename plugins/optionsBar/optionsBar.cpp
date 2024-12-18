@@ -89,7 +89,7 @@ private:
     vec2i gapBetweenChildren_ = {0, 0};
     vec2i gapFromBoundaries_ = {0, 0};
 
-    vec2u maxChildSize_ = {128, 128};
+    vec2u maxChildSize_ = {512, 512};
 };
 
 class OptionsBar : public IOptionsBar
@@ -176,10 +176,12 @@ void SubOptionsBar::setChildrenInfo()
 
         window->setPos(childPos);
 
-        vec2u windowSize = window->getSize();
+#if 0
         window->setSize(vec2u{std::min(windowSize.x, maxChildSize_.x), 
                               std::min(windowSize.y, maxChildSize_.y)});
         windowSize = window->getSize();
+#endif
+        vec2u windowSize = window->getSize();
 
         if (gapBetweenChildren_.x > 0)
             childPos.x += static_cast<int>(windowSize.x) + gapBetweenChildren_.x;
@@ -289,8 +291,10 @@ void SubOptionsBar::addWindow(std::unique_ptr<IWindow> window)
             addStandardWindow(windows_, std::move(window), 0);
             break;
         case kThicknessBarId:
+        {
             addStandardWindow(windows_, std::move(window), 1);
             break;
+        }
         case kOpacityBarId:
             addStandardWindow(windows_, std::move(window), 2);
             break;

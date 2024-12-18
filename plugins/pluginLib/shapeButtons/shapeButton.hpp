@@ -105,9 +105,11 @@ std::unique_ptr<T> ShapeButton<T>::createShape(const vec2i& beginShapePos, const
 
     assert(colorPalette_);
     Color color = colorPalette_->getColor();
+    assert(thicknessOption_);
+    float thickness = thicknessOption_->getThickness();
 
     shape->setFillColor(color);
-    shape->setOutlineThickness(0);
+    shape->setOutlineThickness(static_cast<unsigned>(thickness));
     shape->setPosition(topLeft);
 
     return shape;

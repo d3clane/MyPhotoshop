@@ -59,9 +59,10 @@ std::unique_ptr<IRectangleShape> LineButton::createLineShape(vec2i beginPos, con
     const float lineLength = static_cast<float>(len(beginPos, mousePos));
     const float angle = static_cast<float>(std::atan2(mousePos.y - beginPos.y, mousePos.x - beginPos.x));
 
-    static const unsigned thickness = 5;
+    assert(thicknessOption_);
+    float thickness = thicknessOption_->getThickness();
     std::unique_ptr<IRectangleShape> line = IRectangleShape::create(static_cast<unsigned>(lineLength), 
-                                                                    thickness);
+                                                                    static_cast<unsigned>(thickness));
 
     Color color = colorPalette_->getColor();
     line->setFillColor(color);

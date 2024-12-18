@@ -20,8 +20,9 @@ EraserButton::EraserButton(std::unique_ptr<ISprite> sprite, std::unique_ptr<ITex
 
 void EraserButton::drawPoint(ICanvas* canvas, psapi::ILayer* layer, const vec2i& point)
 {
-    unsigned thickness = 5;
-    int drawingRange = static_cast<int>(thickness + 1) / 2;
+    assert(thicknessOption_);
+    float thickness = thicknessOption_->getThickness();
+    int drawingRange = static_cast<int>((thickness + 1) / 2);
 
     Color color = canvas->getCanvasBaseColor();
 

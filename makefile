@@ -45,7 +45,7 @@ DEPS = $(CPPOBJ:.o=.d)
 
 DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib \
 			   lib_toolbar.dylib lib_optionsBar.dylib lib_menuBar.dylib \
-			   lib_brush.dylib #lib_eraser.dylib \
+			   lib_brush.dylib lib_eraser.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   lib_negative_filter.dylib lib_blur_filter.dylib \
 			   lib_file_loader.dylib lib_edit_settings.dylib \

@@ -15,5 +15,7 @@ struct SpriteInfo
 SpriteInfo createSprite(const psapi::sfm::vec2u& size, const char* filename);
 std::unique_ptr<psapi::sfm::IRectangleShape> createShape(psapi::sfm::Color color, const psapi::sfm::vec2u& size);
 
+bool operator==(const psapi::sfm::Color& a, const psapi::sfm::Color& b);
+
 }
 #endif // PLUGINS_PLUGIN_LIB_SFML_HELPFUL_HPP

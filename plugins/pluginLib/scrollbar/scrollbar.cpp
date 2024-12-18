@@ -313,12 +313,12 @@ bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Even
     return true;
 }
 
-void AScrollBarButton::setScrollable(IScrollableWindow* scrollable)
+void AScrollBarButton::setScrollable(IScrollable* scrollable)
 {
     scrollable_ = scrollable;
 }
 
-const IScrollableWindow* AScrollBarButton::getScrollable() const 
+const IScrollable* AScrollBarButton::getScrollable() const 
 {
     return scrollable_;
 }
@@ -464,8 +464,10 @@ void ScrollBarButtonY::updateSize()
 // scroll bar xy manager implementation
 
 ScrollBarsXYManager::ScrollBarsXYManager(
-    std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY
-) : scrollBarX_(std::move(scrollBarX)), scrollBarY_(std::move(scrollBarY))
+    std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY,
+    std::unique_ptr<ICanScrollAction> canScrollAction
+) : scrollBarX_(std::move(scrollBarX)), scrollBarY_(std::move(scrollBarY)), 
+    canScrollAction_(std::move(canScrollAction))
 {
 }
 
@@ -488,13 +490,9 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
     assert(scrollBarButtonX);
     assert(scrollBarButtonY);
 
-    const IScrollableWindow* scrollable = scrollBarButtonX->getScrollable();
-    assert(scrollable);
-
-    if (!ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 
-                            scrollable->getPos(), scrollable->getSize()))
+    if (!canScrollAction_->canScroll(renderWindow, event))
         return false;
-
+    
     static const double scrollSpeed = -1;
 
     vec2d deltaMove;

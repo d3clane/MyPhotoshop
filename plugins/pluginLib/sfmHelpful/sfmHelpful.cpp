@@ -35,5 +35,9 @@ std::unique_ptr<IRectangleShape> createShape(Color color, const vec2u& size)
     return shape;
 }
 
+bool operator==(const Color& a, const Color& b)
+{
+    return a.a == b.a && a.r == b.r && a.g == b.g && a.b == b.b;
+}
 
 } // namespace ps

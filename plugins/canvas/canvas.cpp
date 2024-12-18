@@ -645,6 +645,25 @@ std::unique_ptr<Canvas> createCanvas()
     return std::make_unique<Canvas>(canvasPos, canvasSize);
 }
 
+// Can scroll action
+
+class CanScrollAction : public ICanScrollAction
+{
+public:
+    CanScrollAction(ICanvas* canvas) : canvas_(canvas) {}
+
+    bool canScroll(const IRenderWindow* renderWindow, const Event& event) override;
+
+private:
+    ICanvas* canvas_;
+};
+
+bool CanScrollAction::canScroll(const IRenderWindow* /* renderWindow */, const Event& event)
+{
+    return ps::checkIsHovered(vec2i{event.mouseWheel.x, event.mouseWheel.y}, 
+                              canvas_->getPos(), canvas_->getSize());
+}
+
 } // namespace anonymous
 
 bool onLoadPlugin()
@@ -664,8 +683,10 @@ bool onLoadPlugin()
     scrollBarY->setMoveButton(std::move(moveButtonY));
 
     std::unique_ptr<ScrollBarsXYManager> scrollBarsXYManager = std::make_unique<ScrollBarsXYManager>(
-        std::unique_ptr<ScrollBarX>(static_cast<ScrollBarX*>(scrollBarX.release())), 
-        std::unique_ptr<ScrollBarY>(static_cast<ScrollBarY*>(scrollBarY.release())));
+        std::unique_ptr<ScrollBarX>(static_cast<ScrollBarX*>(scrollBarX.release())),
+        std::unique_ptr<ScrollBarY>(static_cast<ScrollBarY*>(scrollBarY.release())),
+        std::make_unique<CanScrollAction>(canvas.get())
+        );
 
     rootWindow->addWindow(std::unique_ptr<ICanvas>(canvas.release()));
     rootWindow->addWindow(std::unique_ptr<IWindowContainer>(scrollBarsXYManager.release()));

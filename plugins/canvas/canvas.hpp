@@ -90,7 +90,7 @@ private:
     std::vector<std::unique_ptr<LayerSnapshot>> layers_;
 };
 
-class Canvas : public ICanvas, public IScrollableWindow
+class Canvas : public ICanvas, public IScrollable
 {
 public:
     Canvas(vec2i pos, vec2u size);

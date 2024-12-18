@@ -22,8 +22,12 @@ public:
     virtual ~IScrollable() = default;
 };
 
-class IScrollableWindow : public IScrollable, public IWindow
+class ICanScrollAction
 {
+public:
+    virtual bool canScroll(const IRenderWindow* renderWindow, const Event& event) = 0;
+
+    virtual ~ICanScrollAction() = default;
 };
 
 class PressButton : public AWindow
@@ -54,7 +58,6 @@ class AScrollBarButton : public PressButton
 public:
     AScrollBarButton(vec2i pos, vec2u size, wid_t id);
 
-
     void setSize(const vec2u& size) override;
     void move  (vec2d offset); // TODO: transformable 
     void setPos(const vec2i& pos) override;
@@ -68,8 +71,8 @@ public:
 
     void draw(IRenderWindow* renderWindow) override;
 
-    void setScrollable(IScrollableWindow* scrollable);
-    const IScrollableWindow* getScrollable() const;
+    void setScrollable(IScrollable* scrollable);
+    const IScrollable* getScrollable() const;
 
 protected:
     void setStateFromOutside(const IRenderWindow* renderWindow);
@@ -78,7 +81,7 @@ protected:
     virtual void updateSize() = 0;
 
 protected:
-    IScrollableWindow* scrollable_ = nullptr;
+    IScrollable* scrollable_ = nullptr;
 
     vec2f scroll_;
     vec2i zeroScrollPos_;
@@ -193,7 +196,8 @@ protected:
 class ScrollBarsXYManager : public IWindowContainer
 {
 public:
-    ScrollBarsXYManager(std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY);
+    ScrollBarsXYManager(std::unique_ptr<ScrollBarX> scrollBarX, std::unique_ptr<ScrollBarY> scrollBarY,
+                        std::unique_ptr<ICanScrollAction> canScrollAction);
 
     std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
                                           const Event& event) override;
@@ -234,9 +238,11 @@ private:
     bool isActive_ = true;
 
     const IWindow* parent_ = nullptr;
-
+    
     std::unique_ptr<ScrollBarX> scrollBarX_;
     std::unique_ptr<ScrollBarY> scrollBarY_;
+    
+    std::unique_ptr<ICanScrollAction> canScrollAction_;
 };
 } // namespace ps
 

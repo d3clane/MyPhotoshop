@@ -3,6 +3,8 @@
 // TODO: Dependency on plugin lib
 #include "pluginLib/actions/actions.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
+#include "pluginLib/sfmHelpful/sfmHelpful.hpp"
+#include "pluginLib/scrollbar/scrollbar.hpp"
 
 #include <vector>
 #include <memory>
@@ -283,7 +285,64 @@ bool ColorPalette::isWindowContainer() const { return false; }
 
 Color ColorPalette::getColor() const { return activatedColor_; }
 
-void ColorPalette::setColor(const Color& /* color */) 
+void ColorPalette::setColor(const Color& color) 
 {
-    assert(false); // TODO: 
+    activatedColor_ = color;
+    
+    for (auto& colorButton : colors_)
+    {
+        colorButton->setState(IBarButton::State::Normal);
+
+        if (colorButton->getColor() == color)
+            colorButton->setState(IBarButton::State::Released);
+    }
 }
+
+// Size palette implementation
+
+#if 0
+class ThicknessOption : public IThicknessOption
+{
+public:
+
+    float getThickness() const override;
+    void setThickness(float thickness) override;
+void draw(IRenderWindow* renderWindow) override;
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) override;
+    bool update(const IRenderWindow* renderWindow, const Event& event);
+
+    wid_t getId() const override;
+
+    IWindow* getWindowById(wid_t id) override;
+    const IWindow* getWindowById(wid_t id) const override;
+
+    vec2i getPos() const override;
+    vec2u getSize() const override;
+
+    void setSize(const vec2u& size) override;
+    void setPos(const vec2i& pos) override;
+    void setParent(const IWindow* parent) override;
+
+    void forceActivate() override;
+
+    void forceDeactivate() override;
+    bool isActive() const override;
+    bool isWindowContainer() const override;
+
+    Color getColor() const override;
+    void setColor(const Color &color) override;
+
+    void setChildrenInfo();
+
+private:
+    std::vector<std::unique_ptr<ColorButton>> colors_;
+
+    Color activatedColor_;
+
+    wid_t id_ = kColorPaletteId;
+    vec2i pos_ = {0, 0};
+    vec2u size_ = {0, 0};
+    bool isActive_ = true;
+    const IWindow* parent_ = nullptr;
+};
+#endif

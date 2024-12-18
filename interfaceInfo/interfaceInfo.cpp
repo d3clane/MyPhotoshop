@@ -28,6 +28,7 @@ const char* getCommonReleaseTexturePath()
     return "media/textures/ToolbarOnRelease.png";
 }
 
+// TODO: design fix - menu bar is too big for it's buttons. Up tool options are also too big
 IntRect getLayersIntRect()
 {
     IntRect rect;
@@ -56,13 +57,13 @@ IntRect getToolOptionsRightIntRect()
     return rect;
 }
 
-IntRect getUpperToolOptionsIntRect()
+IntRect getToolOptionsUpIntRect()
 {
     IntRect rect;
     vec2u size = getScreenSize();
 
     rect.pos = vec2i{0, static_cast<int>(static_cast<float>(size.y) * 0.035f)};
-    rect.size = vec2u{size.x, static_cast<unsigned>(static_cast<float>(size.y) * 0.045f)};
+    rect.size = vec2u{size.x, static_cast<unsigned>(static_cast<float>(size.y) * 0.047f)};
 
     return rect;
 }

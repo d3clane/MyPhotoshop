@@ -14,7 +14,7 @@ const char* getCommonReleaseTexturePath();
 
 psapi::sfm::IntRect getLayersIntRect();
 psapi::sfm::IntRect getToolOptionsRightIntRect();
-psapi::sfm::IntRect getUpperToolOptionsIntRect();
+psapi::sfm::IntRect getToolOptionsUpIntRect();
 
 } // namespace ps
 

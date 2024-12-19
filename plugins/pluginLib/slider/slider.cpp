@@ -42,7 +42,7 @@ void drawTextUponSlider(IRenderWindow* renderWindow, const std::string& string,
     assert(text_);
 
     text_->setFont(font_.get());
-    text_->setCharacterSize(15);
+    text_->setCharacterSize(SliderX::characterSize_);
     text_->setString(string);
 
     text_->setPos({0.f, 0.f});

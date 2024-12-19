@@ -62,13 +62,18 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
     if (state_ != State::Released)
     {
         if (filterWindow_)
+        {
+            filterWindow_->close();
             filterWindow_.reset();
+        }
 
         return updateStateRes;
     }
 
     if (updateStateRes)
-        filterWindow_ = std::make_unique<FilterWindow>(kInvalidWindowId, "Box Blur");
+        filterWindow_ = createSimpleFilterWindow("Box Blur");
+
+    assert(filterWindow_);
 
     AActionController* actionController = getActionController();
 
@@ -111,7 +116,7 @@ bool onLoadPlugin()
     std::unique_ptr<IFont> font = IFont::create();
     font->loadFromFile("media/fonts/arial.ttf");
     text->setFont(font.get());
-    text->setString("Box blur");
+    text->setString("Box Blur");
     
     auto button = std::make_unique<BlurFilterButton>(std::move(text), std::move(font));
 

@@ -17,7 +17,7 @@ public:
 
     virtual ~ISliderTitleAction() = default;
 };
-
+ 
 class SliderX : public ABarButton
 {
 public:
@@ -37,6 +37,9 @@ public:
     void setSize(const vec2u& size) override;
 
     float getCurrentFullness() const;
+
+public:
+    static const unsigned characterSize_ = 15;
 
 private:
     vec2u fillColorShapeSize_;

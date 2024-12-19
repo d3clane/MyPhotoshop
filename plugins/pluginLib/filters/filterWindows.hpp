@@ -41,6 +41,9 @@ public:
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
 
+    bool closed() const;
+    void close();
+
 private:
     wid_t id_;
     bool isActive_ = true;
@@ -48,6 +51,8 @@ private:
     std::unique_ptr<IRenderWindow> renderWindow_;
     std::vector<std::unique_ptr<IWindow>> windows_;
 };
+
+std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name);
 
 }
 

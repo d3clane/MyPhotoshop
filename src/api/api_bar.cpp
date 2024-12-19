@@ -352,7 +352,6 @@ std::string SliderPxTitleAction::getSliderTitle() const
     return "Size: " + std::to_string(static_cast<int>(thickness)) + " px";
 }
 
-
 ThicknessOption::ThicknessOption()
 {
     SpriteInfo slideNormal = createSprite("media/textures/sliderNormal.png");
@@ -364,7 +363,6 @@ ThicknessOption::ThicknessOption()
     Color blueSliderColor = Color{74, 115, 145, 255};
     vec2u spritesOutlineWidth = {3, 2};
     vec2u maxFillColorSize = slideNormal.sprite->getSize() - 2 * spritesOutlineWidth;
-    maxFillColorSize.x = 157;
 
     slider_ = SliderX{{0, 0}, slideNormal.sprite->getSize(), kInvalidWindowId, 
                       createShape(blueSliderColor, {1, 1}), 

@@ -63,6 +63,8 @@ ABarButton::State ABarButton::getState() const
 
 bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
 {
+    State statePrevious = state_;
+
     vec2i mousePos = Mouse::getPosition(renderWindow);
     bool hovered = checkIsHovered(mousePos, pos_, size_);
     bool pressed = updateIsPressed(event, state_ == State::Press, hovered);
@@ -83,7 +85,7 @@ bool ABarButton::updateState(const IRenderWindow* renderWindow, const Event& eve
         if (pressed) state_ = State::Press;
     }
 
-    return clicked || hovered || pressed;
+    return statePrevious != state_;
 }
 
 void ABarButton::setPos(const vec2i& pos)
@@ -218,6 +220,8 @@ void AMenuBarButton::draw(IRenderWindow* renderWindow)
 // TODO: copypaste
 bool AMenuBarButton::updateState(const IRenderWindow* renderWindow, const Event& event)
 {
+    State statePrevious = state_;
+
     vec2i mousePos = Mouse::getPosition(renderWindow);
     bool hovered = checkIsHovered(mousePos, pos_, size_);
     bool pressed = updateIsPressed(event, state_ == State::Press, hovered);
@@ -238,7 +242,7 @@ bool AMenuBarButton::updateState(const IRenderWindow* renderWindow, const Event&
         if (pressed) state_ = State::Press;
     }
 
-    return clicked || hovered || pressed;
+    return statePrevious != state_;
 }
 
 // ABar implementation

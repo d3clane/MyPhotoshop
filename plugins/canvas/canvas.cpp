@@ -580,8 +580,6 @@ std::unique_ptr<ICanvasSnapshot> Canvas::save()
 
 void Canvas::restore(ICanvasSnapshot* snapshot)
 {
-    fprintf(stderr, "RESTOING CANVAS\n");
-    
     auto canvasSnapshot = dynamic_cast<CanvasSnapshot*>(snapshot);
     assert(canvasSnapshot);
 

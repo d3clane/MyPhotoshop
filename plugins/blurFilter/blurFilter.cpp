@@ -83,7 +83,6 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
         return false;
     }
 
-#if 0
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
     assert(canvas);
     
@@ -96,7 +95,6 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
     std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
     
     copyPixelsToLayer(activeLayer, blured);
-#endif
 
     return true;
 }

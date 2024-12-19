@@ -117,6 +117,51 @@ void AWindowContainer::setParent(const IWindow* parent) { AWindow::setParent(par
 
 #endif
 
+// Empty window implementation
+
+EmptyWindow::EmptyWindow(SpriteInfo spriteInfo) : spriteInfo_(std::move(spriteInfo)) {}
+
+std::unique_ptr<IAction> EmptyWindow::createAction(const IRenderWindow* /* renderWindow */,
+                                                   const Event& /* event */) 
+{ 
+    return nullptr; 
+}
+
+void EmptyWindow::draw(IRenderWindow* renderWindow) { spriteInfo_.sprite->draw(renderWindow); }
+    
+wid_t EmptyWindow::getId() const { return kInvalidWindowId; }
+
+IWindow* EmptyWindow::getWindowById(wid_t /* id */) { return nullptr; }
+const IWindow* EmptyWindow::getWindowById(wid_t /* id */) const { return nullptr; }
+
+vec2i EmptyWindow::getPos() const { return pos_; }
+vec2u EmptyWindow::getSize() const { return size_; }
+
+void EmptyWindow::setPos(const vec2i& pos) 
+{ 
+    pos_ = pos; 
+    spriteInfo_.sprite->setPosition(static_cast<float>(pos_.x), static_cast<float>(pos_.y));
+}
+
+void EmptyWindow::setSize(const vec2u& size) 
+{ 
+    size_ = size;
+
+    spriteInfo_.sprite->setScale(1.f, 1.f);
+    vec2u spriteSize = spriteInfo_.sprite->getSize();
+    spriteInfo_.sprite->setScale(static_cast<float>(size.x) / static_cast<float>(spriteSize.x),
+                                 static_cast<float>(size.y) / static_cast<float>(spriteSize.y));
+
+}
+
+void EmptyWindow::forceActivate() { isActive_ = true; }
+void EmptyWindow::forceDeactivate() { isActive_ = false; }
+
+bool EmptyWindow::isActive() const { return isActive_; }
+bool EmptyWindow::isWindowContainer() const { return false; }
+
+void EmptyWindow::setParent(const IWindow* /* parent */) { return; }
+
 // other functions implementation
 
 vec2i shrinkPosToBoundary(const vec2i& objectPos, const vec2u& objectSize, 

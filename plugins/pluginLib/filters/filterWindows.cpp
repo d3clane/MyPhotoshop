@@ -9,12 +9,12 @@
 namespace ps
 {
 
+static const vec2u RenderWindowSize = {800, 600};
+
 FilterWindow::FilterWindow(wid_t id, const char* filterWindowName)
     : id_(id)
 {
-    static const vec2u renderWindowSize = {800, 600};
-
-    renderWindow_ = IRenderWindow::create(renderWindowSize.x, renderWindowSize.y, filterWindowName);
+    renderWindow_ = IRenderWindow::create(RenderWindowSize.x, RenderWindowSize.y, filterWindowName);
 }
 
 
@@ -219,7 +219,7 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
     Color blueSliderColor = Color{74, 115, 145, 255};
     vec2u spritesOutlineWidth = {3, 2};
     vec2u maxFillColorSize = slideNormal.sprite->getSize() - 2 * spritesOutlineWidth;
-
+    maxFillColorSize.x = 432;
 
     const float maxRadius = 100;
     auto namedSlider = std::make_unique<NamedSlider>("Radius: ", maxRadius);
@@ -234,6 +234,10 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
     namedSlider->setSlider(std::move(slider));
     namedSlider->setPos({100, 100});
 
+    auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/renderWindowColor.png"));
+    emptyWindow->setSize(RenderWindowSize);
+    
+    filterWindow->addWindow(std::move(emptyWindow)); // order is important
     filterWindow->addWindow(std::move(namedSlider));
 
     fprintf(stderr, "FILTER WINDOW IS CREATED\n");

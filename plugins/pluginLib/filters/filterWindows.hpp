@@ -52,6 +52,14 @@ private:
     std::vector<std::unique_ptr<IWindow>> windows_;
 };
 
+class ApplyResultButtonsController : public IWindow
+{
+public:
+
+private:
+    
+};
+
 std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name);
 
 }

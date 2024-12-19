@@ -49,8 +49,8 @@ void drawTextUponSlider(IRenderWindow* renderWindow, const std::string& string,
     IntRect bounds = text_->getGlobalBounds();
 
     // absolute magic constants. Idk how text works
-    text_->setPos(vec2f{static_cast<float>(sliderPos.x + (sliderSize.x - bounds.size.x) / 2),
-                        static_cast<float>(sliderPos.y + 2)});
+    text_->setPos(vec2f{sliderPos.x + (sliderSize.x - bounds.size.x) / 2,
+                        sliderPos.y + 0.285f * sliderSize.y - 0.43f * bounds.size.y});
 
     renderWindow->draw(text_.get());
 }

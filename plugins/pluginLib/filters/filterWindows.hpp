@@ -1,6 +1,9 @@
 #ifndef PLUGINS_PLUGIN_LIB_FILTER_WINDOWS_HPP
 #define PLUGINS_PLUGIN_LIB_FILTER_WINDOWS_HPP
 
+#include "api/api_memento.hpp"
+#include "api/api_canvas.hpp"
+
 #include "pluginLib/windows/windows.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
 
@@ -52,12 +55,11 @@ private:
     std::vector<std::unique_ptr<IWindow>> windows_;
 };
 
-class ApplyResultButtonsController : public IWindow
+class ApplyButtonsBar : public ABar
 {
 public:
 
 private:
-    
 };
 
 std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name);

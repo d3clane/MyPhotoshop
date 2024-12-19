@@ -9,6 +9,8 @@ namespace ps
 NamedSlider::NamedSlider(const char* caption, float maxValue)
     : maxValue_(maxValue)
 {
+    id_ = kRadiusSliderId;
+    
     captionFont_ = IFont::create();
     assert(captionFont_);
     captionFont_->loadFromFile("media/fonts/arial.ttf");

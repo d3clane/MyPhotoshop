@@ -149,7 +149,6 @@ protected:
     vec2i calculateMiddleForChild(vec2u childSize);
     virtual void drawChildren(IRenderWindow* renderWindow) = 0;
     
-
 protected:
     wid_t id_ = kInvalidWindowId;
 

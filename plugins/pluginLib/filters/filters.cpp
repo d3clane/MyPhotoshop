@@ -111,20 +111,20 @@ static bool valueInBoundaries(int value, int boundaryBottom, int boundaryTop)
     return boundaryBottom < value && value < boundaryTop;
 }
 
-static Color boxBlurPixel(const std::vector<std::vector<Color>>& pixels, int x0, int y0)
+static Color boxBlurPixel(const std::vector<std::vector<Color>>& pixels, int x0, int y0,
+                          int horizontalRadius, int verticalRadius)
 {
     assert(x0 >= 0);
     assert(y0 >= 0);
     assert(y0 < static_cast<int>(pixels.size()));
     assert(x0 < static_cast<int>(pixels[(size_t)y0].size()));
 
-    int range = 1;
     int resultR = 0, resultB = 0, resultG = 0, resultA = 0;
     int divider = 0;
 
-    for (int y = y0 - range; y <= y0 + range; ++y)
+    for (int y = y0 - verticalRadius; y <= y0 + verticalRadius; ++y)
     {
-        for (int x = x0 - range; x <= x0 + range; ++x)
+        for (int x = x0 - horizontalRadius; x <= x0 + horizontalRadius; ++x)
         {
             if (!valueInBoundaries(y, -1, static_cast<int>(pixels           .size())) || 
                 !valueInBoundaries(x, -1, static_cast<int>(pixels[(size_t)y].size())))
@@ -147,7 +147,9 @@ static Color boxBlurPixel(const std::vector<std::vector<Color>>& pixels, int x0,
                  static_cast<uint8_t>(resultA / divider)};
 }
 
-std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color>>& pixels)
+
+std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color>>& pixels,
+                                             int horizontalRadius, int verticalRadius)
 {
     std::vector<std::vector<Color>> result = pixels;
 
@@ -155,7 +157,8 @@ std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color
     {
         for (size_t x = 0; x < pixels[y].size(); ++x)    
         {
-            result[y][x] = boxBlurPixel(pixels, static_cast<int>(x), static_cast<int>(y));
+            result[y][x] = boxBlurPixel(pixels, static_cast<int>(x), static_cast<int>(y),
+                                        horizontalRadius, verticalRadius);
         }
     }
 
@@ -165,7 +168,7 @@ std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color
 std::vector<std::vector<Color>> getUnsharpMasked(const std::vector<std::vector<Color>>& pixels)
 {
     std::vector<std::vector<Color>> result = pixels;
-    std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
+    std::vector<std::vector<Color>> blured = getBoxBlured(pixels, 1, 1);
 
     for (size_t y = 0; y < pixels.size(); ++y)
     {

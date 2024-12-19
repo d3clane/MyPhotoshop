@@ -39,7 +39,8 @@ std::vector<std::vector<Color>> getNegative (const std::vector<std::vector<Color
 std::vector<std::vector<Color>> getBasRelief(const std::vector<std::vector<Color>>& pixels, 
                                              const std::vector<std::vector<Color>>& negative);
 
-std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color>>& pixels);
+std::vector<std::vector<Color>> getBoxBlured(const std::vector<std::vector<Color>>& pixels,
+                                             int horizontalRadius, int verticalRadius);
 
 std::vector<std::vector<Color>> getUnsharpMasked(const std::vector<std::vector<Color>>& pixels);
 

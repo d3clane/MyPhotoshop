@@ -1,7 +1,10 @@
 #include "filterWindows.hpp"
 
+#include "api/api_canvas.hpp"
+
 #include "pluginLib/actions/actions.hpp"
 #include "slider.hpp"
+#include "interfaceInfo/interfaceInfo.hpp"
 
 #include <string>
 #include <cassert>
@@ -44,14 +47,16 @@ std::unique_ptr<IAction> FilterWindow::createAction(const IRenderWindow* /* rend
 
 bool FilterWindow::update(const IRenderWindow* /* renderWindow */, const Event& /* event */)
 {
-    if (!isActive_)
-    {
-        fprintf(stderr, "INACTIVE\n");
+    if (!renderWindow_)
         return false;
-    }
+
+    if (!isActive_)
+        return false;
     // TODO: bad stuff... Let's just believe that no actions would be undoable and no bugs are here
 
     AActionController* actionController = getActionController();
+    assert(actionController);
+    assert(renderWindow_);
 
     // TODO: govnokod -> create class for root window to call execute for it, not to run through children
 
@@ -88,6 +93,9 @@ wid_t FilterWindow::getId() const
 
 IWindow* FilterWindow::getWindowById(wid_t id)
 {
+    if (!isActive_)
+        return nullptr;
+
     if (id == id_)
         return this;
 
@@ -179,7 +187,6 @@ bool FilterWindow::closed() const
 void FilterWindow::close()
 {
     renderWindow_->close();
-    renderWindow_.reset();
 }
 
 // functions
@@ -202,6 +209,88 @@ std::string SliderTitleAction::getSliderTitle() const
     float thickness = slider_->getCurrentValue();
 
     return std::to_string(static_cast<int>(thickness));
+}
+
+// Cancel button
+
+class CancelAction : public IAction
+{
+public:
+    CancelAction(FilterWindow* filterWindow, std::unique_ptr<ICanvasSnapshot> canvasSnapshot) 
+        : filterWindow_(filterWindow), canvasSnapshot_(std::move(canvasSnapshot)) {}
+
+    bool execute(const Key& /* key */) override
+    {
+        static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId))->restore(canvasSnapshot_.get());
+        
+        assert(filterWindow_);
+        filterWindow_->close();
+        filterWindow_->forceDeactivate();
+
+        return true;
+    }
+
+    bool isUndoable(const Key& /* key */) override { return false; }
+
+private:
+    FilterWindow* filterWindow_;
+    std::unique_ptr<ICanvasSnapshot> canvasSnapshot_;
+};
+
+class OkAction : public IAction
+{
+public:
+    OkAction(FilterWindow* filterWindow) : filterWindow_(filterWindow) {}
+
+    bool execute(const Key& /* key */) override
+    { 
+        filterWindow_->close();
+        return true; 
+    }
+
+    bool isUndoable(const Key& /* key */) override { return false; }
+
+private:
+    FilterWindow* filterWindow_;
+};
+
+class ApplyButton : public ANamedBarButton
+{
+public:
+    ApplyButton(std::unique_ptr<IAction> action, const char* name);
+
+    std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, const Event& event) override;
+
+private:
+    std::unique_ptr<IAction> action_;
+};
+
+ApplyButton::ApplyButton(std::unique_ptr<IAction> action, const char* name)
+    : action_(std::move(action))
+{
+    name_ = IText::create();
+    font_ = IFont::create();
+
+    font_->loadFromFile("media/fonts/arial.ttf");
+
+    name_->setFont(font_.get());
+    name_->setString(name);
+    name_->setCharacterSize(getCommonTextCharacterSize());
+}
+
+std::unique_ptr<IAction> ApplyButton::createAction(const IRenderWindow* renderWindow,  
+                                                   const Event& event)
+{
+    if (!renderWindow)
+        return nullptr;
+
+    updateState(renderWindow, event);
+
+    if (state_ != State::Released)
+        return nullptr;
+
+    state_ = State::Normal;
+    return std::move(action_);
 }
 
 } // namespace anonymous
@@ -236,11 +325,25 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
 
     auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/renderWindowColor.png"));
     emptyWindow->setSize(RenderWindowSize);
-    
+
     filterWindow->addWindow(std::move(emptyWindow)); // order is important
     filterWindow->addWindow(std::move(namedSlider));
 
-    fprintf(stderr, "FILTER WINDOW IS CREATED\n");
+    std::unique_ptr<ICanvasSnapshot> canvasSnapshot = 
+        static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId))->save();
+
+    auto cancelButton = std::make_unique<ApplyButton>(
+        std::make_unique<CancelAction>(filterWindow.get(), std::move(canvasSnapshot)), "Cancel");
+    cancelButton->setPos({500, 500});
+    cancelButton->setSize({100, 50});
+
+    auto okButton = std::make_unique<ApplyButton>(
+        std::make_unique<OkAction>(filterWindow.get()), "Ok");
+    okButton->setPos({600, 500});
+    okButton->setSize({100, 50});
+
+    filterWindow->addWindow(std::move(cancelButton));
+    filterWindow->addWindow(std::move(okButton));
 
     return filterWindow;
 }

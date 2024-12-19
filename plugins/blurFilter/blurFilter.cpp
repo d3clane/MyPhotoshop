@@ -1,6 +1,7 @@
 #include "pluginLib/bars/ps_bar.hpp"
 
 #include "blurFilter.hpp"
+#include "pluginLib/filters/slider.hpp"
 
 #include <string>
 #include <cassert>
@@ -40,6 +41,8 @@ public:
     void draw(IRenderWindow* renderWindow) override;
 
 private:
+    std::vector<std::vector<Color>> beginLayer_;
+
     std::unique_ptr<FilterWindow> filterWindow_;
 };
 
@@ -70,19 +73,6 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
         return updateStateRes;
     }
 
-    if (updateStateRes)
-        filterWindow_ = createSimpleFilterWindow("Box Blur");
-
-    assert(filterWindow_);
-
-    AActionController* actionController = getActionController();
-
-    if (!actionController->execute(filterWindow_->createAction(renderWindow, event)))
-    {
-        state_ = State::Normal;
-        return false;
-    }
-
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
     assert(canvas);
     
@@ -91,10 +81,32 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
 
     vec2u canvasSize = canvas->getSize();
 
-    std::vector<std::vector<Color>> pixels = getLayerScreenIn2D(activeLayer, canvasSize);
-    std::vector<std::vector<Color>> blured = getBoxBlured(pixels);
+    if (updateStateRes)
+    {
+        beginLayer_ = getLayerScreenIn2D(activeLayer, canvasSize);
+        filterWindow_ = createSimpleFilterWindow("Box Blur");
+    }
+
+    assert(filterWindow_);
+
+    AActionController* actionController = getActionController();
+
+    NamedSlider* radiusSlider = dynamic_cast<NamedSlider*>(filterWindow_->getWindowById(kRadiusSliderId));
     
-    copyPixelsToLayer(activeLayer, blured);
+    if (radiusSlider)
+    {
+        int radius = static_cast<int>(radiusSlider->getCurrentValue());
+
+        std::vector<std::vector<Color>> blured = getBoxBlured(beginLayer_, radius, radius);
+        
+        copyPixelsToLayer(activeLayer, blured);
+    }
+
+    if (!actionController->execute(filterWindow_->createAction(renderWindow, event)))
+    {
+        state_ = State::Normal;
+        return false;
+    }
 
     return true;
 }

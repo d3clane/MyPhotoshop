@@ -15,7 +15,7 @@
 #include "pluginLib/canvas/canvas.hpp"
 #include "pluginLib/bars/ps_bar.hpp"
 #include "pluginLib/windows/windows.hpp"
-
+#include "pluginLib/timer/timer.hpp"
 #include "pluginLib/filters/filters.hpp"
 
 #include "pluginLib/filters/filterWindows.hpp"
@@ -44,6 +44,8 @@ private:
     std::vector<std::vector<Color>> beginLayer_;
 
     std::unique_ptr<FilterWindow> filterWindow_;
+    Timer timer_;
+
 };
 
 BlurFilterButton::BlurFilterButton(std::unique_ptr<IText> name, std::unique_ptr<IFont> font)
@@ -83,6 +85,7 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
 
     if (updateStateRes)
     {
+        timer_.start();
         beginLayer_ = getLayerScreenIn2D(activeLayer, canvasSize);
         filterWindow_ = createSimpleFilterWindow("Box Blur");
     }
@@ -91,6 +94,18 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
 
     AActionController* actionController = getActionController();
 
+    if (!actionController->execute(filterWindow_->createAction(renderWindow, event)))
+    {
+        state_ = State::Normal;
+        return false;
+    }
+
+    static const long long waitTime = 2000;
+
+    if (timer_.deltaInMs() < waitTime)
+        return false;
+
+    timer_.start();    
     NamedSlider* radiusSlider = dynamic_cast<NamedSlider*>(filterWindow_->getWindowById(kRadiusSliderId));
     
     if (radiusSlider)
@@ -100,12 +115,6 @@ bool BlurFilterButton::update(const IRenderWindow* renderWindow, const Event& ev
         std::vector<std::vector<Color>> blured = getBoxBlured(beginLayer_, radius, radius);
         
         copyPixelsToLayer(activeLayer, blured);
-    }
-
-    if (!actionController->execute(filterWindow_->createAction(renderWindow, event)))
-    {
-        state_ = State::Normal;
-        return false;
     }
 
     return true;

@@ -310,7 +310,7 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
     vec2u maxFillColorSize = slideNormal.sprite->getSize() - 2 * spritesOutlineWidth;
     maxFillColorSize.x = 432;
 
-    const float maxRadius = 100;
+    const float maxRadius = 10;
     auto namedSlider = std::make_unique<NamedSlider>("Radius: ", maxRadius);
 
     auto slider = std::make_unique<SliderX>(

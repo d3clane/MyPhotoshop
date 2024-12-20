@@ -3,6 +3,7 @@
 #include "pluginLib/scrollbar/scrollbar.hpp"
 #include "plugins/pluginLib/actions/actions.hpp" // TODO: ?
 #include "interfaceInfo/interfaceInfo.hpp"
+#include "pluginLib/windows/windows.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -603,12 +604,16 @@ namespace
 
 template<typename T>
 std::unique_ptr<AScrollBar> createScrollBar(const Canvas* canvas, const char* spriteName, vec2i pos,
-                                            vec2i deltaFromPos, vec2u deltaFromSize)
+                                            vec2i deltaFromPos, vec2u deltaFromSize, bool isY)
 {
     SpriteInfo sprite = createSprite(spriteName);
     vec2u size = sprite.sprite->getSize();
 
-    fprintf(stderr, "POS - %d %d\n", pos.x, pos.y);
+    if (isY)
+        sprite.sprite->setScale(1.f, (float)getCanvasRightScrollBarIntRect().size.y / (float)size.y);
+    else
+        sprite.sprite->setScale((float)getCanvasDownScrollBarIntRect().size.x / (float)size.x, 1.f);
+
     std::unique_ptr<AScrollBar> scrollBar{new T{pos, size, deltaFromPos, deltaFromSize, kInvalidWindowId}};
     scrollBar->setSprite(std::move(sprite));
 
@@ -673,12 +678,28 @@ bool onLoadPlugin()
 {
     auto rootWindow = getRootWindow();
 
+    auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/canvasBg.png"));
+    IntRect fullCanvasRect = getFullCanvasIntRect();
+    emptyWindow->setPos(fullCanvasRect.pos);
+    emptyWindow->setSize(fullCanvasRect.size);
+    rootWindow->addWindow(std::move(emptyWindow));
+
+    auto downWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/downBg.png"));
+    IntRect downRect = getEmptyDownBarIntRect();
+    downWindow->setPos(downRect.pos);
+    downWindow->setSize(downRect.size);
+    rootWindow->addWindow(std::move(downWindow));
+
+    auto emptySquareBetweenScrolls = std::make_unique<EmptyWindow>(createSprite("media/textures/squareBetween.png"));
+    emptySquareBetweenScrolls->setPos(getCanvasSquareBetweenScrollIntRect().pos);
+    emptySquareBetweenScrolls->setSize(getCanvasSquareBetweenScrollIntRect().size);
+    rootWindow->addWindow(std::move(emptySquareBetweenScrolls));
+
     std::unique_ptr<Canvas> canvas = createCanvas();
-    
 
     std::unique_ptr<AScrollBar> scrollBarX = createScrollBar<ScrollBarX>(
         canvas.get(), "media/textures/scrollX.png", getCanvasDownScrollBarIntRect().pos,
-        vec2i{14, 1}, vec2u{28, 2});
+        vec2i{14, 1}, vec2u{28, 2}, false);
 
     std::unique_ptr<AScrollBarButton> moveButtonX = 
         createMoveButton<ScrollBarButtonX>(scrollBarX.get(), canvas.get(), 
@@ -687,7 +708,7 @@ bool onLoadPlugin()
 
     std::unique_ptr<AScrollBar> scrollBarY = createScrollBar<ScrollBarY>(canvas.get(),
         "media/textures/scrollY.png", getCanvasRightScrollBarIntRect().pos,
-        vec2i{1, 14}, vec2u{2, 28});
+        vec2i{1, 14}, vec2u{2, 28}, true);
     
     std::unique_ptr<AScrollBarButton> moveButtonY = 
         createMoveButton<ScrollBarButtonY>(scrollBarY.get(), canvas.get(), 

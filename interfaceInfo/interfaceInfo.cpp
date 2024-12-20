@@ -106,8 +106,8 @@ psapi::sfm::IntRect getCanvasRightScrollBarIntRect()
     IntRect rect;
 
     //1460 / 65 + 29 = 1460 / 94
-    rect.pos = vec2i{1449, 72};
-    rect.size = vec2u{14, 966};
+    rect.pos = vec2i{1449, 64};
+    rect.size = vec2u{14, 952};
 
     return rect;
 }

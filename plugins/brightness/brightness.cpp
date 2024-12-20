@@ -126,14 +126,7 @@ Graph::Graph(vec2i pos, SpriteInfo graphSprite, vec2f graphSteps)
     vec2f infPoint = vec2f{0.f, pos_.y};
     catmullRom_.addPoint(infPoint);
 
-#if 0
-    catmullRom_.addPoint(vec2f{pos.x, pos.y});
-    catmullRom_.addPoint(vec2f{pos.x + 220, pos.y + 20});
-
-    catmullRom_.addPoint(vec2f{pos.x + 320, pos.y + 420});
-    catmullRom_.addPoint(vec2f{pos.x + 600, pos.y + 0});
-#endif
-
+    graphSprite_.sprite->setPosition(pos_.x, pos_.y);
 }
 
 void Graph::draw(IRenderWindow* renderWindow)
@@ -217,8 +210,8 @@ bool InteractivePoint::update(const IRenderWindow* renderWindow, const Event& ev
 
     vec2i mousePos = Mouse::getPosition(renderWindow);
 
-    std::clamp(mousePos.x, boundaryTopLeft_.x, boundaryTopLeft_.x + (int)boundarySizes_.x);
-    std::clamp(mousePos.y, boundaryTopLeft_.y, boundaryTopLeft_.y + (int)boundarySizes_.y);
+    mousePos.x = std::clamp(mousePos.x, boundaryTopLeft_.x, boundaryTopLeft_.x + (int)boundarySizes_.x);
+    mousePos.y = std::clamp(mousePos.y, boundaryTopLeft_.y, boundaryTopLeft_.y + (int)boundarySizes_.y);
 
     setPos(mousePos);
 

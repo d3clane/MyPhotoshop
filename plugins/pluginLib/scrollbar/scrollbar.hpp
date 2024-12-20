@@ -45,12 +45,18 @@ public:
 
     State getState() const;
 
-    void setShape(std::unique_ptr<IRectangleShape> shape, State state);
-    
+    void setInsideSprite(SpriteInfo sprite, State state);
+    void setLeftBoundarySprite(SpriteInfo sprite);
+    void setRightBoundarySprite(SpriteInfo sprite);
+
 protected:
+    virtual void configureSprites() = 0;
+
     State state_ = State::Normal;
     
-    std::unique_ptr<IRectangleShape> shapes_[static_cast<size_t>(State::Count)];
+    SpriteInfo sprites_[static_cast<size_t>(State::Count)];
+    SpriteInfo leftBoundary_;
+    SpriteInfo rightBoundary_;
 };
 
 class AScrollBarButton : public PressButton
@@ -74,10 +80,11 @@ public:
     void setScrollable(IScrollable* scrollable);
     const IScrollable* getScrollable() const;
 
+    void setZeroSCrollPos(vec2i pos);
+    
 protected:
     void setStateFromOutside(const IRenderWindow* renderWindow);
 
-    virtual void updateZeroScrollPos() = 0;
     virtual void updateSize() = 0;
 
 protected:
@@ -98,7 +105,7 @@ protected:
 class AScrollBar : public IWindowContainer
 {
 public:
-    AScrollBar(vec2i pos, vec2u size, wid_t id);
+    AScrollBar(vec2i pos, vec2u size, vec2i deltaFromPos, vec2u deltaFromSize, wid_t id);
 
     std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
                                           const Event& event) override;
@@ -127,19 +134,15 @@ public:
 
     bool isActive() const override;
 
-    vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const;
+    virtual vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const = 0;
 
     void addWindow(std::unique_ptr<IWindow> window) override;
     void removeWindow(wid_t id) override;
 
-    void setShape(std::unique_ptr<IRectangleShape> shape);
+    void setSprite(SpriteInfo sprite);
     void setMoveButton(std::unique_ptr<AScrollBarButton> moveButton);
 
     AScrollBarButton* getMoveButton();
-
-protected:
-    virtual void updatePos () = 0;
-    virtual void updateSize() = 0;
 
 protected:
     wid_t id_ = kInvalidWindowId;
@@ -148,41 +151,40 @@ protected:
     vec2u size_;
 
     bool isActive_ = true;
-
     const IWindow* parent_ = nullptr;
 
-    std::unique_ptr<IRectangleShape> shape_;
+    SpriteInfo sprite_;
 
     std::unique_ptr<AScrollBarButton> moveButton_;
+
+    vec2i deltaFromPos_;
+    vec2u deltaFromSize_;
 };
 
 class ScrollBarX : public AScrollBar
 {
 public:
-    ScrollBarX(vec2i pos, vec2u size, wid_t id);
+    ScrollBarX(vec2i pos, vec2u size, vec2i deltaFromPos, vec2u deltaFromSize, wid_t id);
 
-protected:
-    void updatePos () override;
-    void updateSize() override;
+    vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const override;
 };
 
 class ScrollBarY : public AScrollBar
 {
 public:
-    ScrollBarY(vec2i pos, vec2u size, wid_t id);
+    ScrollBarY(vec2i pos, vec2u size, vec2i deltaFromPos, vec2u deltaFromSize, wid_t id);
 
-protected:
-    void updatePos () override;
-    void updateSize() override;
+    vec2i shrinkPosToBoundaries(vec2i pos, vec2u size) const override;
 };
 
 class ScrollBarButtonX : public AScrollBarButton
 {
 public:
     ScrollBarButtonX(vec2i pos, vec2u size, wid_t id);
+
 protected:
-    void updateZeroScrollPos() override;
-    void updateSize()          override;
+    void configureSprites() override;
+    void updateSize() override;
 };
 
 class ScrollBarButtonY : public AScrollBarButton
@@ -191,10 +193,11 @@ public:
     ScrollBarButtonY(vec2i pos, vec2u size, wid_t id);
 
 protected:
-    void updateZeroScrollPos() override;
-    void updateSize()          override;
+    void configureSprites() override;
+    void updateSize() override;
 };
 
+// TODO: a square between
 class ScrollBarsXYManager : public IWindowContainer
 {
 public:

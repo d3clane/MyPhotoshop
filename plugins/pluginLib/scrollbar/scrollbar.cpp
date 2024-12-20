@@ -29,18 +29,46 @@ PressButton::State PressButton::getState() const
     return state_;
 }
 
-void PressButton::setShape(std::unique_ptr<IRectangleShape> shape, State state)
+#if 0
+static void configureSprite(ISprite* sprite, vec2u size, vec2i pos, 
+                     SpriteInfo& leftBoundary, SpriteInfo& rightBoundary)
 {
-    auto& myShape = shapes_[static_cast<size_t>(state)];
+    vec2u deltaLeft = leftBoundary.sprite->getSize();
+    vec2u deltaRight = rightBoundary.sprite->getSize();
 
+    sprite->setScale(1.f, 1.f);
+    sprite->setScale(
+        static_cast<float>(size.x - deltaLeft.x - deltaRight.x) / static_cast<float>(sprite->getSize().x), 
+        static_cast<float>(size.y - deltaLeft.y - deltaRight.y) / static_cast<float>(sprite->getSize().y));
+
+    sprite->setPosition((float)pos.x + (float)deltaLeft.x, (float)pos.y + (float)deltaLeft.y);
+}
+#endif
+
+void PressButton::setInsideSprite(SpriteInfo shape, State state)
+{
+    auto& myShape = sprites_[static_cast<size_t>(state)];
     myShape = std::move(shape);
-    myShape->setSize(size_);
-    myShape->setPosition(pos_);
+    configureSprites();
+}
+
+void PressButton::setLeftBoundarySprite(SpriteInfo sprite)
+{
+    leftBoundary_ = std::move(sprite);
+    configureSprites();
+}
+
+void PressButton::setRightBoundarySprite(SpriteInfo sprite)
+{
+    rightBoundary_ = std::move(sprite);
+    configureSprites();
 }
 
 // Scrollbar implementation
 
-AScrollBar::AScrollBar(vec2i pos, vec2u size, wid_t id) : id_(id), pos_(pos), size_(size)
+AScrollBar::AScrollBar(vec2i pos, vec2u size, vec2i deltaFromPos, vec2u deltaFromSize, wid_t id)
+    : id_(id), pos_(pos), size_(size), moveButton_(nullptr),
+      deltaFromPos_(deltaFromPos), deltaFromSize_(deltaFromSize)
 {
 }
 
@@ -55,9 +83,6 @@ bool AScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
     if (!isActive_)
         return false;
 
-    updatePos();
-    updateSize();
-    
     bool eventUsed = moveButton_->update(renderWindow, event);
     if (eventUsed)
         return true;
@@ -77,8 +102,8 @@ bool AScrollBar::update(const IRenderWindow* renderWindow, const Event& event)
 
 void AScrollBar::draw(IRenderWindow* renderWindow)
 {
-    if (shape_)
-        shape_->draw(renderWindow);
+    if (sprite_.sprite)
+        sprite_.sprite->draw(renderWindow);
 
     moveButton_->draw(renderWindow);
 }
@@ -143,36 +168,21 @@ void AScrollBar::removeWindow(wid_t /* id */)
     assert(false);
 }
 
-vec2i AScrollBar::shrinkPosToBoundaries(vec2i pos, vec2u size) const
+void AScrollBar::setSprite(SpriteInfo sprite)
 {
-    assert(size_.x >= size.x);
-    assert(size_.y >= size.y);
-
-    vec2i newPos = pos;
-    vec2i intSize_ = vec2i{static_cast<int>(size_.x), static_cast<int>(size_.y)};
-    vec2i intSize  = vec2i{static_cast<int>(size.x ), static_cast<int>(size.y )};
-
-    newPos.x = newPos.x < pos_.x ? pos_.x : newPos.x;
-    newPos.y = newPos.y < pos_.y ? pos_.y : newPos.y;
-    newPos.x = newPos.x + intSize.x > pos_.x + intSize_.x ? pos_.x + intSize_.x - intSize.x : newPos.x;
-    newPos.y = newPos.y + intSize.y > pos_.y + intSize_.y ? pos_.y + intSize_.y - intSize.y : newPos.y;
-
-    return newPos;
-}
-
-void AScrollBar::setShape(std::unique_ptr<IRectangleShape> shape)
-{
-    shape_.reset(shape.release());
-
-    shape_->setPosition(pos_);
-    shape_->setSize(size_);
+    sprite_ = std::move(sprite);
+    
+    sprite_.sprite->setPosition(vec2f{static_cast<float>(pos_.x), static_cast<float>(pos_.y)});
+    
+    //assert(sprite_.sprite->getSize().x == size_.x && sprite_.sprite->getSize().y == size_.y);
 }
 
 void AScrollBar::setMoveButton(std::unique_ptr<AScrollBarButton> moveButton)
 {
     moveButton_.reset(moveButton.release());
-
     moveButton_->setParent(static_cast<IWindowContainer*>(this));
+
+    moveButton_->setZeroSCrollPos(pos_ + deltaFromPos_);
 }
 
 AScrollBarButton* AScrollBar::getMoveButton()
@@ -184,14 +194,14 @@ void AScrollBar::setPos(const vec2i& pos)
 {
     pos_ = pos;
 
-    shape_->setPosition(pos_);
+    sprite_.sprite->setPosition(vec2f{static_cast<float>(pos_.x), static_cast<float>(pos_.y)});
 }
 
 void AScrollBar::setSize(const vec2u& size)
 {
     size_ = size;
 
-    shape_->setSize(size_);
+    assert(0);
 }
 
 // Scrollbar button
@@ -202,10 +212,9 @@ AScrollBarButton::AScrollBarButton(vec2i pos, vec2u size, wid_t id) : PressButto
 
 void AScrollBarButton::setSize(const vec2u& size)
 {
-    for (auto& shape : shapes_)
-        shape->setSize(size);
-
     size_ = size;
+
+    configureSprites();
 }
 
 void AScrollBarButton::move(vec2d delta)
@@ -238,9 +247,7 @@ void AScrollBarButton::move(vec2d delta)
         size_
     );
 
-    for (auto& shape : shapes_)
-        shape->setPosition(newPos);
-
+    configureSprites();
     pos_ = newPos;
 
     scrollable_->setScroll(scroll_);
@@ -260,7 +267,7 @@ void AScrollBarButton::setState(State state)
 
 void AScrollBarButton::draw(IRenderWindow* renderWindow)
 {
-    shapes_[static_cast<size_t>(state_)]->draw(renderWindow);
+    sprites_[static_cast<size_t>(state_)].sprite->draw(renderWindow);
 }
 
 void AScrollBarButton::setStateFromOutside(const IRenderWindow* renderWindow)
@@ -288,7 +295,6 @@ std::unique_ptr<IAction> AScrollBarButton::createAction(const IRenderWindow* ren
 
 bool AScrollBarButton::update(const IRenderWindow* renderWindow, const sfm::Event& event)
 {
-    updateZeroScrollPos();
     updateSize();
 
     setStateFromOutside(renderWindow);
@@ -323,90 +329,44 @@ const IScrollable* AScrollBarButton::getScrollable() const
     return scrollable_;
 }
 
+void AScrollBarButton::setZeroSCrollPos(vec2i pos)
+{
+    zeroScrollPos_ = pos;
+}
+
 // ScrollbarX implementation
 
-ScrollBarX::ScrollBarX(vec2i pos, vec2u size, wid_t id) : AScrollBar(pos, size, id)
+ScrollBarX::ScrollBarX(vec2i pos, vec2u size, vec2i deltaFromPos, vec2u deltaFromSize, wid_t id) 
+    : AScrollBar(pos, size, deltaFromPos, deltaFromSize, id)
 { 
     moveButton_ = std::make_unique<ScrollBarButtonX>(pos, size, id);
 }
 
-void ScrollBarX::updatePos()
+vec2i ScrollBarX::shrinkPosToBoundaries(vec2i pos, vec2u size) const
 {
-    assert(parent_);
+    vec2i leftBoundary = vec2i{pos_.x + deltaFromPos_.x, pos_.y + deltaFromPos_.y};
+    vec2i rightBoundary = vec2i{pos_.x + (int)size_.x - (int)deltaFromSize_.x - (int)size.x, pos_.y + deltaFromPos_.y};
 
-    vec2i parentPos  = parent_->getPos();
-    vec2u parentSize = parent_->getSize();
+#if 0
+    fprintf(stderr, "POS BEFORE SHRINKING - (%d, %d)\n", pos.x, pos.y);
+    fprintf(stderr, "LEFT BOUNDARY - (%d, %d)\n", leftBoundary.x, leftBoundary.y);
+    fprintf(stderr, "RIGHT BOUNDARY - (%d, %d)\n", rightBoundary.x, rightBoundary.y);
+    fprintf(stderr, "SIZE - %u %u\n", size.x, size.y);
+    fprintf(stderr, "SIZE_ - %u %u\n", size_.x, size_.y);
+#endif
 
-    setPos(vec2i{ parentPos.x, parentPos.y + static_cast<int>(parentSize.y)});
-}
-
-void ScrollBarX::updateSize()
-{
-    assert(parent_);
-    vec2u parentSize = parent_->getSize();
-
-    static const unsigned prettyCoeff = 40;
-    static const unsigned minYSize = 5;
-
-    setSize(vec2u{parentSize.x, std::max(minYSize, parentSize.y / prettyCoeff)});
-}
-
-// ScrollbarY implementation
-
-ScrollBarY::ScrollBarY(vec2i pos, vec2u size, wid_t id) : AScrollBar(pos, size, id)
-{ 
-    moveButton_ = std::make_unique<ScrollBarButtonY>(pos, size, id);
-}
-
-void ScrollBarY::updatePos()
-{
-    assert(parent_);
-
-    vec2i parentPos = parent_->getPos();
-    vec2u parentSize = parent_->getSize();
+    if (pos.x < leftBoundary.x)
+        pos.x = leftBoundary.x;
     
-    setPos(vec2i{ parentPos.x + static_cast<int>(parentSize.x), parentPos.y });
-}
+    pos.y = pos_.y + deltaFromPos_.y;
+    
+    if (pos.x > rightBoundary.x)
+        pos.x = rightBoundary.x;
+#if 0
+    fprintf(stderr, "POS AFTER SHRINKING - (%d, %d)\n", pos.x, pos.y);
+#endif
 
-void ScrollBarY::updateSize()
-{
-    assert(parent_);
-
-    vec2u parentSize = parent_->getSize();
-
-    static const unsigned prettyCoeff = 40;
-    static const unsigned minYSize = 5;
-
-    setSize(vec2u{std::max(minYSize, parentSize.x / prettyCoeff), parentSize.y});
-}
-
-// ScrollBarButtonX implementation
-
-ScrollBarButtonX::ScrollBarButtonX(vec2i pos, vec2u size, wid_t id) : AScrollBarButton(pos, size, id) 
-{
-    canScrollX_ = true;
-}
-
-// TODO: copy paste
-void ScrollBarButtonX::updateZeroScrollPos()
-{
-    assert(parent_);
-
-    // TODO: set pos correctly by scroll
-    if (scroll_.x > 0 || scroll_.y > 0)
-        return;
-
-    assert(parent_);
-    const AScrollBar* parent = static_cast<const AScrollBar*>(parent_);
-    assert(parent);
-
-    vec2i newPos = parent->shrinkPosToBoundaries(parent_->getPos() , size_);
-
-    for (auto& shape : shapes_)
-        shape->setPosition(newPos);
-
-    zeroScrollPos_ = newPos;
-    pos_ = newPos;
+    return pos;
 }
 
 void ScrollBarButtonX::updateSize()
@@ -418,7 +378,67 @@ void ScrollBarButtonX::updateSize()
 
     double xRatio = calculateScrollButtonRatio(scrollable_->getVisibleSize().x, scrollable_->getFullSize().x);
 
-    setSize(vec2u{static_cast<unsigned>(parentSize.x * xRatio), parentSize.y});
+#if 0
+    fprintf(stderr, "PARENT SIZE - %u %u\n", parentSize.x, parentSize.y);
+    fprintf(stderr, "X RATIO - %f\n", xRatio);
+#endif
+
+    setSize(vec2u{static_cast<unsigned>(parentSize.x * xRatio), size_.y});
+}
+
+// ScrollbarY implementation
+
+ScrollBarY::ScrollBarY(vec2i pos, vec2u size, vec2i deltaFromPos, vec2u deltaFromSize, wid_t id) 
+    : AScrollBar(pos, size, deltaFromPos, deltaFromSize, id)
+{ 
+    moveButton_ = std::make_unique<ScrollBarButtonY>(pos, size, id);
+}
+
+vec2i ScrollBarY::shrinkPosToBoundaries(vec2i pos, vec2u size) const
+{
+    // TODO: 
+    return vec2i{
+        pos.x + deltaFromPos_.x,
+        std::clamp(pos.y, pos_.y + deltaFromPos_.y, pos_.y + deltaFromPos_.y + (int)size_.y - (int)deltaFromSize_.y)
+    };
+}
+
+// ScrollBarButtonX implementation
+
+ScrollBarButtonX::ScrollBarButtonX(vec2i pos, vec2u size, wid_t id) : AScrollBarButton(pos, size, id) 
+{
+    canScrollX_ = true;
+}
+
+void ScrollBarButtonX::configureSprites()
+{
+    if (!leftBoundary_.sprite || !rightBoundary_.sprite)
+        return;
+
+#if 0
+    fprintf(stderr, "POS - %d %d\n", pos_.x, pos_.y);
+#endif
+
+    leftBoundary_.sprite->setPosition((float)pos_.x, (float)pos_.y);
+
+    rightBoundary_.sprite->setPosition((float)pos_.x + (float)size_.x - (float)rightBoundary_.sprite->getSize().x, 
+                                            (float)pos_.y);
+
+    vec2u deltaLeft = leftBoundary_.sprite->getSize();
+    vec2u deltaRight = rightBoundary_.sprite->getSize();
+
+    for (auto& sprite : sprites_)
+    {
+        if (!sprite.sprite)
+            continue;
+
+        sprite.sprite->setScale(1.f, 1.f);
+        sprite.sprite->setScale(
+            static_cast<float>(size_.x - deltaLeft.x - deltaRight.x) / static_cast<float>(sprite.sprite->getSize().x), 
+            1.f);
+        
+        sprite.sprite->setPosition((float)pos_.x + (float)deltaLeft.x, pos_.y);
+    }
 }
 
 // ScrollBarButtonY implementation
@@ -428,25 +448,26 @@ ScrollBarButtonY::ScrollBarButtonY(vec2i pos, vec2u size, wid_t id) : AScrollBar
     canScrollY_ = true;
 }
 
-void ScrollBarButtonY::updateZeroScrollPos()
+void ScrollBarButtonY::configureSprites()
 {
-    assert(parent_);
+    leftBoundary_.sprite->setPosition((float)pos_.x, (float)pos_.y);
+    rightBoundary_.sprite->setPosition((float)pos_.x,
+                                       (float)pos_.y + (float)size_.y - (float)rightBoundary_.sprite->getSize().y);
 
-    // TODO: set pos correctly by scroll
-    if (scroll_.x > 0 || scroll_.y > 0)
-        return;
+    vec2u deltaLeft = leftBoundary_.sprite->getSize();
+    vec2u deltaRight = rightBoundary_.sprite->getSize();
 
-    assert(parent_);
-    const AScrollBar* parent = static_cast<const AScrollBar*>(parent_);
-    assert(parent);
+    for (auto& sprite : sprites_)
+    {
+        sprite.sprite->setScale(1.f, 1.f);
+        sprite.sprite->setScale(
+            1.f,
+            static_cast<float>(size_.y - deltaLeft.y - deltaRight.y) / static_cast<float>(sprite.sprite->getSize().y));
+        
+        assert(sprite.sprite->getSize().x == size_.x);
 
-    vec2i newPos = parent->shrinkPosToBoundaries(parent_->getPos() , size_);
-
-    for (auto& shape : shapes_)
-        shape->setPosition(newPos);
-
-    zeroScrollPos_ = newPos;
-    pos_ = newPos;
+        sprite.sprite->setPosition((float)pos_.x + (float)deltaLeft.x, (float)pos_.y + (float)deltaLeft.y);
+    }
 }
 
 void ScrollBarButtonY::updateSize()
@@ -458,7 +479,7 @@ void ScrollBarButtonY::updateSize()
 
     double yRatio = calculateScrollButtonRatio(scrollable_->getVisibleSize().y, scrollable_->getFullSize().y);
 
-    setSize(vec2u{parentSize.x, static_cast<unsigned>(parentSize.y * yRatio)});
+    setSize(vec2u{size_.x, static_cast<unsigned>(parentSize.y * yRatio)});
 }
 
 // scroll bar xy manager implementation
@@ -479,16 +500,17 @@ std::unique_ptr<IAction> ScrollBarsXYManager::createAction(const IRenderWindow* 
 
 bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event& event)
 {
-    scrollBarX_->update(renderWindow, event);
-    scrollBarY_->update(renderWindow, event);
+    if (scrollBarX_) scrollBarX_->update(renderWindow, event);
+    if (scrollBarY_) scrollBarY_->update(renderWindow, event);
 
     if (event.type != Event::MouseWheelScrolled)
         return false;
 
+
     ScrollBarButtonX* scrollBarButtonX = static_cast<ScrollBarButtonX*>(scrollBarX_->getMoveButton());
-    ScrollBarButtonY* scrollBarButtonY = static_cast<ScrollBarButtonY*>(scrollBarY_->getMoveButton());
+    //ScrollBarButtonY* scrollBarButtonY = static_cast<ScrollBarButtonY*>(scrollBarY_->getMoveButton());
     assert(scrollBarButtonX);
-    assert(scrollBarButtonY);
+    //assert(scrollBarButtonY);
 
     if (!canScrollAction_->canScroll(renderWindow, event))
         return false;
@@ -502,15 +524,15 @@ bool ScrollBarsXYManager::update(const IRenderWindow* renderWindow, const Event&
         deltaMove = {event.mouseWheel.delta * scrollSpeed, 0};
 
     scrollBarButtonX->move(deltaMove);
-    scrollBarButtonY->move(deltaMove);
+    //scrollBarButtonY->move(deltaMove);
     
     return true;
 }
 
 void ScrollBarsXYManager::draw(IRenderWindow* renderWindow)
 {
-    scrollBarX_->draw(renderWindow);
-    scrollBarY_->draw(renderWindow);
+    if (scrollBarX_) scrollBarX_->draw(renderWindow);
+    if (scrollBarY_) scrollBarY_->draw(renderWindow);
 }
 
 void ScrollBarsXYManager::addWindow(std::unique_ptr<IWindow> /* window */)
@@ -528,10 +550,10 @@ IWindow* ScrollBarsXYManager::getWindowById(wid_t id)
     if (id == id_)
         return static_cast<IWindowContainer*>(this);
 
-    if (scrollBarX_->getWindowById(id))
+    if (scrollBarX_ && scrollBarX_->getWindowById(id))
         return scrollBarX_->getWindowById(id);
     
-    if (scrollBarY_->getWindowById(id))
+    if (scrollBarY_ && scrollBarY_->getWindowById(id))
         return scrollBarY_->getWindowById(id);
 
     return nullptr;

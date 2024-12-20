@@ -190,6 +190,8 @@ vec2u getScreenSize()
     return getRootWindow()->getSize();
 }
 
+static const vec2u renderWindowSize = {1728, 1080};
+
 sfm::IntRect getCanvasIntRect()
 {
     vec2u size = getScreenSize();

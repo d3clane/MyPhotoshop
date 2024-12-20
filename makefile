@@ -12,7 +12,7 @@ CFLAGS = -D _DEBUG -std=c++17 -O3 -Wall -Wextra -Weffc++ \
 		   -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs 			  \
 		   -Wstack-protector -fsized-deallocation -fstack-protector -fstrict-overflow 	  \
 		   -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-protector  						  \
-		   -fPIE -Werror=vla #-fsanitize=address				  
+		   -fPIE -Werror=vla -fsanitize=address				  
 
 OUT_O_DIR := build
 COMMONINC := -I./include -I./ -I./plugins
@@ -49,7 +49,8 @@ DYLIBS_NAMES = libapi_photoshop.dylib lib_canvas.dylib \
 			   lib_line.dylib lib_ellipse.dylib lib_rectangle.dylib \
 			   lib_negative_filter.dylib lib_blur_filter.dylib \
 			   lib_file_loader.dylib lib_edit_settings.dylib \
-			   lib_bas_relief.dylib lib_unsharp_mask.dylib 
+			   lib_bas_relief.dylib lib_unsharp_mask.dylib  \
+			   lib_brightness.dylib
 
 DYLIB_DIR = libs
 DYLIBS := $(addprefix $(DYLIB_DIR)/,$(DYLIBS_NAMES))
@@ -149,6 +150,15 @@ $(DYLIB_DIR)/lib_negative_filter.dylib : plugins/negativeFilter/negFilter.cpp \
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(DYLIB_DIR)/lib_blur_filter.dylib : plugins/blurFilter/blurFilter.cpp \
+	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
+	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
+	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp \
+	plugins/pluginLib/filters/filterWindows.cpp plugins/pluginLib/filters/slider.cpp \
+	plugins/pluginLib/timer/timer.cpp $(PS_API_LIB)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+$(DYLIB_DIR)/lib_brightness.dylib : plugins/brightness/brightness.cpp \
+	plugins/brightness/CatmullRom.cpp \
 	plugins/pluginLib/windows/windows.cpp plugins/pluginLib/bars/ps_bar.cpp \
 	plugins/pluginLib/sfmHelpful/sfmHelpful.cpp \
 	plugins/pluginLib/canvas/canvas.cpp plugins/pluginLib/filters/filters.cpp \

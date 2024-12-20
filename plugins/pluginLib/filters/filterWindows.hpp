@@ -47,6 +47,8 @@ public:
     bool closed() const;
     void close();
 
+    vec2u getRenderWindowSize() const;
+
 private:
     wid_t id_;
     bool isActive_ = true;
@@ -54,6 +56,8 @@ private:
     std::unique_ptr<IRenderWindow> renderWindow_;
     std::vector<std::unique_ptr<IWindow>> windows_;
 };
+
+void addApplyButtons(FilterWindow* filterWindow);
 
 class ApplyButtonsBar : public ABar
 {

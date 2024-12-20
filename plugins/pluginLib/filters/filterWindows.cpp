@@ -189,6 +189,11 @@ void FilterWindow::close()
     renderWindow_->close();
 }
 
+vec2u FilterWindow::getRenderWindowSize() const
+{
+    return renderWindow_->getSize();
+}
+
 // functions
 
 namespace 
@@ -295,6 +300,25 @@ std::unique_ptr<IAction> ApplyButton::createAction(const IRenderWindow* renderWi
 
 } // namespace anonymous
 
+void addApplyButtons(FilterWindow* filterWindow)
+{
+    std::unique_ptr<ICanvasSnapshot> canvasSnapshot = 
+        static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId))->save();
+
+    auto cancelButton = std::make_unique<ApplyButton>(
+        std::make_unique<CancelAction>(filterWindow, std::move(canvasSnapshot)), "Cancel");
+    cancelButton->setPos({500, 500});
+    cancelButton->setSize({100, 50});
+
+    auto okButton = std::make_unique<ApplyButton>(
+        std::make_unique<OkAction>(filterWindow), "Ok");
+    okButton->setPos({600, 500});
+    okButton->setSize({100, 50});
+
+    filterWindow->addWindow(std::move(cancelButton));
+    filterWindow->addWindow(std::move(okButton));
+}
+
 std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
 {
     auto filterWindow = std::make_unique<FilterWindow>(kInvalidWindowId, name);
@@ -329,21 +353,7 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
     filterWindow->addWindow(std::move(emptyWindow)); // order is important
     filterWindow->addWindow(std::move(namedSlider));
 
-    std::unique_ptr<ICanvasSnapshot> canvasSnapshot = 
-        static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId))->save();
-
-    auto cancelButton = std::make_unique<ApplyButton>(
-        std::make_unique<CancelAction>(filterWindow.get(), std::move(canvasSnapshot)), "Cancel");
-    cancelButton->setPos({500, 500});
-    cancelButton->setSize({100, 50});
-
-    auto okButton = std::make_unique<ApplyButton>(
-        std::make_unique<OkAction>(filterWindow.get()), "Ok");
-    okButton->setPos({600, 500});
-    okButton->setSize({100, 50});
-
-    filterWindow->addWindow(std::move(cancelButton));
-    filterWindow->addWindow(std::move(okButton));
+    addApplyButtons(filterWindow.get());
 
     return filterWindow;
 }

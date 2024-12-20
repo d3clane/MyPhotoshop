@@ -14,10 +14,14 @@ using namespace ps;
 using namespace psapi;
 using namespace psapi::sfm;
 
+static const vec2u ColorButtonSize = vec2u{64, 64};
+static const vec2u ActivatedColorButtonSize = vec2u{192, 64};
+
 class ColorButton : public ABarButton
 {
 public:
-    ColorButton(Color color);
+    ColorButton(Color color, vec2i pos, vec2u size);
+
     void draw(IRenderWindow* renderWindow) override;
     std::unique_ptr<IAction> createAction(const IRenderWindow* renderWindow, 
                                           const Event& event) override;
@@ -72,7 +76,7 @@ public:
 private:
     std::vector<std::unique_ptr<ColorButton>> colors_;
 
-    Color activatedColor_;
+    std::unique_ptr<ColorButton> activeColor_;
 
     wid_t id_ = kColorPaletteId;
     vec2i pos_ = {0, 0};
@@ -81,11 +85,14 @@ private:
     const IWindow* parent_ = nullptr;
 };
 
-ColorButton::ColorButton(Color color)
+ColorButton::ColorButton(Color color, vec2i pos, vec2u size)
 {
-    shape_ = IRectangleShape::create(1, 1);
+    size_ = size;
+    pos_ = pos;
 
+    shape_ = IRectangleShape::create(size.x, size.y);
     shape_->setFillColor(color);
+    shape_->setPosition(pos_);
 }
 
 void ColorButton::setParent(const IWindow* parent)
@@ -95,6 +102,7 @@ void ColorButton::setParent(const IWindow* parent)
 
 void ColorButton::draw(IRenderWindow* renderWindow)
 {
+
     shape_->draw(renderWindow);
 }
 
@@ -146,18 +154,32 @@ ColorPalette::ColorPalette()
 {
     static const size_t nStandardColors = 9;
 
+    vec2i pos = {0, 64};
+    vec2u size = {64, 64};
+
+    const int nColorsPerRow = 3;
     for (size_t colorId = 0; colorId < nStandardColors; ++colorId)
     {
         Color color = Color::getStandardColor(static_cast<Color::Type>(colorId));
         
-        auto colorButton = std::make_unique<ColorButton>(color);
+        auto colorButton = std::make_unique<ColorButton>(color, pos, size);
         colorButton->setParent(this);
         colors_.push_back(std::move(colorButton));
+
+        pos.x += (int)size.x;
+        if (pos.x >= nColorsPerRow * size.x)
+        {
+            pos.x = 0;
+            pos.y += (int)size.y;
+        }
     }
 
     setChildrenInfo();
 
-    activatedColor_ = colors_[0]->getColor();
+    activeColor_ = std::make_unique<ColorButton>(colors_[0]->getColor(), vec2i{0, 0}, vec2u{192, 64});
+    activeColor_->setPos(vec2i{0, 0});
+    activeColor_->setSize(vec2u{192, 64});
+
     colors_[0]->setState(IBarButton::State::Released);
 }
 
@@ -167,22 +189,22 @@ void ColorPalette::draw(IRenderWindow* renderWindow)
         return;
 
     for (auto& color : colors_)
+    {
+        vec2i pos = color->getPos();
+        color->setPos(pos + pos_);
         color->draw(renderWindow);
+        color->setPos(pos);
+    }
+
+    vec2i pos = activeColor_->getPos();
+    activeColor_->setPos(pos + pos_);
+    activeColor_->draw(renderWindow);
+    activeColor_->setPos(pos);
 }
 
 void ColorPalette::setChildrenInfo()
 {
-    vec2u childSize = {64, 64};
-
-    int gapSize = 16;
-    int childIndex = 0;
-    for (auto& color : colors_)
-    {
-        color->setPos(vec2i{ pos_.x + gapSize, 
-                             gapSize + pos_.y + (childIndex * (static_cast<int>(childSize.y) + gapSize)) });
-        color->setSize(childSize);
-        childIndex++;
-    }
+    return;
 }
 
 std::unique_ptr<IAction> ColorPalette::createAction(const IRenderWindow* renderWindow,
@@ -202,7 +224,11 @@ bool ColorPalette::update(const IRenderWindow* renderWindow, const sfm::Event& e
     for (size_t i = 0; i < childrenSize; ++i)
     {
         IBarButton::State state = colors_[i]->getState();
+
+        vec2i pos = colors_[i]->getPos();
+        colors_[i]->setPos(pos + pos_);
         updatedSomeone |= actionController->execute(colors_[i]->createAction(renderWindow, event));
+        colors_[i]->setPos(pos);
 
         if (colors_[i]->getState() == IBarButton::State::Released && 
             state != IBarButton::State::Released)
@@ -213,7 +239,9 @@ bool ColorPalette::update(const IRenderWindow* renderWindow, const sfm::Event& e
 
     if (lastReleasedButtonPos != invalidPos)
     {
-        activatedColor_ = colors_[lastReleasedButtonPos]->getColor();
+        activeColor_ = std::make_unique<ColorButton>(
+            colors_[lastReleasedButtonPos]->getColor(), activeColor_->getPos(), activeColor_->getSize());
+
         for (size_t i = 0; i < childrenSize; ++i)
         {
             if (i == lastReleasedButtonPos)
@@ -283,11 +311,11 @@ void ColorPalette::forceDeactivate() { isActive_ = false; }
 bool ColorPalette::isActive() const { return isActive_; }
 bool ColorPalette::isWindowContainer() const { return false; }
 
-Color ColorPalette::getColor() const { return activatedColor_; }
+Color ColorPalette::getColor() const { return activeColor_->getColor(); }
 
 void ColorPalette::setColor(const Color& color) 
 {
-    activatedColor_ = color;
+    activeColor_ = std::make_unique<ColorButton>(color, activeColor_->getPos(), activeColor_->getSize());
     
     for (auto& colorButton : colors_)
     {

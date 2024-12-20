@@ -25,7 +25,7 @@ vec2f CatmullRom::Eval_m(const vec2f p0,
 }
 
 vec2f CatmullRom::InterpolatePoint(float t, const vec2f& p0, const vec2f& p1,
-                                                  const vec2f& p2, const vec2f& p3) {
+                                                  const vec2f& p2, const vec2f& p3) const {
     double t2   = t  * t,
            t3   = t2 * t,
            t3_2 = t3 * 2,
@@ -48,7 +48,7 @@ vec2f CatmullRom::InterpolatePoint(float t, const vec2f& p0, const vec2f& p1,
     return vec2f( std::round( res.x), std::round( res.y));
 }
 
-vec2f CatmullRom::operator[](float t) {
+vec2f CatmullRom::operator[](float t) const {
     std::size_t point_number = static_cast<std::size_t>(t);
 
     return InterpolatePoint(t - static_cast<float>(point_number),

@@ -25,7 +25,7 @@ private:
                        const vec2f p1);
 
     vec2f InterpolatePoint(float t, const vec2f& p0, const vec2f& p1,
-                            const vec2f& p2, const vec2f& p3);
+                            const vec2f& p2, const vec2f& p3) const;
 
 public:
     CatmullRom(const std::vector<vec2f>& points)
@@ -37,7 +37,7 @@ public:
 
     size_t getSize() const;
 
-    vec2f operator[](float t);
+    vec2f operator[](float t) const;
 };
 
 } // namespace cr

@@ -21,6 +21,8 @@ using namespace cr;
 namespace 
 {
 
+static const wid_t kGraphId = 88819302;
+
 class InteractivePoint : public ABarButton
 {
 public:
@@ -62,11 +64,13 @@ public:
     void setPos(const vec2i& pos) override;
     void setSize(const vec2u& size) override;
 
-    CatmullRom catmullRom_;
+    const CatmullRom& getInterpolator() const & { return catmullRom_; }
+    vec2f recalculateInterpolatorPointToData(vec2f point) const;
+
 private:
+    CatmullRom catmullRom_;
     SpriteInfo graphSprite_;
     vec2f graphSteps_;
-
 };
 
 class SceneController : public IWindow
@@ -123,6 +127,8 @@ Graph::Graph(vec2i pos, SpriteInfo graphSprite, vec2f graphSteps)
       graphSprite_(std::move(graphSprite)), graphSteps_(graphSteps), 
       catmullRom_(std::vector<vec2f>())
 {
+    id_ = kGraphId;
+
     vec2f infPoint = vec2f{0.f, pos_.y};
     catmullRom_.addPoint(infPoint);
 
@@ -175,6 +181,11 @@ void Graph::setSize(const vec2u& size)
     assert(0);
 }
 
+vec2f Graph::recalculateInterpolatorPointToData(vec2f point) const
+{
+    return vec2f{((point.x - (float)pos_.x) * graphSteps_.x),
+                 ((float)pos_.y + (float)size_.y - point.y) * graphSteps_.y};
+}
 // Interactive point implementation
 
 InteractivePoint::InteractivePoint(vec2i pos, vec2u size,
@@ -289,7 +300,6 @@ bool SceneController::update(const IRenderWindow* renderWindow, const Event& eve
     InteractivePoint* pressedPoint = nullptr;
     for (auto& point : points_)
     {
-        fprintf(stderr, "POINT POS - %d %d\n", point.getPos().x, point.getPos().y);
         vec2i middle = calculateMiddle(point.getPos(), point.getSize());
         bool movedPoint = controller->execute(point.createAction(renderWindow, event));
 
@@ -405,7 +415,6 @@ private:
     std::vector<std::vector<Color>> beginLayer_;
 
     std::unique_ptr<FilterWindow> filterWindow_;
-    Timer timer_;
 };
 
 std::unique_ptr<FilterWindow> createFilterWindow(const char* name)
@@ -414,10 +423,11 @@ std::unique_ptr<FilterWindow> createFilterWindow(const char* name)
 
     vec2i graphTopLeft = {50, 50};
 
-    Graph graph{
-        graphTopLeft, createSprite("media/textures/grid_plot.png"),
-        vec2f{0.5f, 3.7f}
-    };
+    ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
+    SpriteInfo grid = createSprite("media/textures/grid_plot.png");
+    vec2f graphSteps = vec2f{(float)canvas->getSize().x / (float)grid.sprite->getSize().x, 0.004f};
+
+    Graph graph{graphTopLeft, std::move(grid), graphSteps};
 
     auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/renderWindowColor.png"));
     emptyWindow->setSize(filterWindow->getRenderWindowSize());
@@ -442,6 +452,49 @@ std::unique_ptr<IAction> BrightnessFilter::createAction(const IRenderWindow* ren
                                                         const Event& event)
 {
     return std::make_unique<UpdateCallbackAction<BrightnessFilter>>(*this, renderWindow, event);
+}
+
+void setBrightness(std::vector<std::vector<Color>>& pixels, unsigned fromX, unsigned toX, float brightness)
+{
+    for (unsigned y = 0; y < pixels.size(); ++y)
+    {
+        for (unsigned x = fromX; x < toX; ++x)
+        {
+            if (x >= pixels[y].size())
+                break;
+            
+            pixels[y][x].r = std::clamp(static_cast<int>(pixels[y][x].r * brightness), 0, 255);
+            pixels[y][x].g = std::clamp(static_cast<int>(pixels[y][x].g * brightness), 0, 255);
+            pixels[y][x].b = std::clamp(static_cast<int>(pixels[y][x].b * brightness), 0, 255);
+        }
+    }
+}
+
+std::vector<std::vector<Color>> applyBrightness(const std::vector<std::vector<Color>>& pixels, 
+                                                const Graph* graph)
+{
+    const CatmullRom& interpolator = graph->getInterpolator();
+
+    std::vector<std::vector<Color>> result = pixels;
+
+    double step = 0.01;
+    vec2f prevPoint = interpolator[1.0];
+    for (double a = 1; a < (double)interpolator.getSize() - 2.0 - step; a += step)
+    {
+        vec2f point = interpolator[a];
+
+        unsigned fromX = static_cast<unsigned>(graph->recalculateInterpolatorPointToData(prevPoint).x);
+        unsigned toX = static_cast<unsigned>(graph->recalculateInterpolatorPointToData(point).x);
+        #if 0
+        fprintf(stderr, "POINT - %u %u\n", static_cast<unsigned>(point.x), static_cast<unsigned>(point.y));
+        fprintf(stderr, "FROM %u TO %u\n", fromX, toX);
+        #endif
+
+        setBrightness(result, fromX, toX, graph->recalculateInterpolatorPointToData(point).y);
+        prevPoint = point;
+    }
+
+    return result;
 }
 
 bool BrightnessFilter::update(const IRenderWindow* renderWindow, const Event& event)
@@ -469,7 +522,6 @@ bool BrightnessFilter::update(const IRenderWindow* renderWindow, const Event& ev
 
     if (updateStateRes)
     {
-        timer_.start();
         beginLayer_ = getLayerScreenIn2D(activeLayer, canvasSize);
         filterWindow_ = createFilterWindow("Brightness Filter");
     }
@@ -484,13 +536,13 @@ bool BrightnessFilter::update(const IRenderWindow* renderWindow, const Event& ev
         return false;
     }
 
-    static const long long waitTime = 2000;
-
-    if (timer_.deltaInMs() < waitTime)
+    Graph* graph = dynamic_cast<Graph*>(filterWindow_->getWindowById(kGraphId));
+    
+    if (!graph)
         return false;
 
-    timer_.start();    
-
+    copyPixelsToLayer(activeLayer, applyBrightness(beginLayer_, graph));
+    
     return true;
 }
 

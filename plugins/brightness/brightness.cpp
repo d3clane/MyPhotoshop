@@ -46,6 +46,10 @@ private:
     vec2u boundarySizes_;
 };
 
+static const vec2i deltaFromGraphSpritePos = {63, 4};
+static const vec2u deltaFromGraphSpriteSize = {80, 56};
+static const int kInteractivePointRadius = 7;
+
 class Graph : public AWindow
 {
 public:
@@ -183,8 +187,8 @@ void Graph::setSize(const vec2u& size)
 
 vec2f Graph::recalculateInterpolatorPointToData(vec2f point) const
 {
-    return vec2f{((point.x - (float)pos_.x) * graphSteps_.x),
-                 ((float)pos_.y + (float)size_.y - point.y) * graphSteps_.y};
+    return vec2f{((point.x - (float)pos_.x - (float)deltaFromGraphSpritePos.x - kInteractivePointRadius) * graphSteps_.x),
+                 ((float)pos_.y + (float)size_.y - point.y - (float)deltaFromGraphSpritePos.y) * graphSteps_.y};
 }
 // Interactive point implementation
 
@@ -261,11 +265,13 @@ SceneController::SceneController(Graph&& graph) : graph_(std::move(graph))
     vec2u size = {13, 13};
 
     vec2i pos = graph_.getPos();
-    vec2i positions[] = {pos, pos + vec2i{100, 100}, pos + vec2i{300, 400}, pos + vec2i{600, 200}};
+    vec2i positions[] = {pos + vec2i{63, 4}, pos + vec2i{150, 100}, pos + vec2i{300, 400}, pos + vec2i{600, 200}};
     
     for (auto& point : positions)
     {
-        InteractivePoint interactivePoint{point, size, graph_.getPos(), graph_.getSize()};
+        // TODO: magic shifts that depend on texture
+        InteractivePoint interactivePoint{point, size, graph_.getPos() + deltaFromGraphSpritePos, 
+                                                       graph_.getSize() - deltaFromGraphSpriteSize};
 
         interactivePoint.setSprite(createSprite("media/textures/circleNormal.png"),  IBarButton::State::Normal);
         interactivePoint.setSprite(createSprite("media/textures/circleHover.png"),   IBarButton::State::Hover);
@@ -421,11 +427,12 @@ std::unique_ptr<FilterWindow> createFilterWindow(const char* name)
 {
     auto filterWindow = std::make_unique<FilterWindow>(kInvalidWindowId, name);
 
-    vec2i graphTopLeft = {50, 50};
+    vec2i graphTopLeft = {0, 0};
 
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
     SpriteInfo grid = createSprite("media/textures/grid_plot.png");
-    vec2f graphSteps = vec2f{(float)canvas->getSize().x / (float)grid.sprite->getSize().x, 0.004f};
+    vec2f graphSteps = vec2f{(float)canvas->getSize().x / 
+                             ((float)grid.sprite->getSize().x - deltaFromGraphSpriteSize.x), 0.004f};
 
     Graph graph{graphTopLeft, std::move(grid), graphSteps};
 

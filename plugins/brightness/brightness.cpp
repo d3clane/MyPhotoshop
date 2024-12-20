@@ -275,11 +275,18 @@ std::unique_ptr<IAction> SceneController::createAction(const IRenderWindow* rend
     return std::make_unique<UpdateCallbackAction<SceneController>>(*this, renderWindow, event);
 }
 
+void unPressAllPoints(std::vector<InteractivePoint>& points)
+{
+    for (auto& point : points)
+        point.setState(IBarButton::State::Normal);
+}
+
 bool SceneController::update(const IRenderWindow* renderWindow, const Event& event)
 {
     AActionController* controller = getActionController();
     bool executedSomeone = false;
 
+    InteractivePoint* pressedPoint = nullptr;
     for (auto& point : points_)
     {
         fprintf(stderr, "POINT POS - %d %d\n", point.getPos().x, point.getPos().y);
@@ -289,7 +296,16 @@ bool SceneController::update(const IRenderWindow* renderWindow, const Event& eve
         if (movedPoint)
             graph_.movePoint(middle, calculateMiddle(point.getPos(), point.getSize()));
 
+        if (point.getState() == IBarButton::State::Press)
+            pressedPoint = &point;
+
         executedSomeone |= movedPoint;
+    }
+
+    if (pressedPoint)
+    {
+        unPressAllPoints(points_);
+        pressedPoint->setState(IBarButton::State::Press);
     }
 
     controller->execute(graph_.createAction(renderWindow, event));

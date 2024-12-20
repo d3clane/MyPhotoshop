@@ -17,6 +17,11 @@ const char* getCommonReleaseTexturePath();
 psapi::sfm::IntRect getLayersIntRect();
 psapi::sfm::IntRect getToolOptionsRightIntRect();
 psapi::sfm::IntRect getToolOptionsUpIntRect();
+psapi::sfm::IntRect getEmptyDownBarIntRect();
+psapi::sfm::IntRect getFullCanvasIntRect();
+psapi::sfm::IntRect getCanvasDownScrollBarIntRect();
+psapi::sfm::IntRect getCanvasRightScrollBarIntRect();
+psapi::sfm::IntRect getCanvasSquareBetweenScrollIntRect();
 
 } // namespace ps
 

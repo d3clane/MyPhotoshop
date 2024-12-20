@@ -197,11 +197,10 @@ sfm::IntRect getCanvasIntRect()
     vec2u size = getScreenSize();
     
     sfm::IntRect rect;
-    rect.pos  = {static_cast<int>     (static_cast<float>(size.x) * 0.045f),
-                 static_cast<int>     (static_cast<float>(size.y) * 0.08f)};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.81f),
-                 static_cast<unsigned>(static_cast<float>(size.y) * 0.9f)};
-    
+
+    rect.pos = {240, 180};
+    rect.size = { 1048, 749 };
+
     return rect;
 }
 
@@ -211,15 +210,16 @@ sfm::IntRect getToolbarIntRect()
 
     sfm::IntRect rect;
     // 0.035f (menu bar) + 0.045f (bar below, probably options)
-    rect.pos  = {0, static_cast<int>(static_cast<float>(size.y) * 0.08f)};
-    rect.size = {static_cast<unsigned>(static_cast<float>(size.x) * 0.045f), 
-                 static_cast<unsigned>(static_cast<float>(size.y) * 0.92f)};
+    rect.pos  = {0, 64};
+    rect.size = {72, 966}; 
     
     return rect;
 }
 
 sfm::IntRect getOptionsBarIntRect()
 {
+    // deprecated
+
     vec2u size = getScreenSize();
 
     sfm::IntRect rect;
@@ -238,14 +238,15 @@ sfm::IntRect getMenuBarIntRect()
 
     sfm::IntRect rect;
     rect.pos  = {0, 0};
-    rect.size = {size.x, 
-                 static_cast<unsigned>(static_cast<float>(size.y) * 0.035f)};
+    rect.size = {size.x, 29};
 
     return rect;
 }
 
 sfm::IntRect getInstrumentOptionsIntRect()
 {
+    // deprecated
+
     vec2u size = getScreenSize();
 
     sfm::IntRect rect;

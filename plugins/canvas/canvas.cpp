@@ -2,6 +2,7 @@
 #include "api/api_sfm.hpp"
 #include "pluginLib/scrollbar/scrollbar.hpp"
 #include "plugins/pluginLib/actions/actions.hpp" // TODO: ?
+#include "interfaceInfo/interfaceInfo.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -607,6 +608,7 @@ std::unique_ptr<AScrollBar> createScrollBar(const Canvas* canvas, const char* sp
     SpriteInfo sprite = createSprite(spriteName);
     vec2u size = sprite.sprite->getSize();
 
+    fprintf(stderr, "POS - %d %d\n", pos.x, pos.y);
     std::unique_ptr<AScrollBar> scrollBar{new T{pos, size, deltaFromPos, deltaFromSize, kInvalidWindowId}};
     scrollBar->setSprite(std::move(sprite));
 
@@ -672,29 +674,32 @@ bool onLoadPlugin()
     auto rootWindow = getRootWindow();
 
     std::unique_ptr<Canvas> canvas = createCanvas();
+    
 
     std::unique_ptr<AScrollBar> scrollBarX = createScrollBar<ScrollBarX>(
-        canvas.get(), "media/textures/scrollX.png", {100, 500},
-        vec2i{14, 1}, {28, 2});
+        canvas.get(), "media/textures/scrollX.png", getCanvasDownScrollBarIntRect().pos,
+        vec2i{14, 1}, vec2u{28, 2});
 
     std::unique_ptr<AScrollBarButton> moveButtonX = 
         createMoveButton<ScrollBarButtonX>(scrollBarX.get(), canvas.get(), 
                                            "media/textures/scrollXNormal.png", "media/textures/scrollXHover.png", "media/textures/scrollXPress.png",
                                            "media/textures/scrollXLeftBoundary.png", "media/textures/scrollXRightBoundary.png");
 
-#if 0
-    std::unique_ptr<AScrollBar> scrollBarY = createScrollBar<ScrollBarY>(canvas.get());
-    std::unique_ptr<AScrollBarButton> moveButtonY = 
-        createMoveButton<ScrollBarButtonY>(scrollBarY.get(), canvas.get());
-#endif
-    scrollBarX->setMoveButton(std::move(moveButtonX));
+    std::unique_ptr<AScrollBar> scrollBarY = createScrollBar<ScrollBarY>(canvas.get(),
+        "media/textures/scrollY.png", getCanvasRightScrollBarIntRect().pos,
+        vec2i{1, 14}, vec2u{2, 28});
     
-//scrollBarY->setMoveButton(std::move(moveButtonY));
+    std::unique_ptr<AScrollBarButton> moveButtonY = 
+        createMoveButton<ScrollBarButtonY>(scrollBarY.get(), canvas.get(), 
+                                           "media/textures/scrollYNormal.png", "media/textures/scrollYHover.png", "media/textures/scrollYPress.png",
+                                           "media/textures/scrollYLeftBoundary.png", "media/textures/scrollYRightBoundary.png");
 
+    scrollBarX->setMoveButton(std::move(moveButtonX));
+    scrollBarY->setMoveButton(std::move(moveButtonY));
+    
     std::unique_ptr<ScrollBarsXYManager> scrollBarsXYManager = std::make_unique<ScrollBarsXYManager>(
         std::unique_ptr<ScrollBarX>(static_cast<ScrollBarX*>(scrollBarX.release())),
-        nullptr,
-        //std::unique_ptr<ScrollBarY>(static_cast<ScrollBarY*>(scrollBarY.release())),
+        std::unique_ptr<ScrollBarY>(static_cast<ScrollBarY*>(scrollBarY.release())),
         std::make_unique<CanScrollAction>(canvas.get())
         );
 

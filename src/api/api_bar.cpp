@@ -383,8 +383,8 @@ std::string SliderPxTitleAction::getSliderTitle() const
 
 ThicknessOption::ThicknessOption()
 {
-    SpriteInfo slideNormal = createSprite("media/textures/sliderNormal.png");
-    SpriteInfo slidePress = createSprite("media/textures/sliderPress.png");
+    SpriteInfo slideNormal = createSprite("assets/textures/sliderNormal.png");
+    SpriteInfo slidePress = createSprite("assets/textures/sliderPress.png");
 
     assert(slideNormal.sprite->getSize().x == slidePress.sprite->getSize().x);
     assert(slideNormal.sprite->getSize().y == slidePress.sprite->getSize().y);

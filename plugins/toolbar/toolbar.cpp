@@ -38,7 +38,7 @@ Toolbar::Toolbar(vec2i pos, vec2u size)
                          getCommonHoverTexturePath(), getCommonPressTexturePath(), 
                          getCommonReleaseTexturePath())
 {
-    delimeterSprite_ = createSprite(size, "media/textures/toolbarDelimeter.png");
+    delimeterSprite_ = createSprite(size, "assets/textures/toolbarDelimeter.png");
 }
 
 void Toolbar::setChildrenInfo()

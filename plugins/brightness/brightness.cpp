@@ -273,10 +273,10 @@ SceneController::SceneController(Graph&& graph) : graph_(std::move(graph))
         InteractivePoint interactivePoint{point, size, graph_.getPos() + deltaFromGraphSpritePos, 
                                                        graph_.getSize() - deltaFromGraphSpriteSize};
 
-        interactivePoint.setSprite(createSprite("media/textures/circleNormal.png"),  IBarButton::State::Normal);
-        interactivePoint.setSprite(createSprite("media/textures/circleHover.png"),   IBarButton::State::Hover);
-        interactivePoint.setSprite(createSprite("media/textures/circlePress.png"),   IBarButton::State::Press);
-        interactivePoint.setSprite(createSprite("media/textures/circleRelease.png"), IBarButton::State::Released);
+        interactivePoint.setSprite(createSprite("assets/textures/circleNormal.png"),  IBarButton::State::Normal);
+        interactivePoint.setSprite(createSprite("assets/textures/circleHover.png"),   IBarButton::State::Hover);
+        interactivePoint.setSprite(createSprite("assets/textures/circlePress.png"),   IBarButton::State::Press);
+        interactivePoint.setSprite(createSprite("assets/textures/circleRelease.png"), IBarButton::State::Released);
 
         graph_.addPoint(calculateMiddle(point, size));
         points_.push_back(std::move(interactivePoint));
@@ -430,13 +430,13 @@ std::unique_ptr<FilterWindow> createFilterWindow(const char* name)
     vec2i graphTopLeft = {0, 0};
 
     ICanvas* canvas = static_cast<ICanvas*>(getRootWindow()->getWindowById(kCanvasWindowId));
-    SpriteInfo grid = createSprite("media/textures/grid_plot.png");
+    SpriteInfo grid = createSprite("assets/textures/grid_plot.png");
     vec2f graphSteps = vec2f{(float)canvas->getSize().x / 
                              ((float)grid.sprite->getSize().x - deltaFromGraphSpriteSize.x), 0.004f};
 
     Graph graph{graphTopLeft, std::move(grid), graphSteps};
 
-    auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/renderWindowColor.png"));
+    auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("assets/textures/renderWindowColor.png"));
     emptyWindow->setSize(filterWindow->getRenderWindowSize());
 
     auto sceneController = std::make_unique<SceneController>(std::move(graph));
@@ -568,7 +568,7 @@ bool onLoadPlugin()
 {
     std::unique_ptr<IText> text = IText::create();
     std::unique_ptr<IFont> font = IFont::create();
-    font->loadFromFile("media/fonts/arial.ttf");
+    font->loadFromFile("assets/fonts/arial.ttf");
     text->setFont(font.get());
     text->setString("Brightness Filter");
     

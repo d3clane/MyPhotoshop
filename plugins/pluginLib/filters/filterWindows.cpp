@@ -276,7 +276,7 @@ ApplyButton::ApplyButton(std::unique_ptr<IAction> action, const char* name)
     name_ = IText::create();
     font_ = IFont::create();
 
-    font_->loadFromFile("media/fonts/arial.ttf");
+    font_->loadFromFile("assets/fonts/arial.ttf");
 
     name_->setFont(font_.get());
     name_->setString(name);
@@ -323,8 +323,8 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
 {
     auto filterWindow = std::make_unique<FilterWindow>(kInvalidWindowId, name);
 
-    SpriteInfo slideNormal = createSprite("media/textures/longSliderNormal.png");
-    SpriteInfo slidePress  = createSprite("media/textures/longSliderPress.png");
+    SpriteInfo slideNormal = createSprite("assets/textures/longSliderNormal.png");
+    SpriteInfo slidePress  = createSprite("assets/textures/longSliderPress.png");
 
     assert(slideNormal.sprite->getSize().x == slidePress.sprite->getSize().x);
     assert(slideNormal.sprite->getSize().y == slidePress.sprite->getSize().y);
@@ -347,7 +347,7 @@ std::unique_ptr<FilterWindow> createSimpleFilterWindow(const char* name)
     namedSlider->setSlider(std::move(slider));
     namedSlider->setPos({100, 100});
 
-    auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("media/textures/renderWindowColor.png"));
+    auto emptyWindow = std::make_unique<EmptyWindow>(createSprite("assets/textures/renderWindowColor.png"));
     emptyWindow->setSize(RenderWindowSize);
 
     filterWindow->addWindow(std::move(emptyWindow)); // order is important

@@ -33,9 +33,9 @@ static const vec2u SubMenuChildSize = {256, 32};
 
 SubMenuBar::SubMenuBar() 
     : ASpritedButtonsBar(vec2i{0, 0}, vec2u{SubMenuChildSize.x, 0}, kInvalidWindowId, Color{60, 60, 60, 255},
-                         "media/textures/SubMenuButtonOnHover.png", 
-                         "media/textures/SubMenuButtonOnPress.png", 
-                         "media/textures/SubMenuButtonOnRelease.png")
+                         "assets/textures/SubMenuButtonOnHover.png", 
+                         "assets/textures/SubMenuButtonOnPress.png", 
+                         "assets/textures/SubMenuButtonOnRelease.png")
 {
     childSize_ = SubMenuChildSize;
 }

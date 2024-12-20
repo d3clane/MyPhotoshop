@@ -98,7 +98,7 @@ void drawPoint(ICanvas* canvas, std::shared_ptr<MediatorType> mediator)
 bool loadPlugin()
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<
-        SprayButton, MediatorType>("media/textures/spray.png");
+        SprayButton, MediatorType>("assets/textures/spray.png");
 }
 
 void unloadPlugin()

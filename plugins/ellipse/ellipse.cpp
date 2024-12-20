@@ -5,7 +5,7 @@
 bool onLoadPlugin()
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<
-        ShapeButton<IEllipseShape>>("media/textures/ellipse.png");
+        ShapeButton<IEllipseShape>>("assets/textures/ellipse.png");
 }
 
 void onUnloadPlugin()

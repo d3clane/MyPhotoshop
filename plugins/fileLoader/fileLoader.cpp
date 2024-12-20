@@ -99,7 +99,7 @@ void updateMenuChildren(SubMenuBar* menu)
         if (isImage(filename))
         {
             std::unique_ptr<IFont> font = IFont::create();
-            font->loadFromFile("media/fonts/arial.ttf");
+            font->loadFromFile("assets/fonts/arial.ttf");
 
             menu->addWindow(std::make_unique<MenuButtonType>(filesIdsBegin + filesCnt, 
                                                              filename, std::move(font)));
@@ -239,7 +239,7 @@ template<typename SubButtonsType>
 void loadPlugin(const char* pluginName)
 {
     std::unique_ptr<IFont> font = IFont::create();
-    font->loadFromFile("media/fonts/arial.ttf");
+    font->loadFromFile("assets/fonts/arial.ttf");
     std::unique_ptr<IText> name = IText::create();
     name->setFont(font.get());
     name->setString(pluginName);

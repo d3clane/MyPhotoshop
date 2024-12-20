@@ -65,7 +65,7 @@ std::unique_ptr<IBarButton> createCommonButton(const char* name, std::unique_ptr
 {
     std::unique_ptr<IText> text = IText::create();
     std::unique_ptr<IFont> font = IFont::create();
-    font->loadFromFile("media/fonts/arial.ttf");
+    font->loadFromFile("assets/fonts/arial.ttf");
     text->setFont(font.get());
     text->setString(name);
 

@@ -39,7 +39,7 @@ void EraserButton::drawPoint(ICanvas* canvas, psapi::ILayer* layer, const vec2i&
 bool onLoadPlugin()
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<EraserButton>(
-        "media/textures/eraser.png"
+        "assets/textures/eraser.png"
     );
 }
 

@@ -24,7 +24,7 @@ std::unique_ptr<IFont> loadFont()
     std::unique_ptr<IFont> font_ = IFont::create();
 
     assert(font_);
-    font_->loadFromFile("media/fonts/arial.ttf");
+    font_->loadFromFile("assets/fonts/arial.ttf");
 
     return font_;
 }

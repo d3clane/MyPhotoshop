@@ -15,17 +15,17 @@ psapi::sfm::Color getCommonBarColor()
 
 const char* getCommonHoverTexturePath()
 {
-    return "media/textures/ToolbarOnHover.png";
+    return "assets/textures/ToolbarOnHover.png";
 }
 
 const char* getCommonPressTexturePath()
 {
-    return "media/textures/ToolbarOnPress.png";
+    return "assets/textures/ToolbarOnPress.png";
 }
 
 const char* getCommonReleaseTexturePath()
 {
-    return "media/textures/ToolbarOnRelease.png";
+    return "assets/textures/ToolbarOnRelease.png";
 }
 
 // TODO: design fix - menu bar is too big for it's buttons. Up tool options are also too big

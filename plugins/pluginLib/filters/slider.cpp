@@ -13,7 +13,7 @@ NamedSlider::NamedSlider(const char* caption, float maxValue)
     
     captionFont_ = IFont::create();
     assert(captionFont_);
-    captionFont_->loadFromFile("media/fonts/arial.ttf");
+    captionFont_->loadFromFile("assets/fonts/arial.ttf");
     
     caption_ = IText::create();
     caption_->setFont(captionFont_.get());

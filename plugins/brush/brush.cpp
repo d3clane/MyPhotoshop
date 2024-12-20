@@ -61,7 +61,7 @@ void BrushButton::drawPoint(ICanvas* /* canvas */, ILayer* layer, const vec2i& p
 bool onLoadPlugin()
 {
     return instrument_button_functions::instrumentButtonOnLoadPlugin<BrushButton>(
-        "media/textures/paintbrush.png");
+        "assets/textures/paintbrush.png");
 }
 
 void onUnloadPlugin()

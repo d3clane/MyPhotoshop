@@ -1,6 +1,6 @@
 build/
 .vscode/
-.DS_Store/
+.DS_Store
 html/
 latex/
 libs/

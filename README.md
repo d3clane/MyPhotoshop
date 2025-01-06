@@ -2,7 +2,7 @@
 
 ## Installation and Run
 
-This project is utilizing SFML.
+This project utilizes SFML.
 
 ```
 git clone https://github.com/d3clane/MyPhotoshop
@@ -10,92 +10,96 @@ make
 ./build/bin/ps.out
 ```
 
+
 ## Project Goal
 
-Main goal of the project - get used to working in team and with plugins architecture.
+The main goal of the project is to gain experience in teamwork and plugin-based architecture.  
 
-First step of the project was to come up with the standard(API) in our studying group and approve it together. It is an API about how plugins and photoshop program interact with each other, so that we can simply code plugins independently of concrete photoshop implementation and they would definitely be able to run and work as expected. 
+The first step of the project was to define a standard (API) in our study group and approve it. This API specifies how plugins and the image editor interacts, so that we can code plugins independently of the concrete implementation.
 
-As expected, first API was not perfect and there were some limitations we could do using these standard. So, after some time we came up with a second standard and approved it.
+As expected, the initial API had limitations. After a few time, we came up with the second version of standard that fixed many issues.  
 
 ## API Architecture
 
-The main idea of the API - everything is a plugin. Like, literally, everything. Of course, some of them are system plugins - like canvas, toolbar, menu bar, but they are still plugins. Plugin can ask photoshop to give a pointer to the concrete window on the screen and use this pointer to interact with it. For example brush plugin asks a pointer to canvas to draw on it and a pointer to toolbar to add himself there.
+The core idea of the API is that everything is a plugin. Like, literally - everything. While some plugins, such as the canvas, toolbar, and menu bar, are considered system plugins, they still follow the plugin model. A plugin can request Photoshop to provide a pointer to a specific window on the screen and use this pointer for interaction. For example, the brush plugin requests a pointer to the canvas for drawing and a pointer to the toolbar to add itself as a tool.  
 
-In this paradigm, plugins can do roughly anything in the photoshop, they are not really bounded by any limitations - and that's something that we wanted and what we achieved, as I believe.
+In this paradigm, plugins can do anything they want with no limitations - something that we wanted, and something we achieved.
 
-Each plugin have an action - something, that have to be executed on each polled event. This actions are executed using `Action Controller` so that some of them could be undoable, e.g undo of the drawing on the screen or applying filter. 
+Each plugin has an action - a task executed for each polled event. These actions are managed using the `Action Controller`, enabling features like undo. 
 
-Obviously, API should not depend on the particular graphics library (for example SFML) and therefore API also standardise common graphics shell - so that they could be implemented using different graphics library and switching from one to another doesn't lead to rewriting whole project - we only need to rewrite implementation of graphics functions.
+Obviously, API has to be independent of any specific graphics library (e.g., SFML). It standardizes a common graphics shell - so, switching to a different library doesn't lead to rewriting the whole project.
 
 ## Photoshop Features
 
-Here how it looks like, design is inspired by Krita:
+Here’s how it looks (design inspired by Krita):  
 
-![Image editor](ReadmeAssets/ImageEditor.png)
+![Image editor](ReadmeAssets/ImageEditor.png)  
 
-So, what are the main features?
+### Key Features  
 
-Firstly, screen is divided into:
-1. Canvas
-2. Toolbar - left bar with eraser, brush, etc.
-3. Menu bar - upper bar with file, tools, filters, etc.
-4. Options bar - options of the concrete tool - upper part with the size slide and right bar that contains colors (is hidden by brightness filter render window).
+The screen is divided into:  
+1. **Canvas**  
+2. **Toolbar** (left bar with eraser, brush, etc.)  
+3. **Menu Bar** (top bar with file, tools, filters, etc.)  
+4. **Options Bar** (tool options like size slider and color palette (hidden by brightness filter render window)).  
 
-Let's dive into each of the parts more deeply.
+Let’s dive deeper into each part:
 
-### Canvas
+### Canvas  
 
-Canvas is pretty simple.
+The canvas is simple:  
+- **Scrollable**: Two scrollbars - upside-down and left-right. Functions like in other GUI applications.  
+- **Undoable**: Plugins can take snapshots and restore the canvas from it at any time. Combining this with `Action Controller` results in undoable canvas. 
 
-First of all, it is scrollable, it works the same as in other GUI applications.
+### Toolbar  
 
-Secondly, it is "mementable" - you can take a snapshot and restore canvas from it at any time. Therefore canvas can be considered "undoable" - using `Action Controller` different plugins can undo their actions and interactions with canvas.
+The toolbar contains tools. In this project, I implemented:  
+1. **Brush**  
+2. **Eraser**  
+3. **Shapes** (line, ellipse, rectangle)  
 
-### Toolbar
+Implementing the brush and eraser required interpolation since events were not processed often enough to draw continuous lines. I implemented Catmull-Rom interpolator, added points to it and drew lines based on the interpolated points.  
 
-Simple instruments are expected to be added to toolbar. In my concrete case I implemented
+### Options Bar  
 
-1. Brush
-2. Eraser
-3. Shapes - line, ellipse, rectangle
+Toolbar tools can define specific options for more precise tuning. Standardized options are:  
+1. Thickness  
+2. Opacity  
+3. Color palette  
 
-Implementing brush and eraser was harder because it required interpolation. The problem is that events are sent not as often as I needed to draw continuous line. Therefore I needed to add points to the interpolator (I used Catmull-Rom interpolation) and then draw line using interpolated points.
+Plugins can choose which options to add or define custom options for their functionality.  
 
-### Options bar
+### Menu Bar  
 
-Instruments from toolbar can have their own options for more precise tuning of it. There are a few standardised options:
-1. Thickness
-2. Opacity
-3. Color palette
+The menu bar contains:  
+1. **File**  
+2. **Tools**  
+3. **Layer**  
+4. **Filters**  
+5. **Help**  
 
-Concrete plugin can choose which of them to add to the option bar. Also it could create it's own options and add them.
+- **File**: Includes options to open and save files.  
+- **Tools**: Features "Do" and "Undo" buttons for canvas interaction.  
 
-### Menu bar
+The most interesting button - Filters.
 
-Menu bar defines common buttons:
-1. File
-2. Tools
-3. Layer
-4. Filters
-5. Help
+#### Filters  
 
-File provides two main functions - open file and save file.
-Tools provides buttons "Do" and "Undo" to interact with the canvas.
+I implemented five filters:  
+1. Negative  
+2. Box Blur  
+3. Bas Relief  
+4. Unsharp Mask  
+5. Brightness Filter (shown in the screenshot)  
 
-The most interesting part - filters. I implemented 5 filters:
-1. Negative
-2. Box Blur
-3. Bas Relief
-4. Unsharp mask
-5. Brightness filter - on the screenshot.
+Each filter opens a render window with customizable options and "Ok / Cancel" buttons.  
 
-Each filter opens it's own render window with options and "Ok / Cancel" buttons. 
+For instance:  
+- **Brightness Filter**: Opens an interactive graph for pixel brightness adjustments.  
+- **Box Blur**: Provides a slider to control the blur radius. Here how it looks like:
 
-For example, brightness filter provides interactive graph to adjust brightness of the canvas pixels. Another example - box blur provides slider to choose the blur radius:
+![Box blur](ReadmeAssets/boxBlur.png)  
 
-![Box blur](ReadmeAssets/boxBlur.png)
+## Conclusion  
 
-## Conclusion
-
-If you wish to try to code a plugin using our API - it is provided in [api](/include/api/) folder.
+If you’d like to try coding a plugin using our API, you can find it in the [api](/include/api/) folder.  

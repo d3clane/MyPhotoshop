@@ -10,10 +10,9 @@ make
 ./build/bin/ps.out
 ```
 
-
 ## Project Goal
 
-The main goal of the project is to gain experience in teamwork and plugin-based architecture.  
+The main goal of the project is to get used to teamwork and plugin-based architecture.  
 
 The first step of the project was to define a standard (API) in our study group and approve it. This API specifies how plugins and the image editor interacts, so that we can code plugins independently of the concrete implementation.
 

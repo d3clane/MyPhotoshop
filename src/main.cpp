@@ -18,7 +18,7 @@ void loadPlugin(const char* libName)
 
     if (!handle)
     {
-        std::cerr << "Ошибка загрузки библиотеки: " << dlerror() << std::endl;
+        std::cerr << "Error loading " << dlerror() << std::endl;
         return;
     }
 
@@ -26,7 +26,7 @@ void loadPlugin(const char* libName)
 
     if (!load_func) 
     {
-        std::cerr << "Ошибка получения функции load(): " << dlerror() << std::endl;
+        std::cerr << "Error getting onLoadPlugin() function " << dlerror() << std::endl;
         return;
     }
 
